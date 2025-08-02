@@ -1,0 +1,218 @@
+declare const cv: any;
+
+export interface PlateDetectionResult {
+  plateNumber: string;
+  confidence: number;
+  boundingBox: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+}
+
+export class PlateDetector {
+  private isInitialized = false;
+  private cascadeClassifier: any = null;
+
+  async initialize(): Promise<void> {
+    if (this.isInitialized) return;
+
+    try {
+      // Wait for OpenCV to be ready
+      await new Promise<void>((resolve) => {
+        if (cv.getBuildInformation) {
+          resolve();
+        } else {
+          cv.onRuntimeInitialized = () => resolve();
+        }
+      });
+
+      // Load Haar cascade for license plate detection
+      // Note: In production, you'd load a pre-trained cascade file
+      this.isInitialized = true;
+      console.log('OpenCV initialized successfully');
+    } catch (error) {
+      console.error('Failed to initialize OpenCV:', error);
+      throw error;
+    }
+  }
+
+  async detectPlate(imageElement: HTMLImageElement | HTMLVideoElement | HTMLCanvasElement): Promise<PlateDetectionResult | null> {
+    if (!this.isInitialized) {
+      await this.initialize();
+    }
+
+    try {
+      // Convert image to OpenCV Mat
+      const src = cv.imread(imageElement);
+      const gray = new cv.Mat();
+      const edges = new cv.Mat();
+      const contours = new cv.MatVector();
+      const hierarchy = new cv.Mat();
+
+      // Convert to grayscale
+      cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
+
+      // Apply Gaussian blur to reduce noise
+      const blurred = new cv.Mat();
+      cv.GaussianBlur(gray, blurred, new cv.Size(5, 5), 0);
+
+      // Apply edge detection
+      cv.Canny(blurred, edges, 50, 150);
+
+      // Find contours
+      cv.findContours(edges, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+
+      let bestCandidate: PlateDetectionResult | null = null;
+      let maxArea = 0;
+
+      // Analyze contours to find rectangular shapes (potential plates)
+      for (let i = 0; i < contours.size(); i++) {
+        const contour = contours.get(i);
+        const area = cv.contourArea(contour);
+        
+        // Filter by area (license plates should be reasonably sized)
+        if (area > 1000 && area < 50000) {
+          const rect = cv.boundingRect(contour);
+          const aspectRatio = rect.width / rect.height;
+          
+          // License plates typically have aspect ratio between 2:1 and 5:1
+          if (aspectRatio > 2 && aspectRatio < 5 && area > maxArea) {
+            maxArea = area;
+            
+            // Extract the region of interest (ROI)
+            const roi = src.roi(rect);
+            const plateText = await this.extractTextFromROI(roi);
+            
+            if (plateText && this.isValidPlateFormat(plateText)) {
+              bestCandidate = {
+                plateNumber: plateText,
+                confidence: this.calculateConfidence(plateText, aspectRatio, area),
+                boundingBox: {
+                  x: rect.x,
+                  y: rect.y,
+                  width: rect.width,
+                  height: rect.height
+                }
+              };
+            }
+            
+            roi.delete();
+          }
+        }
+        contour.delete();
+      }
+
+      // Clean up memory
+      src.delete();
+      gray.delete();
+      blurred.delete();
+      edges.delete();
+      contours.delete();
+      hierarchy.delete();
+
+      return bestCandidate;
+    } catch (error) {
+      console.error('Error detecting plate:', error);
+      return null;
+    }
+  }
+
+  private async extractTextFromROI(roi: any): Promise<string | null> {
+    try {
+      // Convert ROI to grayscale for better OCR
+      const gray = new cv.Mat();
+      cv.cvtColor(roi, gray, cv.COLOR_RGBA2GRAY);
+
+      // Apply threshold to get binary image
+      const binary = new cv.Mat();
+      cv.threshold(gray, binary, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU);
+
+      // Morphological operations to clean up the image
+      const kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(3, 3));
+      const cleaned = new cv.Mat();
+      cv.morphologyEx(binary, cleaned, cv.MORPH_CLOSE, kernel);
+
+      // Convert to canvas for text extraction
+      const canvas = document.createElement('canvas');
+      cv.imshow(canvas, cleaned);
+
+      // Simple character recognition (in production, use Tesseract.js or similar)
+      const plateText = await this.performOCR(canvas);
+
+      // Clean up
+      gray.delete();
+      binary.delete();
+      kernel.delete();
+      cleaned.delete();
+
+      return plateText;
+    } catch (error) {
+      console.error('Error extracting text from ROI:', error);
+      return null;
+    }
+  }
+
+  private async performOCR(canvas: HTMLCanvasElement): Promise<string | null> {
+    // Simplified OCR - in production, integrate with Tesseract.js
+    // For now, we'll simulate plate detection with pattern matching
+    
+    // Get image data
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    
+    // Simulate OCR result based on image characteristics
+    // In a real implementation, you would use a proper OCR library
+    const simulatedPlates = [
+      'ABC123', 'XYZ789', 'DEF456', 'GHI012', 'JKL345',
+      'MNO678', 'PQR901', 'STU234', 'VWX567', 'YZA890'
+    ];
+    
+    // Return a random plate for demonstration
+    return simulatedPlates[Math.floor(Math.random() * simulatedPlates.length)];
+  }
+
+  private isValidPlateFormat(text: string): boolean {
+    // Common license plate patterns
+    const patterns = [
+      /^[A-Z]{3}\s?\d{3}$/,  // ABC 123
+      /^[A-Z]{2}\s?\d{4}$/,  // AB 1234
+      /^\d{3}\s?[A-Z]{3}$/,  // 123 ABC
+      /^[A-Z]\d{2}\s?[A-Z]{3}$/, // A12 BCD
+      /^[A-Z]{4}\s?\d{2}$/   // ABCD 12
+    ];
+
+    return patterns.some(pattern => pattern.test(text.replace(/\s+/g, ' ').trim()));
+  }
+
+  private calculateConfidence(plateText: string, aspectRatio: number, area: number): number {
+    let confidence = 0.5; // Base confidence
+
+    // Boost confidence for valid format
+    if (this.isValidPlateFormat(plateText)) {
+      confidence += 0.3;
+    }
+
+    // Boost confidence for good aspect ratio
+    if (aspectRatio >= 2.5 && aspectRatio <= 4.5) {
+      confidence += 0.1;
+    }
+
+    // Boost confidence for reasonable area
+    if (area >= 5000 && area <= 25000) {
+      confidence += 0.1;
+    }
+
+    return Math.min(confidence, 1.0);
+  }
+
+  cleanup(): void {
+    this.isInitialized = false;
+    this.cascadeClassifier = null;
+  }
+}
+
+export const plateDetector = new PlateDetector();

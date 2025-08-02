@@ -1,0 +1,38 @@
+Changes made to the app in this session:
+
+1. Merged DVLA and Police apps into the main app with credential-based routing from a unified login page.
+2. Moved DVLA and Police app code into the main src/ directory for a cleaner structure.
+3. Updated login logic to route users to the correct app (main, DVLA, Police) based on credentials.
+4. Added and fixed logout functionality for DVLA and Police apps, so logging out returns to the login page.
+5. Made the sidebars in both the main and police apps sticky (not scrolling with main content on large screens).
+6. Set the main app to show the Overview Dashboard as the first page after login.
+7. Fixed the Police app's sidebar to stretch to the bottom of the page and not move with scrolling.
+8. Removed and restored the 'Plate Recognition' title in the main app's sidebar header as requested.
+9. Removed the copyright footer from the login page.
+10. Fixed duplicate placeholder warning in RegisterPage.
+11. Ensured all logout buttons in sidebars work as expected.
+12. General bug fixes and linter error resolutions throughout the integration process.
+
+NEW CHANGES - SUPERVISOR APP INTEGRATION:
+
+13. Merged Supervisor app into the main app with credential-based routing from a unified login page.
+14. Moved Supervisor app code into the main src/supervisor/ directory for a cleaner structure.
+15. Updated login logic to support Supervisor app credentials: username = '0203549815', password = 'Killerman020'.
+16. Added SupervisorApp component that wraps the Supervisor app with proper logout functionality.
+17. Updated Layout component in Supervisor app to accept and use onLogout prop.
+18. Installed react-router-dom and recharts dependencies for Supervisor app functionality.
+19. Updated App.tsx to include Supervisor app rendering logic alongside existing DVLA and Police apps.
+20. Updated LoginPage.tsx interface and handleLogin function to support 'supervisor' app type.
+21. Ensured Supervisor app logout button takes users back to the login page.
+22. Maintained consistent routing structure with other integrated apps.
+
+RECENT FIXES AND DEPLOYMENT:
+
+23. Resolved recharts import issues by ensuring proper package installation and dependency management.
+24. Fixed Vite build errors related to missing dependencies and import resolution.
+25. Successfully deployed the unified application with all four apps (Main, DVLA, Police, Supervisor) running on port 5174.
+26. Verified that all login credentials work correctly and route to appropriate applications.
+27. Confirmed that logout functionality works properly across all integrated apps.
+28. Ensured all dependencies are properly installed and configured for the Supervisor app's chart components.
+
+All four apps (Main, DVLA, Police, Supervisor) are now integrated into a single unified application with shared login and proper logout functionality. The application is successfully running and accessible at http://localhost:5174/. 
