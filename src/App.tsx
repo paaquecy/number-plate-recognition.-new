@@ -16,7 +16,6 @@ import AdministrativeControls from './components/AdministrativeControls';
 import SystemSettings from './components/SystemSettings';
 import AddNewRole from './components/AddNewRole';
 import NotificationsPage from './components/NotificationsPage';
-import UserProfilePage from './components/UserProfilePage';
 import { ThemeProvider as DvlaThemeProvider } from './dvla/contexts/ThemeContext';
 import DvlaApp from './dvla/App';
 import PoliceApp from './police/App';
@@ -148,8 +147,6 @@ function App() {
     setCurrentPage(page);
     if (page === 'dashboard') {
       setActiveItem('overview');
-    } else if (page === 'user-accounts' || page === 'user-profile') {
-      setCurrentPage('user-profile');
     }
   };
 
@@ -203,16 +200,6 @@ function App() {
   if (currentPage === 'notifications') {
     return (
       <NotificationsPage 
-        onNavigate={handlePageNavigation} 
-        currentPage={currentPage} 
-      />
-    );
-  }
-
-  // Render user profile page if currentPage is 'user-profile'
-  if (currentPage === 'user-profile') {
-    return (
-      <UserProfilePage 
         onNavigate={handlePageNavigation} 
         currentPage={currentPage} 
       />

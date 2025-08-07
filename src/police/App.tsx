@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { 
+  BarChart3, 
   Menu,
   X,
 } from 'lucide-react';
@@ -10,7 +11,6 @@ import ViolationsManagement from './components/ViolationsManagement';
 import VehicleInformationAccess from './components/VehicleInformationAccess';
 import FieldReporting from './components/FieldReporting';
 import PersonalSettings from './components/PersonalSettings';
-import VerifyLicensePage from '../components/VerifyLicensePage';
 
 // Lazy load VehicleScanner to avoid OpenCV loading issues
 const VehicleScanner = React.lazy(() => import('./components/VehicleScanner'));
@@ -40,22 +40,15 @@ function App({ onLogout }: PoliceAppProps) {
         return 'Field Reporting';
       case 'settings':
         return 'Personal Settings';
-      case 'verify-license':
-        return 'Verify License';
       default:
         return 'Police Dashboard';
     }
   };
 
-  const handleNavigation = (page: string) => {
-    setActiveNav(page);
-    setSidebarOpen(false);
-  };
-
   const renderContent = () => {
     switch (activeNav) {
       case 'overview':
-        return <OverviewDashboard onNavigate={handleNavigation} />;
+        return <OverviewDashboard />;
       case 'scanner':
         return (
           <React.Suspense fallback={
@@ -77,10 +70,8 @@ function App({ onLogout }: PoliceAppProps) {
         return <FieldReporting />;
       case 'settings':
         return <PersonalSettings />;
-      case 'verify-license':
-        return <VerifyLicensePage onNavigate={handleNavigation} currentPage={activeNav} />;
       default:
-        return <OverviewDashboard onNavigate={handleNavigation} />;
+        return <OverviewDashboard />;
     }
   };
 
@@ -89,23 +80,23 @@ function App({ onLogout }: PoliceAppProps) {
   
   React.useEffect(() => {
     const handleError = (error: ErrorEvent) => {
-      console.error('Error caught by boundary:', error);
+      console.error('Application error:', error);
       setHasError(true);
     };
-
+    
     window.addEventListener('error', handleError);
     return () => window.removeEventListener('error', handleError);
   }, []);
-
+  
   if (hasError) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Something went wrong</h2>
+          <h1 className="text-2xl font-bold text-gray-800 mb-4">Something went wrong</h1>
           <p className="text-gray-600 mb-4">Please refresh the page to try again.</p>
           <button 
             onClick={() => window.location.reload()} 
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
             Refresh Page
           </button>

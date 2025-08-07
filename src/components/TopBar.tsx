@@ -26,14 +26,6 @@ const TopBar: React.FC<TopBarProps> = ({ title, onSearch, darkMode, onNavigate }
     }
   };
 
-  const handleUserProfileClick = () => {
-    if (onNavigate) {
-      onNavigate('user-profile');
-    } else {
-      setIsProfileOpen(true);
-    }
-  };
-
   return (
     <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4">
       <div className="flex items-center justify-between">
@@ -83,7 +75,7 @@ const TopBar: React.FC<TopBarProps> = ({ title, onSearch, darkMode, onNavigate }
             darkMode 
               ? 'text-gray-400 hover:text-gray-200 hover:bg-gray-700' 
               : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
-          }`} onClick={handleUserProfileClick}>
+          }`} onClick={() => setIsProfileOpen(true)}>
             <User size={20} />
           </button>
         </div>
