@@ -6,8 +6,7 @@ import {
   Info, 
   User, 
   Shield,
-  Lock,
-  UserCheck
+  Lock
 } from 'lucide-react';
 
 interface LoginPageProps {
@@ -165,24 +164,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onRegister }) => {
             </p>
           </div>
         </div>
-
-        {/* Authorized User Roles Section */}
-        <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6">
-          <h3 className="text-center font-semibold text-gray-800 mb-4">
-            Authorized User Roles:
-          </h3>
-          <div className="space-y-3">
-            <div className="flex items-center justify-center">
-              <UserCheck size={18} className="mr-3 text-blue-600" />
-              <span className="text-gray-700 font-medium">DVLA Officer</span>
-            </div>
-            <div className="flex items-center justify-center">
-              <Shield size={18} className="mr-3 text-purple-600" />
-              <span className="text-gray-700 font-medium">Administrator</span>
-            </div>
-          </div>
-        </div>
-
+        
         {/* Footer */}
       </div>
     </div>

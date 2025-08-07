@@ -15,6 +15,8 @@ import SecurityManagement from './components/SecurityManagement';
 import AdministrativeControls from './components/AdministrativeControls';
 import SystemSettings from './components/SystemSettings';
 import AddNewRole from './components/AddNewRole';
+import NotificationsPage from './components/NotificationsPage';
+import UserProfilePage from './components/UserProfilePage';
 import { ThemeProvider as DvlaThemeProvider } from './dvla/contexts/ThemeContext';
 import DvlaApp from './dvla/App';
 import PoliceApp from './police/App';
@@ -27,6 +29,7 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
   const [activeItem, setActiveItem] = useState('violation-management');
+  const [currentPage, setCurrentPage] = useState('dashboard');
   const [darkMode, setDarkMode] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterQuery, setFilterQuery] = useState('');
@@ -114,71 +117,40 @@ function App() {
       } else {
         setActiveItem(app);
       }
-      setShowRegister(false);
-      console.log('User logged in successfully as', app);
     } else {
-      alert('Invalid credentials. Please check your username and password.');
+      alert('Invalid credentials. Please try again.');
     }
-  };
-
-  const handleShowRegister = () => {
-    setShowRegister(true);
-    console.log('Navigating to registration page');
-  };
-
-  const handleBackToLogin = () => {
-    setShowRegister(false);
-    console.log('Navigating back to login page');
-  };
-
-  const handleRegisterSuccess = () => {
-    setShowRegister(false);
-    console.log('Registration successful, returning to login');
-  };
-  
-  const handleNewRegistration = (registrationData: {
-    accountType: 'police' | 'dvla';
-    firstName: string;
-    lastName: string;
-    email: string;
-    telephone: string;
-    badgeNumber?: string;
-    rank?: string;
-    station?: string;
-    idNumber?: string;
-    position?: string;
-  }) => {
-    const newApproval: PendingApproval = {
-      id: String(pendingApprovals.length + 1),
-      userName: `${registrationData.firstName} ${registrationData.lastName}`,
-      email: registrationData.email,
-      role: registrationData.accountType === 'police' ? 'Police Officer' : 'DVLA Officer',
-      requestDate: new Date().toISOString().split('T')[0],
-      accountType: registrationData.accountType,
-      additionalInfo: registrationData.accountType === 'police'
-        ? {
-            badgeNumber: registrationData.badgeNumber || '',
-            rank: registrationData.rank || '',
-            station: registrationData.station || '',
-            idNumber: '',
-            position: ''
-          }
-        : {
-            badgeNumber: '',
-            rank: '',
-            station: '',
-            idNumber: registrationData.idNumber || '',
-            position: registrationData.position || ''
-          }
-    };
-    setPendingApprovals(prev => [...prev, newApproval]);
-    console.log('New registration added to pending approvals:', newApproval);
   };
 
   const handleLogout = () => {
     setIsLoggedIn(false);
-    setActiveItem('violation-management'); // Reset to default page
-    console.log('User logged out');
+    setActiveItem('violation-management');
+  };
+
+  const handleShowRegister = () => {
+    setShowRegister(true);
+  };
+
+  const handleBackToLogin = () => {
+    setShowRegister(false);
+  };
+
+  const handleRegisterSuccess = () => {
+    setShowRegister(false);
+    alert('Registration successful! You can now login.');
+  };
+
+  const handleNewRegistration = (approval: PendingApproval) => {
+    setPendingApprovals(prev => [...prev, approval]);
+  };
+
+  const handlePageNavigation = (page: string) => {
+    setCurrentPage(page);
+    if (page === 'dashboard') {
+      setActiveItem('overview');
+    } else if (page === 'user-accounts' || page === 'user-profile') {
+      setCurrentPage('user-profile');
+    }
   };
 
   const getPageTitle = () => {
@@ -192,7 +164,7 @@ function App() {
       case 'user-accounts':
         return 'User Account Management';
       case 'vehicle-registry':
-        return 'Data Entry & Vehicle Registry';
+        return 'Vehicle Registry';
       case 'analytics':
         return 'Analytics & Reporting';
       case 'security':
@@ -204,34 +176,15 @@ function App() {
       case 'add-new-role':
         return 'Add New Role';
       default:
-        return 'Dashboard';
+        return 'Plate Recognition System';
     }
   };
 
-  // Show login page if not logged in
-  if (!isLoggedIn) {
-    if (showRegister) {
-      return (
-        <RegisterPage 
-          onBackToLogin={handleBackToLogin}
-          onRegisterSuccess={handleRegisterSuccess}
-          onNewRegistration={handleNewRegistration}
-        />
-      );
-    }
-    return (
-      <LoginPage 
-        onLogin={handleLogin} 
-        onRegister={handleShowRegister}
-      />
-    );
-  }
   // Render the correct app after login
   if (activeItem === 'dvla') {
     return (
       <DvlaThemeProvider>
         <DvlaApp onLogout={handleLogout} />
-        <button onClick={handleLogout} style={{position: 'fixed', top: 10, right: 10, zIndex: 1000}}>Logout</button>
       </DvlaThemeProvider>
     );
   }
@@ -243,6 +196,26 @@ function App() {
   if (activeItem === 'supervisor') {
     return (
       <SupervisorApp onLogout={handleLogout} />
+    );
+  }
+
+  // Render notifications page if currentPage is 'notifications'
+  if (currentPage === 'notifications') {
+    return (
+      <NotificationsPage 
+        onNavigate={handlePageNavigation} 
+        currentPage={currentPage} 
+      />
+    );
+  }
+
+  // Render user profile page if currentPage is 'user-profile'
+  if (currentPage === 'user-profile') {
+    return (
+      <UserProfilePage 
+        onNavigate={handlePageNavigation} 
+        currentPage={currentPage} 
+      />
     );
   }
 
@@ -306,6 +279,25 @@ function App() {
         );
     }
   };
+
+  if (!isLoggedIn) {
+    if (showRegister) {
+      return (
+        <RegisterPage
+          onBackToLogin={handleBackToLogin}
+          onRegisterSuccess={handleRegisterSuccess}
+          onNewRegistration={handleNewRegistration}
+        />
+      );
+    }
+    return (
+      <LoginPage
+        onLogin={handleLogin}
+        onRegister={handleShowRegister}
+      />
+    );
+  }
+
   return (
     <div className={`min-h-screen font-['Inter'] flex ${darkMode ? 'bg-gray-900' : 'bg-gray-100'}`}>
       <Sidebar 
@@ -316,7 +308,7 @@ function App() {
       />
       
       <div className="flex-1 lg:ml-0">
-        <TopBar title={getPageTitle()} onSearch={handleSearch} darkMode={darkMode} />
+        <TopBar title={getPageTitle()} onSearch={handleSearch} darkMode={darkMode} onNavigate={handlePageNavigation} />
         
         <main className={`min-h-[calc(100vh-4rem)] ${darkMode ? 'bg-gray-900' : 'bg-gray-100'}`}>
           {renderMainContent()}
