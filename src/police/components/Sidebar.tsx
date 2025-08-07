@@ -55,13 +55,13 @@ const Sidebar: React.FC<SidebarProps> = ({
       <nav className="flex-1 py-2 lg:py-4">
         <ul className="space-y-1 lg:space-y-2 px-2 lg:px-3">
           {navigationItems.map((item) => (
-            <li key={item.id}>
+            <li key={item.id} className="flex flex-col">
               <button
                 onClick={() => {
                   setActiveNav(item.id);
                   setSidebarOpen(false); // Close sidebar on mobile after selection
                 }}
-                className={`w-full flex items-center px-3 lg:px-4 py-2 lg:py-3 rounded-lg text-left transition-colors duration-200 ${
+                className={`w-full flex items-center px-3 lg:px-4 py-2 lg:py-3 rounded-lg text-left transition-colors duration-200 mx-auto ${
                   activeNav === item.id
                     ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-600'
                     : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
