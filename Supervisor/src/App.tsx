@@ -10,7 +10,7 @@ import Settings from './pages/Settings';
 function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 flex font-['Inter',sans-serif] relative">
         <Routes>
           <Route path="/supervisor" element={<Layout />}>
             <Route path="dashboard" element={<Dashboard />} />

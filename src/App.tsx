@@ -286,7 +286,7 @@ function App() {
   }
 
   return (
-    <div className={`min-h-screen font-['Inter'] flex ${darkMode ? 'bg-gray-900' : 'bg-gray-100'}`}>
+    <div className="min-h-screen bg-gray-50 flex font-['Inter',sans-serif] relative">
       <Sidebar 
         activeItem={activeItem} 
         onItemClick={handleItemClick} 

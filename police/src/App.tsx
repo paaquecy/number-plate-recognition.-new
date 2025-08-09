@@ -134,7 +134,7 @@ function App() {
               <h2 className="text-lg lg:text-2xl font-bold text-gray-800 truncate">{getPageTitle()}</h2>
             </div>
             <div className="relative flex-shrink-0 w-full max-w-xs lg:max-w-sm">
-              <Search className="w-4 lg:w-5 h-4 lg:h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <X className="w-4 lg:w-5 h-4 lg:h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
                 placeholder="Search anything..."
