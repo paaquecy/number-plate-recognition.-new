@@ -9,6 +9,7 @@ import {
   Lock
 } from 'lucide-react';
 import { authenticateUser } from '../utils/userStorage';
+import { updateActivity } from '../utils/sessionManager';
 
 interface LoginPageProps {
   onLogin: (app: 'main' | 'dvla' | 'police' | 'supervisor' | null) => void;
