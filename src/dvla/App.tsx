@@ -13,12 +13,21 @@ import Settings from './components/Settings';
 import { logAuth, logSystem } from '../utils/auditLog';
 import { getAppNavigationState, saveAppNavigationState, updateActivity } from '../utils/sessionManager';
 import SessionStatusIndicator from '../components/SessionStatusIndicator';
+import { DataProvider } from '../contexts/DataContext';
 
 interface DvlaAppProps {
   onLogout?: () => void;
 }
 
 function App({ onLogout }: DvlaAppProps) {
+  return (
+    <DataProvider>
+      <DvlaAppContent onLogout={onLogout} />
+    </DataProvider>
+  );
+}
+
+function DvlaAppContent({ onLogout }: DvlaAppProps) {
   // Restore navigation state from session or use default
   const savedNavState = getAppNavigationState('dvla');
   const [activeMenuItem, setActiveMenuItem] = useState(savedNavState?.activeMenuItem || 'overview');

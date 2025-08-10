@@ -26,6 +26,7 @@ const VehicleScanner = () => {
   const [isScanning, setIsScanning] = useState(false);
   const [detectionResult, setDetectionResult] = useState<PlateDetectionResult | null>(null);
   const [scanInterval, setScanInterval] = useState<NodeJS.Timeout | null>(null);
+  const [permissionStatus, setPermissionStatus] = useState<'granted' | 'denied' | 'prompt' | 'unknown'>('unknown');
 
   const {
     videoRef,
@@ -37,6 +38,27 @@ const VehicleScanner = () => {
     stopCamera,
     captureFrame
   } = useCamera();
+
+  // Check camera permissions on mount
+  useEffect(() => {
+    const checkPermissions = async () => {
+      try {
+        if (navigator.permissions && navigator.permissions.query) {
+          const permission = await navigator.permissions.query({ name: 'camera' as PermissionName });
+          setPermissionStatus(permission.state as 'granted' | 'denied' | 'prompt');
+
+          permission.addEventListener('change', () => {
+            setPermissionStatus(permission.state as 'granted' | 'denied' | 'prompt');
+          });
+        }
+      } catch (error) {
+        console.log('Permissions API not supported');
+        setPermissionStatus('unknown');
+      }
+    };
+
+    checkPermissions();
+  }, []);
 
   // Initialize OpenCV when component mounts
   useEffect(() => {
@@ -58,6 +80,18 @@ const VehicleScanner = () => {
       }
     };
   }, [scanInterval]);
+
+  const requestCameraPermission = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      stream.getTracks().forEach(track => track.stop());
+      setPermissionStatus('granted');
+      alert('Camera permission granted! You can now start scanning.');
+    } catch (error) {
+      setPermissionStatus('denied');
+      alert('Camera permission denied. Please enable camera access in your browser settings.');
+    }
+  };
 
   const performPlateDetection = useCallback(async () => {
     if (!cameraActive || !videoRef.current) return;
@@ -166,7 +200,15 @@ const VehicleScanner = () => {
               <div className="text-center text-white">
                 <AlertCircle className="w-8 lg:w-12 h-8 lg:h-12 mx-auto mb-4 text-red-400" />
                 <p className="font-medium text-sm lg:text-base">Camera Error</p>
-                <p className="text-xs lg:text-sm text-gray-300 mt-2">{cameraError}</p>
+                <p className="text-xs lg:text-sm text-gray-300 mt-2 mb-4">{cameraError}</p>
+                {permissionStatus === 'denied' && (
+                  <button
+                    onClick={requestCameraPermission}
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium"
+                  >
+                    Request Camera Permission
+                  </button>
+                )}
               </div>
             </div>
           ) : cameraLoading ? (
@@ -217,6 +259,28 @@ const VehicleScanner = () => {
                 <Camera className="w-12 lg:w-16 h-12 lg:h-16 mx-auto mb-4 text-gray-400" />
                 <p className="font-medium text-sm lg:text-base">Camera Ready</p>
                 <p className="text-xs lg:text-sm text-gray-300 mt-2">Click "Start Scan" to activate camera and begin plate detection</p>
+                {permissionStatus === 'denied' && (
+                  <div className="mt-4">
+                    <p className="text-xs text-red-300 mb-2">Camera permission denied</p>
+                    <button
+                      onClick={requestCameraPermission}
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium"
+                    >
+                      Enable Camera Access
+                    </button>
+                  </div>
+                )}
+                {permissionStatus === 'prompt' && (
+                  <div className="mt-4">
+                    <p className="text-xs text-yellow-300 mb-2">Camera permission needed</p>
+                    <button
+                      onClick={requestCameraPermission}
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium"
+                    >
+                      Grant Camera Permission
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           )}

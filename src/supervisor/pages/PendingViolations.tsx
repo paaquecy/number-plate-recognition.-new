@@ -1,19 +1,42 @@
 import React, { useState } from 'react';
 import { Search, Filter, Eye, CheckCircle, XCircle, Calendar, User } from 'lucide-react';
-import { mockViolations, acceptViolation, rejectViolation } from '../data/mockData';
 import ViolationDetailsModal from '../components/ViolationDetailsModal';
 import { Violation } from '../types';
+import { useData } from '../../contexts/DataContext';
 
 const PendingViolations: React.FC = () => {
+  const { violations, updateViolation, addNotification, isLoading } = useData();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedOfficer, setSelectedOfficer] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
-  const [selectedViolation, setSelectedViolation] = useState<Violation | null>(null);
+  const [selectedViolation, setSelectedViolation] = useState<any>(null);
   const [modalOpen, setModalOpen] = useState(false);
-  const [violations, setViolations] = useState(mockViolations);
 
-  const pendingViolations = violations.filter(v => v.status === 'pending');
-  const officers = Array.from(new Set(violations.map(v => v.capturedBy)));
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <span className="ml-3 text-gray-600">Loading violations...</span>
+      </div>
+    );
+  }
+
+  // Convert violations to supervisor format
+  const convertedViolations = violations.map(v => ({
+    id: v.id,
+    plateNumber: v.plateNumber,
+    offense: v.violationType,
+    dateTime: v.timestamp,
+    location: v.location,
+    capturedBy: v.officerName,
+    status: v.status,
+    fine: v.fine || 0,
+    description: v.description || '',
+    evidence: v.evidence || ''
+  }));
+
+  const pendingViolations = convertedViolations.filter(v => v.status === 'pending');
+  const officers = Array.from(new Set(convertedViolations.map(v => v.capturedBy)));
 
   const filteredViolations = pendingViolations.filter(violation => {
     const matchesSearch = violation.plateNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -30,9 +53,18 @@ const PendingViolations: React.FC = () => {
   };
 
   const handleAccept = (violationId: string) => {
-    const success = acceptViolation(violationId);
-    if (success) {
-      setViolations([...mockViolations]); // Trigger re-render
+    const violation = violations.find(v => v.id === violationId);
+    if (violation) {
+      const updatedViolation = { ...violation, status: 'approved' as const };
+      updateViolation(updatedViolation);
+      addNotification({
+        title: 'Violation Approved',
+        message: `Violation ${violation.plateNumber} has been approved`,
+        type: 'success',
+        timestamp: new Date().toISOString(),
+        read: false,
+        system: 'Supervisor App'
+      });
       alert('Violation accepted successfully!');
     } else {
       alert('Failed to accept violation. Please try again.');
@@ -41,9 +73,22 @@ const PendingViolations: React.FC = () => {
 
   const handleReject = (violationId: string) => {
     const reason = prompt('Please provide a reason for rejection (optional):');
-    const success = rejectViolation(violationId, reason || undefined);
-    if (success) {
-      setViolations([...mockViolations]); // Trigger re-render
+    const violation = violations.find(v => v.id === violationId);
+    if (violation) {
+      const updatedViolation = {
+        ...violation,
+        status: 'rejected' as const,
+        description: reason ? `${violation.description}\n\nRejection reason: ${reason}` : violation.description
+      };
+      updateViolation(updatedViolation);
+      addNotification({
+        title: 'Violation Rejected',
+        message: `Violation ${violation.plateNumber} has been rejected`,
+        type: 'warning',
+        timestamp: new Date().toISOString(),
+        read: false,
+        system: 'Supervisor App'
+      });
       alert('Violation rejected successfully!');
     } else {
       alert('Failed to reject violation. Please try again.');

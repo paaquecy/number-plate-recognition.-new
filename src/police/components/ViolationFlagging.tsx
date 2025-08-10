@@ -8,12 +8,16 @@ import {
   CheckCircle
 } from 'lucide-react';
 import { logViolation } from '../../utils/auditLog';
+import { useData } from '../../contexts/DataContext';
 
 const ViolationFlagging = () => {
+  const { addViolation, addNotification, getUserByUsername } = useData();
   const [formData, setFormData] = useState({
     licensePlate: '',
     violationType: '',
-    violationDetails: ''
+    violationDetails: '',
+    location: '',
+    fine: 0
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState('');
@@ -54,7 +58,7 @@ const ViolationFlagging = () => {
       alert('Please enter a license plate number');
       return;
     }
-    
+
     if (!formData.violationType) {
       setSubmitStatus('error');
       alert('Please select a violation type');
@@ -67,11 +71,36 @@ const ViolationFlagging = () => {
       return;
     }
 
+    if (!formData.location.trim()) {
+      setSubmitStatus('error');
+      alert('Please enter violation location');
+      return;
+    }
+
     setIsSubmitting(true);
     setSubmitStatus('');
 
+    // Get current user (assuming police officer is logged in)
+    const currentUser = getUserByUsername('1234567890') || { id: 'USR003', name: 'Officer Michael Osei' };
+
+    // Create violation record
+    const violationData = {
+      plateNumber: formData.licensePlate.toUpperCase(),
+      violationType: formData.violationType,
+      location: formData.location,
+      timestamp: new Date().toISOString(),
+      officerId: currentUser.id,
+      officerName: currentUser.name,
+      status: 'pending' as const,
+      description: formData.violationDetails,
+      fine: formData.fine || getDefaultFine(formData.violationType)
+    };
+
     // Simulate submission process
     setTimeout(() => {
+      // Save violation to storage
+      addViolation(violationData);
+
       setIsSubmitting(false);
       setSubmitStatus('success');
 
@@ -83,11 +112,29 @@ const ViolationFlagging = () => {
         setFormData({
           licensePlate: '',
           violationType: '',
-          violationDetails: ''
+          violationDetails: '',
+          location: '',
+          fine: 0
         });
         setSubmitStatus('');
       }, 2000);
     }, 2000);
+  };
+
+  const getDefaultFine = (violationType: string): number => {
+    const fineMap: Record<string, number> = {
+      'Illegal Parking': 50,
+      'Speeding': 150,
+      'Running Red Light': 200,
+      'Expired License': 100,
+      'No Insurance': 300,
+      'Reckless Driving': 500,
+      'DUI/DWI': 1000,
+      'Improper Lane Change': 75,
+      'Failure to Stop': 100,
+      'Other': 50
+    };
+    return fineMap[violationType] || 50;
   };
 
   return (
@@ -135,6 +182,43 @@ const ViolationFlagging = () => {
               </select>
               <ChevronDown className="w-4 lg:w-5 h-4 lg:h-5 text-gray-400 absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none" />
             </div>
+          </div>
+
+          {/* Location */}
+          <div className="space-y-2">
+            <label className="block text-sm lg:text-base font-medium text-gray-700">
+              Location
+            </label>
+            <input
+              type="text"
+              placeholder="e.g., Accra-Tema Motorway, Osu Circle"
+              value={formData.location}
+              onChange={(e) => handleInputChange('location', e.target.value)}
+              className="w-full px-3 lg:px-4 py-2 lg:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200 text-sm lg:text-base"
+            />
+          </div>
+
+          {/* Fine Amount */}
+          <div className="space-y-2">
+            <label className="block text-sm lg:text-base font-medium text-gray-700">
+              Fine Amount (GH₵)
+            </label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm lg:text-base">GH₵</span>
+              <input
+                type="number"
+                placeholder="0"
+                value={formData.fine || ''}
+                onChange={(e) => handleInputChange('fine', parseInt(e.target.value) || 0)}
+                className="w-full pl-12 pr-3 lg:pr-4 py-2 lg:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200 text-sm lg:text-base"
+                min="0"
+              />
+            </div>
+            {formData.violationType && (
+              <p className="text-xs text-gray-500">
+                Default fine for {formData.violationType}: GH₵{getDefaultFine(formData.violationType)}
+              </p>
+            )}
           </div>
 
           {/* Violation Details / Notes */}

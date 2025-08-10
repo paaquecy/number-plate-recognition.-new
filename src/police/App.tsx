@@ -15,6 +15,7 @@ import VerifyLicense from './components/VerifyLicense';
 import { logAuth, logSystem } from '../utils/auditLog';
 import { getAppNavigationState, saveAppNavigationState, updateActivity } from '../utils/sessionManager';
 import SessionStatusIndicator from '../components/SessionStatusIndicator';
+import { DataProvider } from '../contexts/DataContext';
 
 // Lazy load VehicleScanner to avoid OpenCV loading issues
 const VehicleScanner = React.lazy(() => import('./components/VehicleScanner'));
@@ -24,6 +25,14 @@ interface PoliceAppProps {
 }
 
 function App({ onLogout }: PoliceAppProps) {
+  return (
+    <DataProvider>
+      <PoliceAppContent onLogout={onLogout} />
+    </DataProvider>
+  );
+}
+
+function PoliceAppContent({ onLogout }: PoliceAppProps) {
   // Restore navigation state from session or use default
   const savedNavState = getAppNavigationState('police');
   const [activeNav, setActiveNav] = useState(savedNavState?.activeNav || 'overview');

@@ -18,7 +18,9 @@ import AddNewRole from './components/AddNewRole';
 import NotificationsPage from './components/NotificationsPage';
 import AuditLogViewer from './components/AuditLogViewer';
 import SessionStatusIndicator from './components/SessionStatusIndicator';
+import DataPersistenceTest from './components/DataPersistenceTest';
 import { ThemeProvider as DvlaThemeProvider } from './dvla/contexts/ThemeContext';
+import { DataProvider } from './contexts/DataContext';
 import DvlaApp from './dvla/App';
 import PoliceApp from './police/App';
 import SupervisorApp from './supervisor/SupervisorApp';
@@ -37,6 +39,14 @@ import {
 } from './utils/sessionManager';
 
 function App() {
+  return (
+    <DataProvider>
+      <AppContent />
+    </DataProvider>
+  );
+}
+
+function AppContent() {
   // Initialize state from session or defaults
   const initialSession = initializeSession();
 
@@ -300,7 +310,14 @@ function App() {
   const renderMainContent = () => {
     switch (activeItem) {
       case 'overview':
-        return <Dashboard darkMode={darkMode} />;
+        return (
+          <div className="space-y-6">
+            <Dashboard darkMode={darkMode} />
+            <div className="p-6">
+              <DataPersistenceTest />
+            </div>
+          </div>
+        );
       case 'pending-approvals':
         return (
           <>
