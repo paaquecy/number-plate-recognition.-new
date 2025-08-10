@@ -23,8 +23,10 @@ interface PoliceAppProps {
 }
 
 function App({ onLogout }: PoliceAppProps) {
-  const [activeNav, setActiveNav] = useState('overview');
-  const [searchQuery, setSearchQuery] = useState('');
+  // Restore navigation state from session or use default
+  const savedNavState = getAppNavigationState('police');
+  const [activeNav, setActiveNav] = useState(savedNavState?.activeNav || 'overview');
+  const [searchQuery, setSearchQuery] = useState(savedNavState?.searchQuery || '');
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Initialize audit logging for police app
@@ -32,12 +34,16 @@ function App({ onLogout }: PoliceAppProps) {
     logSystem('Police App Loaded', 'Police officer accessed police dashboard', 'police');
   }, []);
 
-  // Log navigation changes
+  // Log navigation changes and save to session
   useEffect(() => {
     if (activeNav !== 'overview') {
       logSystem('Navigation', `Police officer navigated to ${activeNav}`, 'police');
     }
-  }, [activeNav]);
+
+    // Save navigation state to session
+    saveAppNavigationState('police', { activeNav, searchQuery });
+    updateActivity();
+  }, [activeNav, searchQuery]);
 
   const getPageTitle = () => {
     switch (activeNav) {
