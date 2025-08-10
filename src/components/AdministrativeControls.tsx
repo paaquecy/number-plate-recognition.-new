@@ -69,43 +69,21 @@ const AdministrativeControls: React.FC<AdministrativeControlsProps> = ({ onNavig
     }
   ]);
 
-  const [auditLogs] = useState<AuditLogEntry[]>([
-    {
-      id: 'LOG001',
-      timestamp: '2023-10-26 14:30:00',
-      user: 'Admin User',
-      action: 'Updated System Settings',
-      details: 'Changed notification email address.'
-    },
-    {
-      id: 'LOG002',
-      timestamp: '2023-10-26 14:25:15',
-      user: 'Moderator1',
-      action: 'Approved User Account',
-      details: 'User: John Doe (ID: 12345)'
-    },
-    {
-      id: 'LOG003',
-      timestamp: '2023-10-26 14:20:00',
-      user: 'Admin User',
-      action: 'Created New Role',
-      details: 'Role: Data Entry, Permissions: Add/Edit Vehicle'
-    },
-    {
-      id: 'LOG004',
-      timestamp: '2023-10-26 14:15:30',
-      user: 'DataEntry1',
-      action: 'Added New Vehicle',
-      details: 'Plate: ABC-123, Make: Toyota, Model: Camry'
-    },
-    {
-      id: 'LOG005',
-      timestamp: '2023-10-26 14:10:05',
-      user: 'Admin User',
-      action: 'Deactivated User',
-      details: 'User: Jane Smith (ID: 67890)'
-    }
-  ]);
+  const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>([]);
+
+  // Load audit logs from storage
+  useEffect(() => {
+    const logs = getAuditLogs();
+    // Convert to local format and take latest 10 entries
+    const formattedLogs = logs.slice(-10).map(log => ({
+      id: log.id,
+      timestamp: new Date(log.timestamp).toLocaleString(),
+      user: log.user,
+      action: log.action,
+      details: log.details
+    }));
+    setAuditLogs(formattedLogs);
+  }, []);
 
   const [systemHealth] = useState<SystemHealthItem[]>([
     {
