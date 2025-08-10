@@ -35,38 +35,33 @@ function App() {
   const [filterQuery, setFilterQuery] = useState('');
   
   // Pending approvals state
-  const [pendingApprovals, setPendingApprovals] = useState<PendingApproval[]>([
-    {
-      id: '1',
-      userName: 'John Doe',
-      email: 'john.doe@example.com',
-      role: 'Police Officer',
-      requestDate: '2024-07-20',
-      accountType: 'police',
+  const [pendingApprovals, setPendingApprovals] = useState<PendingApproval[]>([]);
+
+  // Initialize demo users and load pending approvals on component mount
+  useEffect(() => {
+    initializeDemoUsers();
+    loadPendingApprovals();
+  }, []);
+
+  const loadPendingApprovals = () => {
+    const pendingUsers = getPendingUsers();
+    const formattedApprovals: PendingApproval[] = pendingUsers.map(user => ({
+      id: user.id,
+      userName: `${user.firstName} ${user.lastName}`,
+      email: user.email,
+      role: user.accountType === 'police' ? 'Police Officer' : 'DVLA Officer',
+      requestDate: new Date(user.createdAt).toLocaleDateString(),
+      accountType: user.accountType,
       additionalInfo: {
-        badgeNumber: 'P12345',
-        rank: 'Sergeant',
-        station: 'Central Station',
-        idNumber: '',
-        position: ''
+        badgeNumber: user.badgeNumber || '',
+        rank: user.rank || '',
+        station: user.station || '',
+        idNumber: user.idNumber || '',
+        position: user.position || ''
       }
-    },
-    {
-      id: '2',
-      userName: 'Jane Smith',
-      email: 'jane.smith@example.com',
-      role: 'DVLA Officer',
-      requestDate: '2024-07-19',
-      accountType: 'dvla',
-      additionalInfo: {
-        badgeNumber: '',
-        rank: '',
-        station: '',
-        idNumber: 'DVLA001',
-        position: 'Registration Officer'
-      }
-    }
-  ]);
+    }));
+    setPendingApprovals(formattedApprovals);
+  };
   
   // Violation management specific filters
   const [plateNumberFilter, setPlateNumberFilter] = useState('');
