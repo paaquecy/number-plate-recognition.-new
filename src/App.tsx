@@ -140,6 +140,10 @@ function App() {
   const handleLogin = (app: 'main' | 'dvla' | 'police' | 'supervisor' | null) => {
     if (app) {
       setIsLoggedIn(true);
+
+      // Update session with login info
+      loginWithSession(app);
+
       if (app === 'main') {
         setActiveItem('overview');
         logAuth('User Login', 'Administrator logged into main system', 'main', true);
@@ -147,6 +151,9 @@ function App() {
         setActiveItem(app);
         logAuth('User Login', `User logged into ${app} application`, app as any, true);
       }
+
+      // Update activity
+      updateActivity();
     } else {
       logAuth('Login Failed', 'Invalid credentials provided', 'main', false);
       alert('Invalid credentials. Please try again.');
