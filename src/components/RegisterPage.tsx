@@ -190,29 +190,51 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onBackToLogin, onRegisterSu
       return;
     }
 
+    // Check if username already exists
+    const username = selectedAccountType === 'police' ? formData.badgeNumber : formData.idNumber;
+    if (isUsernameExists(username, selectedAccountType)) {
+      alert(`${selectedAccountType === 'police' ? 'Badge number' : 'ID number'} already exists. Please use a different one.`);
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      const registrationData = {
+
+      // Create new user in storage
+      const newUser = addUser({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        telephone: formData.telephone,
         accountType: selectedAccountType,
-        ...formData,
-        password: '[REDACTED]',
-        confirmPassword: '[REDACTED]'
-      };
-      
-      console.log('Account creation successful:', registrationData);
-      
-      // Add to pending approvals
+        password: formData.password, // In production, this should be hashed
+        ...(selectedAccountType === 'police'
+          ? {
+              badgeNumber: formData.badgeNumber,
+              rank: formData.rank,
+              station: formData.station
+            }
+          : {
+              idNumber: formData.idNumber,
+              position: formData.position
+            }
+        )
+      });
+
+      console.log('Account creation successful:', newUser);
+
+      // Add to pending approvals for the UI
       onNewRegistration({
+        id: newUser.id,
         accountType: selectedAccountType,
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
         telephone: formData.telephone,
-        ...(selectedAccountType === 'police' 
+        ...(selectedAccountType === 'police'
           ? {
               badgeNumber: formData.badgeNumber,
               rank: formData.rank,
