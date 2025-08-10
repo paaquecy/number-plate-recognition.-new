@@ -79,11 +79,15 @@ const UserAccountManagement: React.FC<UserAccountManagementProps> = ({ searchQue
 
   const handleSaveEdit = () => {
     if (editingUser) {
-      setUsers(prev =>
-        prev.map(u =>
-          u.id === editingUser.id ? editingUser : u
-        )
-      );
+      updateUser(editingUser);
+      addNotification({
+        title: 'User Updated',
+        message: `User ${editingUser.name} has been updated successfully`,
+        type: 'success',
+        timestamp: new Date().toISOString(),
+        read: false,
+        system: 'Main App'
+      });
       setIsEditModalOpen(false);
       setEditingUser(null);
     }
@@ -95,36 +99,64 @@ const UserAccountManagement: React.FC<UserAccountManagementProps> = ({ searchQue
   };
 
   const handleDeactivate = (user: User) => {
-    console.log(`Deactivate clicked for ${user.id}`);
-    setUsers(prev => 
-      prev.map(u => 
-        u.id === user.id 
-          ? { ...u, status: 'inactive' as const }
-          : u
-      )
-    );
+    const updatedUser = { ...user, status: 'inactive' as const };
+    updateUser(updatedUser);
+    addNotification({
+      title: 'User Deactivated',
+      message: `User ${user.name} has been deactivated`,
+      type: 'warning',
+      timestamp: new Date().toISOString(),
+      read: false,
+      system: 'Main App'
+    });
   };
 
   const handleActivate = (user: User) => {
-    console.log(`Activate clicked for ${user.id}`);
-    setUsers(prev => 
-      prev.map(u => 
-        u.id === user.id 
-          ? { ...u, status: 'active' as const }
-          : u
-      )
-    );
+    const updatedUser = { ...user, status: 'active' as const };
+    updateUser(updatedUser);
+    addNotification({
+      title: 'User Activated',
+      message: `User ${user.name} has been activated`,
+      type: 'success',
+      timestamp: new Date().toISOString(),
+      read: false,
+      system: 'Main App'
+    });
   };
 
   const handleApprove = (user: User) => {
-    console.log(`Approve clicked for ${user.id}`);
-    setUsers(prev => 
-      prev.map(u => 
-        u.id === user.id 
-          ? { ...u, status: 'active' as const, lastLogin: new Date().toLocaleString() }
-          : u
-      )
-    );
+    const updatedUser = {
+      ...user,
+      status: 'active' as const,
+      lastLogin: new Date().toLocaleString()
+    };
+    updateUser(updatedUser);
+    addNotification({
+      title: 'User Approved',
+      message: `User ${user.name} has been approved and activated`,
+      type: 'success',
+      timestamp: new Date().toISOString(),
+      read: false,
+      system: 'Main App'
+    });
+  };
+
+  const handleAddNewUser = () => {
+    // For now, just show a placeholder alert
+    // In a real app, this would open a form modal
+    alert('Add New User functionality would open a form here');
+  };
+
+  const handleExportData = () => {
+    exportAllData();
+    addNotification({
+      title: 'Data Exported',
+      message: 'System data has been exported successfully',
+      type: 'info',
+      timestamp: new Date().toISOString(),
+      read: false,
+      system: 'Main App'
+    });
   };
 
   const getStatusBadge = (status: string) => {
