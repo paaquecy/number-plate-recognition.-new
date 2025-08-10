@@ -6,6 +6,7 @@ import PendingViolations from './pages/PendingViolations';
 import History from './pages/History';
 import Notifications from './pages/Notifications';
 import Settings from './pages/Settings';
+import { logAuth, logSystem } from '../utils/auditLog';
 
 interface SupervisorAppProps {
   onLogout?: () => void;
