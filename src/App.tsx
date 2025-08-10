@@ -214,11 +214,12 @@ function App() {
               onFilterChange={handleFilterChange}
             />
             
-            <PendingApprovalsTable 
+            <PendingApprovalsTable
               searchQuery={searchQuery}
               filterQuery={filterQuery}
               approvals={pendingApprovals}
               setApprovals={setPendingApprovals}
+              onRefresh={loadPendingApprovals}
             />
           </>
         );
