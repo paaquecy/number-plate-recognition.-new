@@ -213,7 +213,7 @@ const VehicleInformationAccess = () => {
           Quick Lookup Examples
         </h4>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 lg:gap-3">
-          {['ABC 123', 'XYZ 789', 'DEF 456', 'GHI 012'].map((plate, index) => (
+          {['GH-1234-20', 'AS-5678-21', 'BA-9876-19', 'WR-3456-22'].map((plate, index) => (
             <button
               key={index}
               onClick={() => setLookupInput(plate)}
