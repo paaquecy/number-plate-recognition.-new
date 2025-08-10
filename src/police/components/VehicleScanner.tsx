@@ -40,8 +40,17 @@ const VehicleScanner = () => {
 
   // Initialize OpenCV when component mounts
   useEffect(() => {
-    plateDetector.initialize().catch(console.error);
-    
+    const initializeDetector = async () => {
+      try {
+        await plateDetector.initialize();
+        console.log('Plate detector initialized successfully');
+      } catch (error) {
+        console.error('Failed to initialize plate detector:', error);
+      }
+    };
+
+    initializeDetector();
+
     return () => {
       plateDetector.cleanup();
       if (scanInterval) {
