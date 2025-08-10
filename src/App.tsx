@@ -26,6 +26,14 @@ import './police/index.css';
 import type { PendingApproval } from './components/PendingApprovalsTable';
 import { initializeDemoUsers, getPendingUsers } from './utils/userStorage';
 import { initializeDemoAuditLogs, logAuth, logAdmin, logSystem } from './utils/auditLog';
+import {
+  initializeSession,
+  saveSessionState,
+  loginWithSession,
+  logoutWithSession,
+  updateActivity,
+  setupSessionValidation
+} from './utils/sessionManager';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
