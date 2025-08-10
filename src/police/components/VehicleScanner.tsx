@@ -200,7 +200,15 @@ const VehicleScanner = () => {
               <div className="text-center text-white">
                 <AlertCircle className="w-8 lg:w-12 h-8 lg:h-12 mx-auto mb-4 text-red-400" />
                 <p className="font-medium text-sm lg:text-base">Camera Error</p>
-                <p className="text-xs lg:text-sm text-gray-300 mt-2">{cameraError}</p>
+                <p className="text-xs lg:text-sm text-gray-300 mt-2 mb-4">{cameraError}</p>
+                {permissionStatus === 'denied' && (
+                  <button
+                    onClick={requestCameraPermission}
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium"
+                  >
+                    Request Camera Permission
+                  </button>
+                )}
               </div>
             </div>
           ) : cameraLoading ? (
