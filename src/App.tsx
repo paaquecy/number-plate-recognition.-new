@@ -109,6 +109,11 @@ function App() {
 
   const handleItemClick = (item: string) => {
     setActiveItem(item);
+
+    // Save navigation state to session
+    saveSessionState({ activeItem: item });
+    updateActivity();
+
     console.log(`Navigation clicked: ${item}`);
   };
 
