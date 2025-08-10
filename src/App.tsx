@@ -76,6 +76,35 @@ function App() {
     return cleanup;
   }, []);
 
+  // Set up global activity tracking for logged in users
+  useEffect(() => {
+    if (!isLoggedIn) return;
+
+    const activityEvents = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
+    let activityTimeout: NodeJS.Timeout;
+
+    const handleActivity = () => {
+      // Debounce activity updates to avoid excessive calls
+      clearTimeout(activityTimeout);
+      activityTimeout = setTimeout(() => {
+        updateActivity();
+      }, 1000); // Update activity after 1 second of inactivity
+    };
+
+    // Add event listeners for activity tracking
+    activityEvents.forEach(event => {
+      document.addEventListener(event, handleActivity, true);
+    });
+
+    // Cleanup on unmount or when logged out
+    return () => {
+      clearTimeout(activityTimeout);
+      activityEvents.forEach(event => {
+        document.removeEventListener(event, handleActivity, true);
+      });
+    };
+  }, [isLoggedIn]);
+
   const loadPendingApprovals = () => {
     const pendingUsers = getPendingUsers();
     const formattedApprovals: PendingApproval[] = pendingUsers.map(user => ({
