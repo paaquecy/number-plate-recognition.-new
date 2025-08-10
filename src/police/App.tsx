@@ -14,6 +14,7 @@ import PersonalSettings from './components/PersonalSettings';
 import VerifyLicense from './components/VerifyLicense';
 import { logAuth, logSystem } from '../utils/auditLog';
 import { getAppNavigationState, saveAppNavigationState, updateActivity } from '../utils/sessionManager';
+import SessionStatusIndicator from '../components/SessionStatusIndicator';
 
 // Lazy load VehicleScanner to avoid OpenCV loading issues
 const VehicleScanner = React.lazy(() => import('./components/VehicleScanner'));
