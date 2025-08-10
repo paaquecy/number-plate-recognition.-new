@@ -61,6 +61,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onRegister }) => {
 
     if (policeUser) {
       console.log('Police officer authenticated:', policeUser);
+      updateActivity();
       onLogin('police');
       return;
     }
@@ -74,6 +75,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onRegister }) => {
 
     if (dvlaUser) {
       console.log('DVLA officer authenticated:', dvlaUser);
+      updateActivity();
       onLogin('dvla');
       return;
     }
