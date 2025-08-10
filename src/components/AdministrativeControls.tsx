@@ -13,6 +13,7 @@ import {
   AlertTriangle,
   XCircle
 } from 'lucide-react';
+import { getAuditLogs, AuditLogEntry as ImportedAuditLogEntry } from '../utils/auditLog';
 
 interface Role {
   id: string;
