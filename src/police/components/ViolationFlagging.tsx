@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { 
-  Flag, 
-  Camera, 
-  Send, 
+import {
+  Flag,
+  Camera,
+  Send,
   ChevronDown,
   AlertCircle,
   CheckCircle
 } from 'lucide-react';
+import { logViolation } from '../../utils/auditLog';
 
 const ViolationFlagging = () => {
   const [formData, setFormData] = useState({
