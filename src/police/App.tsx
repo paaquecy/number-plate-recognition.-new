@@ -25,6 +25,14 @@ interface PoliceAppProps {
 }
 
 function App({ onLogout }: PoliceAppProps) {
+  return (
+    <DataProvider>
+      <PoliceAppContent onLogout={onLogout} />
+    </DataProvider>
+  );
+}
+
+function PoliceAppContent({ onLogout }: PoliceAppProps) {
   // Restore navigation state from session or use default
   const savedNavState = getAppNavigationState('police');
   const [activeNav, setActiveNav] = useState(savedNavState?.activeNav || 'overview');
