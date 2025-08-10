@@ -58,7 +58,7 @@ const ViolationFlagging = () => {
       alert('Please enter a license plate number');
       return;
     }
-    
+
     if (!formData.violationType) {
       setSubmitStatus('error');
       alert('Please select a violation type');
@@ -71,11 +71,36 @@ const ViolationFlagging = () => {
       return;
     }
 
+    if (!formData.location.trim()) {
+      setSubmitStatus('error');
+      alert('Please enter violation location');
+      return;
+    }
+
     setIsSubmitting(true);
     setSubmitStatus('');
 
+    // Get current user (assuming police officer is logged in)
+    const currentUser = getUserByUsername('1234567890') || { id: 'USR003', name: 'Officer Michael Osei' };
+
+    // Create violation record
+    const violationData = {
+      plateNumber: formData.licensePlate.toUpperCase(),
+      violationType: formData.violationType,
+      location: formData.location,
+      timestamp: new Date().toISOString(),
+      officerId: currentUser.id,
+      officerName: currentUser.name,
+      status: 'pending' as const,
+      description: formData.violationDetails,
+      fine: formData.fine || getDefaultFine(formData.violationType)
+    };
+
     // Simulate submission process
     setTimeout(() => {
+      // Save violation to storage
+      addViolation(violationData);
+
       setIsSubmitting(false);
       setSubmitStatus('success');
 
@@ -87,11 +112,29 @@ const ViolationFlagging = () => {
         setFormData({
           licensePlate: '',
           violationType: '',
-          violationDetails: ''
+          violationDetails: '',
+          location: '',
+          fine: 0
         });
         setSubmitStatus('');
       }, 2000);
     }, 2000);
+  };
+
+  const getDefaultFine = (violationType: string): number => {
+    const fineMap: Record<string, number> = {
+      'Illegal Parking': 50,
+      'Speeding': 150,
+      'Running Red Light': 200,
+      'Expired License': 100,
+      'No Insurance': 300,
+      'Reckless Driving': 500,
+      'DUI/DWI': 1000,
+      'Improper Lane Change': 75,
+      'Failure to Stop': 100,
+      'Other': 50
+    };
+    return fineMap[violationType] || 50;
   };
 
   return (
