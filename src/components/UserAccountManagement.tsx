@@ -255,14 +255,37 @@ const UserAccountManagement: React.FC<UserAccountManagementProps> = ({ searchQue
 
   const getRoleBadge = (role: string) => {
     const baseClasses = "inline-flex px-2 py-1 text-xs font-semibold rounded-full";
-    
+
     switch (role) {
-      case 'Administrator':
+      case 'Admin':
         return `${baseClasses} bg-purple-100 text-purple-800`;
+      case 'Police Officer':
+        return `${baseClasses} bg-red-100 text-red-800`;
+      case 'DVLA Officer':
+        return `${baseClasses} bg-green-100 text-green-800`;
+      case 'Supervisor':
+        return `${baseClasses} bg-orange-100 text-orange-800`;
       case 'Operator':
         return `${baseClasses} bg-blue-100 text-blue-800`;
       case 'Viewer':
         return `${baseClasses} bg-gray-100 text-gray-800`;
+      default:
+        return `${baseClasses} bg-gray-100 text-gray-800`;
+    }
+  };
+
+  const getSystemBadge = (system: string) => {
+    const baseClasses = "inline-flex px-2 py-1 text-xs font-semibold rounded-full";
+
+    switch (system) {
+      case 'Main App':
+        return `${baseClasses} bg-indigo-100 text-indigo-800`;
+      case 'Police App':
+        return `${baseClasses} bg-red-100 text-red-800`;
+      case 'DVLA App':
+        return `${baseClasses} bg-green-100 text-green-800`;
+      case 'Supervisor App':
+        return `${baseClasses} bg-orange-100 text-orange-800`;
       default:
         return `${baseClasses} bg-gray-100 text-gray-800`;
     }
