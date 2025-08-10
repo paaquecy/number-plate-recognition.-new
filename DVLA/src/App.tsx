@@ -42,7 +42,7 @@ function App() {
   };
 
   return (
-    <div className={`flex h-screen transition-colors duration-200 ${
+    <div className={`flex h-screen transition-colors duration-200 font-['Inter',sans-serif] ${
       darkMode ? 'bg-gray-900' : 'bg-gray-50'
     }`}>
       {/* Sidebar */}

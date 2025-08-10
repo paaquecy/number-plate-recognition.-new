@@ -46,9 +46,7 @@ function App({ onLogout }: DvlaAppProps) {
   };
 
   return (
-    <div className={`flex h-screen transition-colors duration-200 ${
-      darkMode ? 'bg-gray-900' : 'bg-gray-50'
-    }`}>
+    <div className="min-h-screen bg-gray-50 flex font-['Inter',sans-serif] relative">
       {/* Sidebar */}
       <Sidebar 
         activeItem={activeMenuItem} 

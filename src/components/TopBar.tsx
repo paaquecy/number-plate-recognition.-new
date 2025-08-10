@@ -1,15 +1,29 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Search, Bell, User } from 'lucide-react';
+import NotificationsModal from './NotificationsModal';
+import UserProfileModal from './UserProfileModal';
 
 interface TopBarProps {
   title: string;
   onSearch: (query: string) => void;
   darkMode: boolean;
+  onNavigate?: (page: string) => void;
 }
 
-const TopBar: React.FC<TopBarProps> = ({ title, onSearch, darkMode }) => {
+const TopBar: React.FC<TopBarProps> = ({ title, onSearch, darkMode, onNavigate }) => {
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onSearch(e.target.value);
+  };
+
+  const handleNotificationClick = () => {
+    if (onNavigate) {
+      onNavigate('notifications');
+    } else {
+      setIsNotifOpen(true);
+    }
   };
 
   return (
@@ -49,24 +63,25 @@ const TopBar: React.FC<TopBarProps> = ({ title, onSearch, darkMode }) => {
             darkMode 
               ? 'text-gray-400 hover:text-gray-200 hover:bg-gray-700' 
               : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
-          }`}>
+          }`} onClick={handleNotificationClick}>
             <Bell size={20} />
-            <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 rounded-full flex items-center justify-center">
-              <span className="text-xs text-white hidden sm:inline">3</span>
-              <span className="w-2 h-2 bg-white rounded-full sm:hidden"></span>
+            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+              3
             </span>
           </button>
           
-          {/* User Icon */}
+          {/* User Profile */}
           <button className={`p-2 rounded-md transition-colors ${
             darkMode 
               ? 'text-gray-400 hover:text-gray-200 hover:bg-gray-700' 
               : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
-          }`}>
+          }`} onClick={() => setIsProfileOpen(true)}>
             <User size={20} />
           </button>
         </div>
       </div>
+      <NotificationsModal isOpen={isNotifOpen} onClose={() => setIsNotifOpen(false)} />
+      <UserProfileModal isOpen={isProfileOpen} onClose={() => setIsProfileOpen(false)} />
     </div>
   );
 };
