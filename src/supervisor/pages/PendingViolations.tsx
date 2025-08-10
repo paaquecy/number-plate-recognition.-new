@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Search, Filter, Eye, CheckCircle, XCircle, Calendar, User } from 'lucide-react';
-import { mockViolations, acceptViolation, rejectViolation } from '../data/mockData';
 import ViolationDetailsModal from '../components/ViolationDetailsModal';
 import { Violation } from '../types';
+import { useData } from '../../contexts/DataContext';
 
 const PendingViolations: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
