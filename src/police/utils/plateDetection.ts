@@ -198,8 +198,8 @@ export class PlateDetector {
     // Simulate OCR result based on image characteristics
     // In a real implementation, you would use a proper OCR library
     const simulatedPlates = [
-      'ABC123', 'XYZ789', 'DEF456', 'GHI012', 'JKL345',
-      'MNO678', 'PQR901', 'STU234', 'VWX567', 'YZA890'
+      'GH-1234-20', 'AS-5678-21', 'BA-9876-19', 'WR-3456-22', 'UE-7890-23',
+      'CR-2468-20', 'TV-1357-21', 'NR-8642-19', 'VR-9753-22', 'ER-1593-20'
     ];
     
     // Return a random plate for demonstration
@@ -207,13 +207,13 @@ export class PlateDetector {
   }
 
   private isValidPlateFormat(text: string): boolean {
-    // Common license plate patterns
+    // Ghanaian license plate patterns
     const patterns = [
-      /^[A-Z]{3}\s?\d{3}$/,  // ABC 123
-      /^[A-Z]{2}\s?\d{4}$/,  // AB 1234
-      /^\d{3}\s?[A-Z]{3}$/,  // 123 ABC
-      /^[A-Z]\d{2}\s?[A-Z]{3}$/, // A12 BCD
-      /^[A-Z]{4}\s?\d{2}$/   // ABCD 12
+      /^[A-Z]{2}-\d{4}-\d{2}$/,  // GH-1234-20 (standard format)
+      /^[A-Z]{2}\s?\d{4}\s?\d{2}$/,  // GH 1234 20 (with spaces)
+      /^[A-Z]{3}-\d{3}-\d{2}$/,  // GHA-123-20 (alternative)
+      /^[A-Z]{2}\d{4}\d{2}$/,  // GH123420 (no separators)
+      /^[A-Z]{2}-\d{3,4}-\d{2}$/   // Flexible digit count
     ];
 
     return patterns.some(pattern => pattern.test(text.replace(/\s+/g, ' ').trim()));
@@ -243,8 +243,8 @@ export class PlateDetector {
   private fallbackDetection(): PlateDetectionResult | null {
     // Simulate plate detection when OpenCV is not available
     const simulatedPlates = [
-      'ABC123', 'XYZ789', 'DEF456', 'GHI012', 'JKL345',
-      'MNO678', 'PQR901', 'STU234', 'VWX567', 'YZA890'
+      'GH-1234-20', 'AS-5678-21', 'BA-9876-19', 'WR-3456-22', 'UE-7890-23',
+      'CR-2468-20', 'TV-1357-21', 'NR-8642-19', 'VR-9753-22', 'ER-1593-20'
     ];
 
     // Return a random simulated detection
