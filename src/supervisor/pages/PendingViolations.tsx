@@ -53,9 +53,18 @@ const PendingViolations: React.FC = () => {
   };
 
   const handleAccept = (violationId: string) => {
-    const success = acceptViolation(violationId);
-    if (success) {
-      setViolations([...mockViolations]); // Trigger re-render
+    const violation = violations.find(v => v.id === violationId);
+    if (violation) {
+      const updatedViolation = { ...violation, status: 'approved' as const };
+      updateViolation(updatedViolation);
+      addNotification({
+        title: 'Violation Approved',
+        message: `Violation ${violation.plateNumber} has been approved`,
+        type: 'success',
+        timestamp: new Date().toISOString(),
+        read: false,
+        system: 'Supervisor App'
+      });
       alert('Violation accepted successfully!');
     } else {
       alert('Failed to accept violation. Please try again.');
@@ -64,9 +73,22 @@ const PendingViolations: React.FC = () => {
 
   const handleReject = (violationId: string) => {
     const reason = prompt('Please provide a reason for rejection (optional):');
-    const success = rejectViolation(violationId, reason || undefined);
-    if (success) {
-      setViolations([...mockViolations]); // Trigger re-render
+    const violation = violations.find(v => v.id === violationId);
+    if (violation) {
+      const updatedViolation = {
+        ...violation,
+        status: 'rejected' as const,
+        description: reason ? `${violation.description}\n\nRejection reason: ${reason}` : violation.description
+      };
+      updateViolation(updatedViolation);
+      addNotification({
+        title: 'Violation Rejected',
+        message: `Violation ${violation.plateNumber} has been rejected`,
+        type: 'warning',
+        timestamp: new Date().toISOString(),
+        read: false,
+        system: 'Supervisor App'
+      });
       alert('Violation rejected successfully!');
     } else {
       alert('Failed to reject violation. Please try again.');
