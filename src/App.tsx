@@ -267,6 +267,8 @@ function App() {
         return <AdministrativeControls onNavigate={setActiveItem} />;
       case 'add-new-role':
         return <AddNewRole onNavigate={setActiveItem} />;
+      case 'audit-log':
+        return <AuditLogViewer onNavigate={setActiveItem} />;
       default:
         return (
           <div className="p-6 text-center text-gray-500">
