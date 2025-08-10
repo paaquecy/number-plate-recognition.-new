@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
@@ -31,4 +31,4 @@ function SupervisorApp({ onLogout }: SupervisorAppProps) {
   );
 }
 
-export default SupervisorApp; 
+export default SupervisorApp;
