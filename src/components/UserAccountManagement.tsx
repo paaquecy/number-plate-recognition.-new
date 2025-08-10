@@ -138,22 +138,26 @@ const UserAccountManagement: React.FC<UserAccountManagementProps> = ({ searchQue
 
   const filteredUsers = useMemo(() => {
     return users.filter(user => {
-      const matchesSearch = searchQuery === '' || 
+      const matchesSearch = searchQuery === '' ||
         user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
         user.id.toLowerCase().includes(searchQuery.toLowerCase());
-      
+
       const matchesNameEmail = nameEmailFilter === '' ||
         user.name.toLowerCase().includes(nameEmailFilter.toLowerCase()) ||
-        user.email.toLowerCase().includes(nameEmailFilter.toLowerCase());
-      
+        user.email.toLowerCase().includes(nameEmailFilter.toLowerCase()) ||
+        user.username.toLowerCase().includes(nameEmailFilter.toLowerCase());
+
       const matchesRole = roleFilter === 'all' || user.role === roleFilter;
-      
+
       const matchesStatus = statusFilter === 'all' || user.status === statusFilter;
-      
-      return matchesSearch && matchesNameEmail && matchesRole && matchesStatus;
+
+      const matchesSystem = systemFilter === 'all' || user.system === systemFilter;
+
+      return matchesSearch && matchesNameEmail && matchesRole && matchesStatus && matchesSystem;
     });
-  }, [users, searchQuery, nameEmailFilter, roleFilter, statusFilter]);
+  }, [users, searchQuery, nameEmailFilter, roleFilter, statusFilter, systemFilter]);
 
   const handleNameEmailFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNameEmailFilter(e.target.value);
