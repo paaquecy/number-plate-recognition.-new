@@ -346,13 +346,13 @@ const UserAccountManagement: React.FC<UserAccountManagementProps> = ({ searchQue
             <div className="flex-1 max-w-md">
               <input
                 type="text"
-                placeholder="Filter by Name/Email..."
+                placeholder="Filter by Name/Email/Username..."
                 value={nameEmailFilter}
                 onChange={handleNameEmailFilterChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
-            
+
             <div className="relative">
               <select
                 value={roleFilter}
@@ -360,13 +360,31 @@ const UserAccountManagement: React.FC<UserAccountManagementProps> = ({ searchQue
                 className="appearance-none bg-white border border-gray-300 rounded-md px-4 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="all">All Roles</option>
-                <option value="Administrator">Administrator</option>
+                <option value="Admin">Admin</option>
+                <option value="Police Officer">Police Officer</option>
+                <option value="DVLA Officer">DVLA Officer</option>
+                <option value="Supervisor">Supervisor</option>
                 <option value="Operator">Operator</option>
                 <option value="Viewer">Viewer</option>
               </select>
               <ChevronDown size={16} className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
             </div>
-            
+
+            <div className="relative">
+              <select
+                value={systemFilter}
+                onChange={handleSystemFilterChange}
+                className="appearance-none bg-white border border-gray-300 rounded-md px-4 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="all">All Systems</option>
+                <option value="Main App">Main App</option>
+                <option value="Police App">Police App</option>
+                <option value="DVLA App">DVLA App</option>
+                <option value="Supervisor App">Supervisor App</option>
+              </select>
+              <ChevronDown size={16} className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
+            </div>
+
             <div className="relative">
               <select
                 value={statusFilter}
