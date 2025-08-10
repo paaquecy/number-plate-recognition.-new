@@ -62,6 +62,9 @@ const PendingApprovalsTable: React.FC<PendingApprovalsTableProps> = ({
         ? `Badge: ${approval.additionalInfo.badgeNumber}, Rank: ${approval.additionalInfo.rank}, Station: ${approval.additionalInfo.station}`
         : `ID: ${approval.additionalInfo.idNumber}, Position: ${approval.additionalInfo.position}`;
 
+      // Log approval action
+      logApproval('Account Approved', `Approved ${approval.accountType} officer account for ${approval.userName} (${loginCredential})`, 'main', 'high');
+
       alert(`Account for ${approval.userName} (${approval.role}) has been approved.\nDetails: ${additionalDetails}\n\nLogin Credentials:\nUsername: ${loginCredential}\nPassword: [The password they provided during registration]\n\nThey can now login to the ${approval.accountType === 'police' ? 'Police' : 'DVLA'} system.`);
 
       if (onRefresh) {
