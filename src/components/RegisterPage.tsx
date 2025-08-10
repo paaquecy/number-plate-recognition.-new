@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowLeft, User, Shield, Car, Phone, Mail, Lock, CheckCircle, XCircle, Eye, EyeOff } from 'lucide-react';
+import { addUser, isUsernameExists } from '../utils/userStorage';
 
 interface RegisterPageProps {
   onBackToLogin: () => void;
