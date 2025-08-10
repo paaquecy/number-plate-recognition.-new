@@ -178,6 +178,8 @@ function App() {
         return 'Administrative Controls';
       case 'add-new-role':
         return 'Add New Role';
+      case 'audit-log':
+        return 'Audit Log Viewer';
       default:
         return 'Plate Recognition System';
     }
