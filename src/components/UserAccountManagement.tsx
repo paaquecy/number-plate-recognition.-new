@@ -458,6 +458,11 @@ const UserAccountManagement: React.FC<UserAccountManagementProps> = ({ searchQue
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm font-mono text-gray-900">
+                    {user.username}
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm font-medium text-gray-900">
                     {user.name}
                   </div>
@@ -470,6 +475,11 @@ const UserAccountManagement: React.FC<UserAccountManagementProps> = ({ searchQue
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={getRoleBadge(user.role)}>
                     {user.role}
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className={getSystemBadge(user.system)}>
+                    {user.system}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
