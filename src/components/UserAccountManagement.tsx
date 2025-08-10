@@ -174,12 +174,35 @@ const UserAccountManagement: React.FC<UserAccountManagementProps> = ({ searchQue
     console.log('Status filter:', e.target.value);
   };
 
+  const handleSystemFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSystemFilter(e.target.value);
+    console.log('System filter:', e.target.value);
+  };
+
   const handleAddNewUser = () => {
     console.log('Add New User button clicked');
   };
 
   const handleEdit = (user: User) => {
-    console.log(`Edit clicked for ${user.id}`);
+    setEditingUser({ ...user });
+    setIsEditModalOpen(true);
+  };
+
+  const handleSaveEdit = () => {
+    if (editingUser) {
+      setUsers(prev =>
+        prev.map(u =>
+          u.id === editingUser.id ? editingUser : u
+        )
+      );
+      setIsEditModalOpen(false);
+      setEditingUser(null);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditModalOpen(false);
+    setEditingUser(null);
   };
 
   const handleDeactivate = (user: User) => {
