@@ -13,6 +13,16 @@ interface SupervisorAppProps {
 }
 
 function SupervisorApp({ onLogout }: SupervisorAppProps) {
+  // Initialize audit logging for supervisor app
+  useEffect(() => {
+    logSystem('Supervisor App Loaded', 'Supervisor accessed supervisor dashboard', 'supervisor');
+  }, []);
+
+  const handleLogout = () => {
+    logAuth('User Logout', 'Supervisor logged out of supervisor system', 'supervisor', true);
+    onLogout?.();
+  };
+
   return (
     <Router>
       <div className="min-h-screen bg-gray-50">
