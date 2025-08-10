@@ -69,7 +69,9 @@ const UserAccountManagement: React.FC<UserAccountManagementProps> = ({ searchQue
   };
 
   const handleAddNewUser = () => {
-    console.log('Add New User button clicked');
+    // For now, just show a placeholder alert
+    // In a real app, this would open a form modal
+    alert('Add New User functionality would open a form here');
   };
 
   const handleEdit = (user: User) => {
