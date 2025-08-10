@@ -185,6 +185,9 @@ function App({ onLogout }: PoliceAppProps) {
           {renderContent()}
         </main>
       </div>
+
+      {/* Session Status Indicator */}
+      <SessionStatusIndicator isLoggedIn={true} />
     </div>
   );
 }
