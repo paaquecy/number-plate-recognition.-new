@@ -84,6 +84,13 @@ const PendingApprovalsTable: React.FC<PendingApprovalsTableProps> = ({
     const success = rejectUser(approval.id);
 
     if (success) {
+      const credential = approval.accountType === 'police'
+        ? approval.additionalInfo.badgeNumber
+        : approval.additionalInfo.idNumber;
+
+      // Log rejection action
+      logApproval('Account Rejected', `Rejected ${approval.accountType} officer account for ${approval.userName} (${credential})`, 'main', 'medium');
+
       alert(`Account for ${approval.userName} (${approval.role}) has been rejected. They will be notified of the decision.`);
 
       if (onRefresh) {
