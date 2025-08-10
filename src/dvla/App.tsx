@@ -57,7 +57,7 @@ function App({ onLogout }: DvlaAppProps) {
       />
       
       {/* Main Content */}
-      <div className={`flex-1 flex flex-col overflow-hidden transition-colors duration-200 ${
+      <div className={`flex-1 flex flex-col overflow-hidden transition-colors duration-200 lg:ml-64 ${
         darkMode ? 'bg-gray-900' : 'bg-white'
       }`}>
         {/* Header */}
