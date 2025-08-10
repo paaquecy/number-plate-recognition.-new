@@ -1,4 +1,9 @@
 declare const cv: any;
+declare global {
+  interface Window {
+    cvReady: boolean;
+  }
+}
 
 export interface PlateDetectionResult {
   plateNumber: string;
@@ -20,12 +25,28 @@ export class PlateDetector {
 
     try {
       // Wait for OpenCV to be ready
-      await new Promise<void>((resolve) => {
-        if (cv.getBuildInformation) {
-          resolve();
-        } else {
-          cv.onRuntimeInitialized = () => resolve();
-        }
+      await new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          reject(new Error('OpenCV failed to load within timeout'));
+        }, 10000);
+
+        const checkReady = () => {
+          if (typeof cv !== 'undefined' && cv.getBuildInformation) {
+            clearTimeout(timeout);
+            resolve();
+          } else if (window.cvReady) {
+            clearTimeout(timeout);
+            resolve();
+          } else {
+            // Listen for opencv-ready event
+            window.addEventListener('opencv-ready', () => {
+              clearTimeout(timeout);
+              resolve();
+            }, { once: true });
+          }
+        };
+
+        checkReady();
       });
 
       // Load Haar cascade for license plate detection
