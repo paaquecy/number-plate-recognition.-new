@@ -15,6 +15,14 @@ interface SupervisorAppProps {
 }
 
 function SupervisorApp({ onLogout }: SupervisorAppProps) {
+  return (
+    <DataProvider>
+      <SupervisorAppContent onLogout={onLogout} />
+    </DataProvider>
+  );
+}
+
+function SupervisorAppContent({ onLogout }: SupervisorAppProps) {
   // Initialize audit logging for supervisor app
   useEffect(() => {
     logSystem('Supervisor App Loaded', 'Supervisor accessed supervisor dashboard', 'supervisor');
