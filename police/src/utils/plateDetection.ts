@@ -20,21 +20,47 @@ export class PlateDetector {
 
     try {
       // Wait for OpenCV to be ready
-      await new Promise<void>((resolve) => {
-        if (cv.getBuildInformation) {
+      await new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          console.warn('OpenCV loading timeout, will use fallback detection');
+          resolve(); // Don't reject, just resolve to allow fallback
+        }, 5000); // Reduced timeout to 5 seconds
+
+        const checkReady = () => {
+          if (typeof cv !== 'undefined' && cv.getBuildInformation) {
+            clearTimeout(timeout);
+            this.isInitialized = true;
+            resolve();
+            return;
+          } else if (window.cvReady) {
+            clearTimeout(timeout);
+            this.isInitialized = true;
+            resolve();
+            return;
+          }
+
+          // Check periodically
+          setTimeout(checkReady, 100);
+        };
+
+        // Also listen for opencv-ready event
+        window.addEventListener('opencv-ready', () => {
+          clearTimeout(timeout);
+          this.isInitialized = true;
           resolve();
-        } else {
-          cv.onRuntimeInitialized = () => resolve();
-        }
+        }, { once: true });
+
+        checkReady();
       });
 
-      // Load Haar cascade for license plate detection
-      // Note: In production, you'd load a pre-trained cascade file
-      this.isInitialized = true;
-      console.log('OpenCV initialized successfully');
+      if (this.isInitialized) {
+        console.log('OpenCV initialized successfully');
+      } else {
+        console.warn('OpenCV not available, will use fallback detection');
+      }
     } catch (error) {
-      console.error('Failed to initialize OpenCV:', error);
-      throw error;
+      console.warn('Failed to initialize OpenCV, will use fallback detection:', error);
+      // Don't throw error, allow fallback to work
     }
   }
 
