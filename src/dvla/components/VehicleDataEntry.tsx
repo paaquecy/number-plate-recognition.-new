@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
-import { 
-  Car, 
-  Calendar, 
-  Upload, 
-  X 
+import {
+  Car,
+  Calendar,
+  Upload,
+  X
 } from 'lucide-react';
+import { logDataOperation } from '../../utils/auditLog';
 
 interface FormData {
   // Vehicle Details
