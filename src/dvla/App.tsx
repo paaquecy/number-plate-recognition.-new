@@ -21,6 +21,18 @@ function App({ onLogout }: DvlaAppProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { darkMode } = useTheme();
 
+  // Initialize audit logging for DVLA app
+  useEffect(() => {
+    logSystem('DVLA App Loaded', 'DVLA officer accessed DVLA dashboard', 'dvla');
+  }, []);
+
+  // Log navigation changes
+  useEffect(() => {
+    if (activeMenuItem !== 'overview') {
+      logSystem('Navigation', `DVLA officer navigated to ${activeMenuItem}`, 'dvla');
+    }
+  }, [activeMenuItem]);
+
   const handleMenuItemClick = (item: string) => {
     setActiveMenuItem(item);
     setSidebarOpen(false); // Close sidebar on mobile after selection
