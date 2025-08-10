@@ -36,23 +36,44 @@ import {
 } from './utils/sessionManager';
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  // Initialize state from session or defaults
+  const initialSession = initializeSession();
+
+  const [isLoggedIn, setIsLoggedIn] = useState(initialSession.isLoggedIn);
   const [showRegister, setShowRegister] = useState(false);
-  const [activeItem, setActiveItem] = useState('violation-management');
-  const [currentPage, setCurrentPage] = useState('dashboard');
+  const [activeItem, setActiveItem] = useState(initialSession.activeItem);
+  const [currentPage, setCurrentPage] = useState(initialSession.currentPage);
   const [darkMode, setDarkMode] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterQuery, setFilterQuery] = useState('');
-  
+
   // Pending approvals state
   const [pendingApprovals, setPendingApprovals] = useState<PendingApproval[]>([]);
 
-  // Initialize demo users and load pending approvals on component mount
+  // Initialize demo users, session validation, and load pending approvals on component mount
   useEffect(() => {
     initializeDemoUsers();
     initializeDemoAuditLogs();
     loadPendingApprovals();
-    logSystem('System Startup', 'Main application initialized', 'main');
+
+    // Only log system startup if not restoring from session
+    if (!initialSession.isLoggedIn) {
+      logSystem('System Startup', 'Main application initialized', 'main');
+    } else {
+      logSystem('Session Restored', 'User session restored from browser storage', 'main');
+    }
+
+    // Set up session validation
+    const cleanup = setupSessionValidation(() => {
+      // Handle session expiration
+      setIsLoggedIn(false);
+      setActiveItem('violation-management');
+      setCurrentPage('dashboard');
+      logAuth('Session Expired', 'User session expired due to inactivity', 'main', false);
+    });
+
+    // Cleanup on unmount
+    return cleanup;
   }, []);
 
   const loadPendingApprovals = () => {
