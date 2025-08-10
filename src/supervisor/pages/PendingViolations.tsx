@@ -5,15 +5,38 @@ import { Violation } from '../types';
 import { useData } from '../../contexts/DataContext';
 
 const PendingViolations: React.FC = () => {
+  const { violations, updateViolation, addNotification, isLoading } = useData();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedOfficer, setSelectedOfficer] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
-  const [selectedViolation, setSelectedViolation] = useState<Violation | null>(null);
+  const [selectedViolation, setSelectedViolation] = useState<any>(null);
   const [modalOpen, setModalOpen] = useState(false);
-  const [violations, setViolations] = useState(mockViolations);
 
-  const pendingViolations = violations.filter(v => v.status === 'pending');
-  const officers = Array.from(new Set(violations.map(v => v.capturedBy)));
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <span className="ml-3 text-gray-600">Loading violations...</span>
+      </div>
+    );
+  }
+
+  // Convert violations to supervisor format
+  const convertedViolations = violations.map(v => ({
+    id: v.id,
+    plateNumber: v.plateNumber,
+    offense: v.violationType,
+    dateTime: v.timestamp,
+    location: v.location,
+    capturedBy: v.officerName,
+    status: v.status,
+    fine: v.fine || 0,
+    description: v.description || '',
+    evidence: v.evidence || ''
+  }));
+
+  const pendingViolations = convertedViolations.filter(v => v.status === 'pending');
+  const officers = Array.from(new Set(convertedViolations.map(v => v.capturedBy)));
 
   const filteredViolations = pendingViolations.filter(violation => {
     const matchesSearch = violation.plateNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
