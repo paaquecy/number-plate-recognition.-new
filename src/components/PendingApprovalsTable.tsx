@@ -29,7 +29,8 @@ const PendingApprovalsTable: React.FC<PendingApprovalsTableProps> = ({
   searchQuery,
   filterQuery,
   approvals,
-  setApprovals
+  setApprovals,
+  onRefresh
 }) => {
   const filteredApprovals = useMemo(() => {
     return approvals.filter(approval => {
