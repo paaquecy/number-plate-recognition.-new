@@ -40,9 +40,9 @@ const OverviewDashboard: React.FC<OverviewDashboardProps> = ({ onNavigate }) => 
   ];
 
   const recentActivities = [
-    { action: 'Scanned plate ABC 123', time: '10 min ago' },
-    { action: 'Flagged Overspeeding on XYZ 789', time: '35 min ago' },
-    { action: 'Resolved case for DEF 456', time: '1 hour ago' },
+    { action: 'Scanned plate GH-1234-20', time: '10 min ago' },
+    { action: 'Flagged Overspeeding on AS-5678-21', time: '35 min ago' },
+    { action: 'Resolved case for BA-9876-19', time: '1 hour ago' },
     { action: 'Scanned plate GHI 012', time: '2 hours ago' }
   ];
 

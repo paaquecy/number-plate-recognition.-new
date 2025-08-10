@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { 
-  BarChart3, 
+import React, { useState, useEffect } from 'react';
+import {
+  BarChart3,
   Menu,
   X,
 } from 'lucide-react';
@@ -12,6 +12,9 @@ import VehicleInformationAccess from './components/VehicleInformationAccess';
 import FieldReporting from './components/FieldReporting';
 import PersonalSettings from './components/PersonalSettings';
 import VerifyLicense from './components/VerifyLicense';
+import { logAuth, logSystem } from '../utils/auditLog';
+import { getAppNavigationState, saveAppNavigationState, updateActivity } from '../utils/sessionManager';
+import SessionStatusIndicator from '../components/SessionStatusIndicator';
 
 // Lazy load VehicleScanner to avoid OpenCV loading issues
 const VehicleScanner = React.lazy(() => import('./components/VehicleScanner'));
@@ -21,9 +24,27 @@ interface PoliceAppProps {
 }
 
 function App({ onLogout }: PoliceAppProps) {
-  const [activeNav, setActiveNav] = useState('overview');
-  const [searchQuery, setSearchQuery] = useState('');
+  // Restore navigation state from session or use default
+  const savedNavState = getAppNavigationState('police');
+  const [activeNav, setActiveNav] = useState(savedNavState?.activeNav || 'overview');
+  const [searchQuery, setSearchQuery] = useState(savedNavState?.searchQuery || '');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Initialize audit logging for police app
+  useEffect(() => {
+    logSystem('Police App Loaded', 'Police officer accessed police dashboard', 'police');
+  }, []);
+
+  // Log navigation changes and save to session
+  useEffect(() => {
+    if (activeNav !== 'overview') {
+      logSystem('Navigation', `Police officer navigated to ${activeNav}`, 'police');
+    }
+
+    // Save navigation state to session
+    saveAppNavigationState('police', { activeNav, searchQuery });
+    updateActivity();
+  }, [activeNav, searchQuery]);
 
   const getPageTitle = () => {
     switch (activeNav) {
@@ -118,7 +139,10 @@ function App({ onLogout }: PoliceAppProps) {
         setActiveNav={setActiveNav}
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
-        onLogout={onLogout}
+        onLogout={() => {
+          logAuth('User Logout', 'Police officer logged out of police system', 'police', true);
+          onLogout?.();
+        }}
       />
 
       {/* Mobile Overlay */}
@@ -161,6 +185,9 @@ function App({ onLogout }: PoliceAppProps) {
           {renderContent()}
         </main>
       </div>
+
+      {/* Session Status Indicator */}
+      <SessionStatusIndicator isLoggedIn={true} />
     </div>
   );
 }

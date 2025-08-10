@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { 
-  Flag, 
-  Camera, 
-  Send, 
+import {
+  Flag,
+  Camera,
+  Send,
   ChevronDown,
   AlertCircle,
   CheckCircle
 } from 'lucide-react';
+import { logViolation } from '../../utils/auditLog';
 
 const ViolationFlagging = () => {
   const [formData, setFormData] = useState({
@@ -73,7 +74,10 @@ const ViolationFlagging = () => {
     setTimeout(() => {
       setIsSubmitting(false);
       setSubmitStatus('success');
-      
+
+      // Log violation submission
+      logViolation('Violation Flagged', `Flagged violation: ${formData.violationType} for plate ${formData.licensePlate}`, 'police', 'high');
+
       // Reset form after successful submission
       setTimeout(() => {
         setFormData({
@@ -103,7 +107,7 @@ const ViolationFlagging = () => {
             </label>
             <input
               type="text"
-              placeholder="e.g., ABC 123"
+              placeholder="e.g., GH-1234-20"
               value={formData.licensePlate}
               onChange={(e) => handleInputChange('licensePlate', e.target.value.toUpperCase())}
               className="w-full px-3 lg:px-4 py-2 lg:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-base lg:text-lg text-center transition-colors duration-200"

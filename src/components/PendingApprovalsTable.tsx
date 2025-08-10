@@ -1,4 +1,6 @@
 import React, { useMemo } from 'react';
+import { approveUser, rejectUser } from '../utils/userStorage';
+import { logApproval } from '../utils/auditLog';
 
 export interface PendingApproval {
   id: string;
@@ -21,13 +23,15 @@ interface PendingApprovalsTableProps {
   filterQuery: string;
   approvals: PendingApproval[];
   setApprovals: React.Dispatch<React.SetStateAction<PendingApproval[]>>;
+  onRefresh?: () => void;
 }
 
 const PendingApprovalsTable: React.FC<PendingApprovalsTableProps> = ({
   searchQuery,
   filterQuery,
   approvals,
-  setApprovals
+  setApprovals,
+  onRefresh
 }) => {
   const filteredApprovals = useMemo(() => {
     return approvals.filter(approval => {
@@ -45,19 +49,58 @@ const PendingApprovalsTable: React.FC<PendingApprovalsTableProps> = ({
 
   const handleApprove = (approval: PendingApproval) => {
     console.log(`Approve clicked for ${approval.userName}`);
-    
-    const additionalDetails = approval.accountType === 'police' 
-      ? `Badge: ${approval.additionalInfo.badgeNumber}, Rank: ${approval.additionalInfo.rank}, Station: ${approval.additionalInfo.station}`
-      : `ID: ${approval.additionalInfo.idNumber}, Position: ${approval.additionalInfo.position}`;
-    
-    alert(`Account for ${approval.userName} (${approval.role}) has been approved.\nDetails: ${additionalDetails}\n\nThey can now login to the system.`);
-    setApprovals((prev: PendingApproval[]) => prev.filter((a: PendingApproval) => a.id !== approval.id));
+
+    // Approve in storage system
+    const approvedUser = approveUser(approval.id);
+
+    if (approvedUser) {
+      const loginCredential = approval.accountType === 'police'
+        ? approval.additionalInfo.badgeNumber
+        : approval.additionalInfo.idNumber;
+
+      const additionalDetails = approval.accountType === 'police'
+        ? `Badge: ${approval.additionalInfo.badgeNumber}, Rank: ${approval.additionalInfo.rank}, Station: ${approval.additionalInfo.station}`
+        : `ID: ${approval.additionalInfo.idNumber}, Position: ${approval.additionalInfo.position}`;
+
+      // Log approval action
+      logApproval('Account Approved', `Approved ${approval.accountType} officer account for ${approval.userName} (${loginCredential})`, 'main', 'high');
+
+      alert(`Account for ${approval.userName} (${approval.role}) has been approved.\nDetails: ${additionalDetails}\n\nLogin Credentials:\nUsername: ${loginCredential}\nPassword: [The password they provided during registration]\n\nThey can now login to the ${approval.accountType === 'police' ? 'Police' : 'DVLA'} system.`);
+
+      if (onRefresh) {
+        onRefresh();
+      } else {
+        setApprovals((prev: PendingApproval[]) => prev.filter((a: PendingApproval) => a.id !== approval.id));
+      }
+    } else {
+      alert('Error approving account. Please try again.');
+    }
   };
 
   const handleReject = (approval: PendingApproval) => {
     console.log(`Reject clicked for ${approval.userName}`);
-    alert(`Account for ${approval.userName} (${approval.role}) has been rejected. They will be notified of the decision.`);
-    setApprovals((prev: PendingApproval[]) => prev.filter((a: PendingApproval) => a.id !== approval.id));
+
+    // Reject in storage system
+    const success = rejectUser(approval.id);
+
+    if (success) {
+      const credential = approval.accountType === 'police'
+        ? approval.additionalInfo.badgeNumber
+        : approval.additionalInfo.idNumber;
+
+      // Log rejection action
+      logApproval('Account Rejected', `Rejected ${approval.accountType} officer account for ${approval.userName} (${credential})`, 'main', 'medium');
+
+      alert(`Account for ${approval.userName} (${approval.role}) has been rejected. They will be notified of the decision.`);
+
+      if (onRefresh) {
+        onRefresh();
+      } else {
+        setApprovals((prev: PendingApproval[]) => prev.filter((a: PendingApproval) => a.id !== approval.id));
+      }
+    } else {
+      alert('Error rejecting account. Please try again.');
+    }
   };
 
   return (

@@ -33,7 +33,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem, onItemClick, isOpen, onCl
   ];
 
   return (
-    <div className={`fixed lg:relative inset-y-0 left-0 z-50 w-64 h-screen flex flex-col transition-all duration-300 transform ${
+    <div className={`fixed inset-y-0 left-0 z-50 w-64 h-screen flex flex-col transition-all duration-300 transform ${
       isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
     } ${
       darkMode 

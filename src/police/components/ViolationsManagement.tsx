@@ -18,7 +18,7 @@ const ViolationsManagement = () => {
   const [violations] = useState([
     {
       id: 1,
-      plateNumber: 'ABC 123',
+      plateNumber: 'GH-1234-20',
       violationType: 'Parking Violation',
       date: '2023-10-26',
       status: 'Pending',
@@ -27,7 +27,7 @@ const ViolationsManagement = () => {
     },
     {
       id: 2,
-      plateNumber: 'XYZ 789',
+      plateNumber: 'AS-5678-21',
       violationType: 'Speeding',
       date: '2023-10-25',
       status: 'Completed',
@@ -36,7 +36,7 @@ const ViolationsManagement = () => {
     },
     {
       id: 3,
-      plateNumber: 'DEF 456',
+      plateNumber: 'BA-9876-19',
       violationType: 'Running Red Light',
       date: '2023-10-24',
       status: 'Dismissed',
@@ -45,7 +45,7 @@ const ViolationsManagement = () => {
     },
     {
       id: 4,
-      plateNumber: 'GHI 012',
+      plateNumber: 'WR-3456-22',
       violationType: 'Illegal Parking',
       date: '2023-10-23',
       status: 'Pending',
@@ -54,7 +54,7 @@ const ViolationsManagement = () => {
     },
     {
       id: 5,
-      plateNumber: 'JKL 345',
+      plateNumber: 'UE-7890-23',
       violationType: 'Expired License',
       date: '2023-10-22',
       status: 'Completed',
@@ -63,7 +63,7 @@ const ViolationsManagement = () => {
     },
     {
       id: 6,
-      plateNumber: 'MNO 678',
+      plateNumber: 'CR-2468-20',
       violationType: 'No Insurance',
       date: '2023-10-21',
       status: 'Pending',
@@ -72,7 +72,7 @@ const ViolationsManagement = () => {
     },
     {
       id: 7,
-      plateNumber: 'PQR 901',
+      plateNumber: 'TV-1357-21',
       violationType: 'Reckless Driving',
       date: '2023-10-20',
       status: 'Completed',

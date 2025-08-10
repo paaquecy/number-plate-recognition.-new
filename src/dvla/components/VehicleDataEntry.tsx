@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
-import { 
-  Car, 
-  Calendar, 
-  Upload, 
-  X 
+import {
+  Car,
+  Calendar,
+  Upload,
+  X
 } from 'lucide-react';
+import { logDataOperation } from '../../utils/auditLog';
 
 interface FormData {
   // Vehicle Details
@@ -144,7 +145,12 @@ const VehicleDataEntry: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Form submitted:', formData);
+
+    // Log vehicle data entry
+    logDataOperation('Vehicle Registered', `New vehicle registered: ${formData.licensePlate} (${formData.manufacturer} ${formData.model})`, 'dvla', 'high');
+
     // Handle form submission logic here
+    alert('Vehicle data submitted successfully!');
   };
 
   const handleCancel = () => {

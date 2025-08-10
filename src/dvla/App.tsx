@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTheme } from './contexts/ThemeContext';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
@@ -10,15 +10,36 @@ import RegistrationRenewal from './components/RegistrationRenewal';
 import DataAnalysis from './components/DataAnalysis';
 import ClearFines from './components/ClearFines';
 import Settings from './components/Settings';
+import { logAuth, logSystem } from '../utils/auditLog';
+import { getAppNavigationState, saveAppNavigationState, updateActivity } from '../utils/sessionManager';
+import SessionStatusIndicator from '../components/SessionStatusIndicator';
 
 interface DvlaAppProps {
   onLogout?: () => void;
 }
 
 function App({ onLogout }: DvlaAppProps) {
-  const [activeMenuItem, setActiveMenuItem] = useState('overview');
+  // Restore navigation state from session or use default
+  const savedNavState = getAppNavigationState('dvla');
+  const [activeMenuItem, setActiveMenuItem] = useState(savedNavState?.activeMenuItem || 'overview');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { darkMode } = useTheme();
+
+  // Initialize audit logging for DVLA app
+  useEffect(() => {
+    logSystem('DVLA App Loaded', 'DVLA officer accessed DVLA dashboard', 'dvla');
+  }, []);
+
+  // Log navigation changes and save to session
+  useEffect(() => {
+    if (activeMenuItem !== 'overview') {
+      logSystem('Navigation', `DVLA officer navigated to ${activeMenuItem}`, 'dvla');
+    }
+
+    // Save navigation state to session
+    saveAppNavigationState('dvla', { activeMenuItem });
+    updateActivity();
+  }, [activeMenuItem]);
 
   const handleMenuItemClick = (item: string) => {
     setActiveMenuItem(item);
@@ -53,11 +74,14 @@ function App({ onLogout }: DvlaAppProps) {
         onItemClick={handleMenuItemClick}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
-        onLogout={onLogout}
+        onLogout={() => {
+          logAuth('User Logout', 'DVLA officer logged out of DVLA system', 'dvla', true);
+          onLogout?.();
+        }}
       />
       
       {/* Main Content */}
-      <div className={`flex-1 flex flex-col overflow-hidden transition-colors duration-200 ${
+      <div className={`flex-1 flex flex-col overflow-hidden transition-colors duration-200 lg:ml-64 ${
         darkMode ? 'bg-gray-900' : 'bg-white'
       }`}>
         {/* Header */}
@@ -73,14 +97,17 @@ function App({ onLogout }: DvlaAppProps) {
         {/* Status Bar */}
         {activeMenuItem === 'overview' && <StatusBar />}
       </div>
-      
+
       {/* Mobile Overlay */}
       {sidebarOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
+
+      {/* Session Status Indicator */}
+      <SessionStatusIndicator isLoggedIn={true} />
     </div>
   );
 }

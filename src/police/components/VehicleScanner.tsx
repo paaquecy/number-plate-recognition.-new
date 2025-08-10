@@ -40,8 +40,17 @@ const VehicleScanner = () => {
 
   // Initialize OpenCV when component mounts
   useEffect(() => {
-    plateDetector.initialize().catch(console.error);
-    
+    const initializeDetector = async () => {
+      try {
+        await plateDetector.initialize();
+        console.log('Plate detector initialized successfully');
+      } catch (error) {
+        console.error('Failed to initialize plate detector:', error);
+      }
+    };
+
+    initializeDetector();
+
     return () => {
       plateDetector.cleanup();
       if (scanInterval) {
@@ -62,8 +71,8 @@ const VehicleScanner = () => {
         // Auto-populate scan results with detected plate
         const mockResults = {
           plateNumber: result.plateNumber,
-          vehicleModel: '2020 Toyota Camry',
-          owner: 'Jane Doe',
+          vehicleModel: '2019 Toyota Corolla',
+          owner: 'Kwame Asante',
           status: Math.random() > 0.5 ? 'No Violations' : 'Outstanding Parking Ticket',
           statusType: Math.random() > 0.5 ? 'clean' : 'violation'
         };
@@ -120,8 +129,8 @@ const VehicleScanner = () => {
       setTimeout(() => {
         const mockResults = {
           plateNumber: plateInput.toUpperCase(),
-          vehicleModel: '2020 Toyota Camry',
-          owner: 'Jane Doe',
+          vehicleModel: '2019 Toyota Corolla',
+          owner: 'Kwame Asante',
           status: 'Outstanding Parking Ticket',
           statusType: 'violation'
         };
