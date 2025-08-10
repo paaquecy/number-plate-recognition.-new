@@ -20,6 +20,14 @@ interface DvlaAppProps {
 }
 
 function App({ onLogout }: DvlaAppProps) {
+  return (
+    <DataProvider>
+      <DvlaAppContent onLogout={onLogout} />
+    </DataProvider>
+  );
+}
+
+function DvlaAppContent({ onLogout }: DvlaAppProps) {
   // Restore navigation state from session or use default
   const savedNavState = getAppNavigationState('dvla');
   const [activeMenuItem, setActiveMenuItem] = useState(savedNavState?.activeMenuItem || 'overview');
