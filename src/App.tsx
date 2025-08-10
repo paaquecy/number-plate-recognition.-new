@@ -19,6 +19,7 @@ import NotificationsPage from './components/NotificationsPage';
 import AuditLogViewer from './components/AuditLogViewer';
 import SessionStatusIndicator from './components/SessionStatusIndicator';
 import { ThemeProvider as DvlaThemeProvider } from './dvla/contexts/ThemeContext';
+import { DataProvider } from './contexts/DataContext';
 import DvlaApp from './dvla/App';
 import PoliceApp from './police/App';
 import SupervisorApp from './supervisor/SupervisorApp';
