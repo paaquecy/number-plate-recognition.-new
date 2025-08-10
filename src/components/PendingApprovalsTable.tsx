@@ -22,6 +22,7 @@ interface PendingApprovalsTableProps {
   filterQuery: string;
   approvals: PendingApproval[];
   setApprovals: React.Dispatch<React.SetStateAction<PendingApproval[]>>;
+  onRefresh?: () => void;
 }
 
 const PendingApprovalsTable: React.FC<PendingApprovalsTableProps> = ({
