@@ -26,6 +26,18 @@ function App({ onLogout }: PoliceAppProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  // Initialize audit logging for police app
+  useEffect(() => {
+    logSystem('Police App Loaded', 'Police officer accessed police dashboard', 'police');
+  }, []);
+
+  // Log navigation changes
+  useEffect(() => {
+    if (activeNav !== 'overview') {
+      logSystem('Navigation', `Police officer navigated to ${activeNav}`, 'police');
+    }
+  }, [activeNav]);
+
   const getPageTitle = () => {
     switch (activeNav) {
       case 'overview':
