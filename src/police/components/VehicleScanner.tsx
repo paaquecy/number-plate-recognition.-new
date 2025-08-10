@@ -71,8 +71,8 @@ const VehicleScanner = () => {
         // Auto-populate scan results with detected plate
         const mockResults = {
           plateNumber: result.plateNumber,
-          vehicleModel: '2020 Toyota Camry',
-          owner: 'Jane Doe',
+          vehicleModel: '2019 Toyota Corolla',
+          owner: 'Kwame Asante',
           status: Math.random() > 0.5 ? 'No Violations' : 'Outstanding Parking Ticket',
           statusType: Math.random() > 0.5 ? 'clean' : 'violation'
         };
@@ -129,8 +129,8 @@ const VehicleScanner = () => {
       setTimeout(() => {
         const mockResults = {
           plateNumber: plateInput.toUpperCase(),
-          vehicleModel: '2020 Toyota Camry',
-          owner: 'Jane Doe',
+          vehicleModel: '2019 Toyota Corolla',
+          owner: 'Kwame Asante',
           status: 'Outstanding Parking Ticket',
           statusType: 'violation'
         };
