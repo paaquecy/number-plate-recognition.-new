@@ -8,44 +8,54 @@ import {
   Trash2
 } from 'lucide-react';
 
+interface VehicleRecord {
+  id: string;
+  licensePlate: string;
+  make: string;
+  model: string;
+  owner: string;
+  status: 'Active' | 'Expired' | 'Pending';
+}
+
 const VehicleRecords: React.FC = () => {
   const { darkMode } = useTheme();
+  const { vehicles, updateVehicle, addNotification, isLoading } = useData();
   const [searchTerm, setSearchTerm] = useState('');
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <span className="ml-3 text-gray-600">Loading vehicle records...</span>
+      </div>
+    );
+  }
   
-  const vehicleRecords: VehicleRecord[] = [
-    {
-      id: '1',
-      licensePlate: 'ABC 123',
-      make: 'Toyota',
-      model: 'Camry',
-      owner: 'Jane Doe',
-      status: 'Active'
-    },
-    {
-      id: '2',
-      licensePlate: 'XYZ 789',
-      make: 'Honda',
-      model: 'Civic',
-      owner: 'Robert Smith',
-      status: 'Expired'
-    },
-    {
-      id: '3',
-      licensePlate: 'DEF 456',
-      make: 'Ford',
-      model: 'F-150',
-      owner: 'Alice Johnson',
-      status: 'Active'
-    },
-    {
-      id: '4',
-      licensePlate: 'GHI 012',
-      make: 'BMW',
-      model: 'X5',
-      owner: 'Michael Brown',
-      status: 'Pending'
+  // Convert data format for compatibility
+  const vehicleRecords: VehicleRecord[] = vehicles.map(vehicle => ({
+    id: vehicle.id,
+    licensePlate: vehicle.plateNumber,
+    make: vehicle.make,
+    model: vehicle.model,
+    owner: vehicle.owner,
+    status: vehicle.status === 'active' ? 'Active' as const :
+            vehicle.status === 'expired' ? 'Expired' as const : 'Pending' as const
+  }));
+
+  const handleStatusChange = (vehicleId: string, newStatus: 'active' | 'expired' | 'suspended') => {
+    const vehicle = vehicles.find(v => v.id === vehicleId);
+    if (vehicle) {
+      updateVehicle({ ...vehicle, status: newStatus });
+      addNotification({
+        title: 'Vehicle Status Updated',
+        message: `Vehicle ${vehicle.plateNumber} status changed to ${newStatus}`,
+        type: 'info',
+        timestamp: new Date().toISOString(),
+        read: false,
+        system: 'DVLA App'
+      });
     }
-  ];
+  };
 
   const filteredRecords = vehicleRecords.filter(record =>
     record.licensePlate.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -68,15 +78,17 @@ const VehicleRecords: React.FC = () => {
   };
 
   const handleAddNewRecord = () => {
-    console.log('Add new record clicked');
+    alert('Add New Vehicle Record functionality would open a form here');
   };
 
   const handleEdit = (id: string) => {
-    console.log('Edit record:', id);
+    alert(`Edit Vehicle Record ${id} functionality would open a form here`);
   };
 
   const handleDelete = (id: string) => {
-    console.log('Delete record:', id);
+    if (confirm('Are you sure you want to delete this vehicle record?')) {
+      handleStatusChange(id, 'suspended');
+    }
   };
 
   return (
