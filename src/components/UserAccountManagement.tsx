@@ -132,6 +132,9 @@ const UserAccountManagement: React.FC<UserAccountManagementProps> = ({ searchQue
   const [nameEmailFilter, setNameEmailFilter] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [systemFilter, setSystemFilter] = useState('all');
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
 
   const filteredUsers = useMemo(() => {
     return users.filter(user => {
