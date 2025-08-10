@@ -18,6 +18,7 @@ import AddNewRole from './components/AddNewRole';
 import NotificationsPage from './components/NotificationsPage';
 import AuditLogViewer from './components/AuditLogViewer';
 import SessionStatusIndicator from './components/SessionStatusIndicator';
+import DataPersistenceTest from './components/DataPersistenceTest';
 import { ThemeProvider as DvlaThemeProvider } from './dvla/contexts/ThemeContext';
 import { DataProvider } from './contexts/DataContext';
 import DvlaApp from './dvla/App';
