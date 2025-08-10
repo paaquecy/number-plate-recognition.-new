@@ -310,7 +310,14 @@ function AppContent() {
   const renderMainContent = () => {
     switch (activeItem) {
       case 'overview':
-        return <Dashboard darkMode={darkMode} />;
+        return (
+          <div className="space-y-6">
+            <Dashboard darkMode={darkMode} />
+            <div className="p-6">
+              <DataPersistenceTest />
+            </div>
+          </div>
+        );
       case 'pending-approvals':
         return (
           <>
