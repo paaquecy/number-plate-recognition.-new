@@ -17,6 +17,7 @@ function SupervisorApp({ onLogout }: SupervisorAppProps) {
   // Initialize audit logging for supervisor app
   useEffect(() => {
     logSystem('Supervisor App Loaded', 'Supervisor accessed supervisor dashboard', 'supervisor');
+    updateActivity();
   }, []);
 
   const handleLogout = () => {
