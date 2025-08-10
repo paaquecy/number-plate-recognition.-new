@@ -395,6 +395,9 @@ function App() {
           {renderMainContent()}
         </main>
       </div>
+
+      {/* Session Status Indicator */}
+      <SessionStatusIndicator isLoggedIn={isLoggedIn} />
     </div>
   );
 }
