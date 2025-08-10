@@ -41,18 +41,44 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onRegister }) => {
       alert('Please enter both username and password');
       return;
     }
-    // Pass credentials to parent for routing
-    let app: 'main' | 'dvla' | 'police' | 'supervisor' | null = null;
+
+    // First check static admin/supervisor credentials
     if (username === '4231220075' && password === 'Wattaddo020') {
-      app = 'main';
-    } else if (username === '0987654321' && password === 'Bigfish020') {
-      app = 'dvla';
-    } else if (username === '1234567890' && password === 'Madman020') {
-      app = 'police';
+      onLogin('main');
+      return;
     } else if (username === '0203549815' && password === 'Killerman020') {
-      app = 'supervisor';
+      onLogin('supervisor');
+      return;
     }
-    onLogin(app);
+
+    // Try to authenticate as police officer
+    const policeUser = authenticateUser({
+      username,
+      password,
+      accountType: 'police'
+    });
+
+    if (policeUser) {
+      console.log('Police officer authenticated:', policeUser);
+      onLogin('police');
+      return;
+    }
+
+    // Try to authenticate as DVLA officer
+    const dvlaUser = authenticateUser({
+      username,
+      password,
+      accountType: 'dvla'
+    });
+
+    if (dvlaUser) {
+      console.log('DVLA officer authenticated:', dvlaUser);
+      onLogin('dvla');
+      return;
+    }
+
+    // If no authentication succeeded
+    alert('Invalid credentials. Please check your username and password.\n\nFor Police Officers: Use your Badge Number as username\nFor DVLA Officers: Use your ID Number as username');
   };
 
   const handleRegisterClick = () => {
