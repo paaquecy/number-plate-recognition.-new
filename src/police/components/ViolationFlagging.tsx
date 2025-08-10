@@ -8,6 +8,7 @@ import {
   CheckCircle
 } from 'lucide-react';
 import { logViolation } from '../../utils/auditLog';
+import { useData } from '../../contexts/DataContext';
 
 const ViolationFlagging = () => {
   const [formData, setFormData] = useState({
