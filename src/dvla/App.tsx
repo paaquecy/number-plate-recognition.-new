@@ -10,6 +10,7 @@ import RegistrationRenewal from './components/RegistrationRenewal';
 import DataAnalysis from './components/DataAnalysis';
 import ClearFines from './components/ClearFines';
 import Settings from './components/Settings';
+import { logAuth, logSystem } from '../utils/auditLog';
 
 interface DvlaAppProps {
   onLogout?: () => void;
