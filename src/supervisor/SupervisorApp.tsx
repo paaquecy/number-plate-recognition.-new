@@ -7,6 +7,7 @@ import History from './pages/History';
 import Notifications from './pages/Notifications';
 import Settings from './pages/Settings';
 import { logAuth, logSystem } from '../utils/auditLog';
+import { updateActivity } from '../utils/sessionManager';
 
 interface SupervisorAppProps {
   onLogout?: () => void;
