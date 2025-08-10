@@ -66,7 +66,10 @@ function App({ onLogout }: DvlaAppProps) {
         onItemClick={handleMenuItemClick}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
-        onLogout={onLogout}
+        onLogout={() => {
+          logAuth('User Logout', 'DVLA officer logged out of DVLA system', 'dvla', true);
+          onLogout?.();
+        }}
       />
       
       {/* Main Content */}
