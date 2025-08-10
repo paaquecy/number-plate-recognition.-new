@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { 
-  BarChart3, 
+import React, { useState, useEffect } from 'react';
+import {
+  BarChart3,
   Menu,
   X,
 } from 'lucide-react';
