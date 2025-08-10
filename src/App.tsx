@@ -145,6 +145,7 @@ function App() {
   const handleNewRegistration = (approval: any) => {
     // Refresh pending approvals from storage instead of just adding to state
     loadPendingApprovals();
+    logAdmin('New Registration', `New ${approval.accountType} officer registration: ${approval.firstName} ${approval.lastName}`, 'main');
   };
 
   const handlePageNavigation = (page: string) => {
