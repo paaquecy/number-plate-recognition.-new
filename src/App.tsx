@@ -41,7 +41,9 @@ function App() {
   // Initialize demo users and load pending approvals on component mount
   useEffect(() => {
     initializeDemoUsers();
+    initializeDemoAuditLogs();
     loadPendingApprovals();
+    logSystem('System Startup', 'Main application initialized', 'main');
   }, []);
 
   const loadPendingApprovals = () => {
