@@ -259,6 +259,28 @@ const VehicleScanner = () => {
                 <Camera className="w-12 lg:w-16 h-12 lg:h-16 mx-auto mb-4 text-gray-400" />
                 <p className="font-medium text-sm lg:text-base">Camera Ready</p>
                 <p className="text-xs lg:text-sm text-gray-300 mt-2">Click "Start Scan" to activate camera and begin plate detection</p>
+                {permissionStatus === 'denied' && (
+                  <div className="mt-4">
+                    <p className="text-xs text-red-300 mb-2">Camera permission denied</p>
+                    <button
+                      onClick={requestCameraPermission}
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium"
+                    >
+                      Enable Camera Access
+                    </button>
+                  </div>
+                )}
+                {permissionStatus === 'prompt' && (
+                  <div className="mt-4">
+                    <p className="text-xs text-yellow-300 mb-2">Camera permission needed</p>
+                    <button
+                      onClick={requestCameraPermission}
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium"
+                    >
+                      Grant Camera Permission
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           )}
