@@ -1,11 +1,13 @@
 import React, { useState, useMemo } from 'react';
-import { ChevronDown, Plus, Edit, UserCheck, UserX, UserPlus } from 'lucide-react';
+import { ChevronDown, Plus, Edit, UserCheck, UserX, UserPlus, X, Save } from 'lucide-react';
 
 interface User {
   id: string;
+  username: string;
   name: string;
   email: string;
-  role: 'Administrator' | 'Operator' | 'Viewer';
+  role: 'Admin' | 'Police Officer' | 'DVLA Officer' | 'Supervisor' | 'Operator' | 'Viewer';
+  system: 'Main App' | 'Police App' | 'DVLA App' | 'Supervisor App';
   status: 'active' | 'inactive' | 'pending';
   lastLogin: string | null;
 }
