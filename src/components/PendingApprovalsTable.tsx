@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { approveUser, rejectUser } from '../utils/userStorage';
 
 export interface PendingApproval {
   id: string;
