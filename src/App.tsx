@@ -16,6 +16,7 @@ import AdministrativeControls from './components/AdministrativeControls';
 import SystemSettings from './components/SystemSettings';
 import AddNewRole from './components/AddNewRole';
 import NotificationsPage from './components/NotificationsPage';
+import AuditLogViewer from './components/AuditLogViewer';
 import { ThemeProvider as DvlaThemeProvider } from './dvla/contexts/ThemeContext';
 import DvlaApp from './dvla/App';
 import PoliceApp from './police/App';
