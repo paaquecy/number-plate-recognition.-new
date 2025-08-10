@@ -135,8 +135,9 @@ function App() {
     alert('Registration successful! You can now login.');
   };
 
-  const handleNewRegistration = (approval: PendingApproval) => {
-    setPendingApprovals(prev => [...prev, approval]);
+  const handleNewRegistration = (approval: any) => {
+    // Refresh pending approvals from storage instead of just adding to state
+    loadPendingApprovals();
   };
 
   const handlePageNavigation = (page: string) => {
