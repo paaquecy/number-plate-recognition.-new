@@ -1,4 +1,9 @@
 declare const cv: any;
+declare global {
+  interface Window {
+    cvReady: boolean;
+  }
+}
 
 export interface PlateDetectionResult {
   plateNumber: string;
