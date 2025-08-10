@@ -11,7 +11,16 @@
   </head>
   <body>
     <div id="root"></div>
-    <script src="/node_modules/opencv.js/opencv.js"></script>
+    <script async src="https://docs.opencv.org/3.4/opencv.js" onload="onOpenCvReady();" type="text/javascript"></script>
+    <script type="text/javascript">
+      function onOpenCvReady() {
+        console.log('OpenCV.js is ready');
+        window.cvReady = true;
+        // Dispatch custom event to notify React components
+        window.dispatchEvent(new CustomEvent('opencv-ready'));
+      }
+      window.cvReady = false;
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
