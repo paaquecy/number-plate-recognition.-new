@@ -51,7 +51,7 @@ function App({ onLogout }: PoliceAppProps) {
   const renderContent = () => {
     switch (activeNav) {
       case 'overview':
-        return <OverviewDashboard />;
+        return <OverviewDashboard onNavigate={setActiveNav} />;
       case 'scanner':
         return (
           <React.Suspense fallback={

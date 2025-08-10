@@ -11,15 +11,18 @@ import {
   Target
 } from 'lucide-react';
 
-const OverviewDashboard = () => {
+interface OverviewDashboardProps {
+  onNavigate?: (page: string) => void;
+}
+
+const OverviewDashboard: React.FC<OverviewDashboardProps> = ({ onNavigate }) => {
   // Get setActiveNav from parent component via props or context
   // For now, we'll use a placeholder function
   const handleQuickAction = (action: string) => {
     console.log(`Quick action clicked: ${action}`);
-    // This would normally call setActiveNav from the parent component
-    // For demonstration, we'll show an alert
-    if (action === 'verify-license') {
-      alert('Navigate to Verify License page - this would call setActiveNav("verify-license")');
+    // Navigate to the selected page
+    if (onNavigate) {
+      onNavigate(action);
     }
   };
 
