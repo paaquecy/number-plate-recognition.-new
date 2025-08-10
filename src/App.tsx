@@ -112,10 +112,13 @@ function App() {
       setIsLoggedIn(true);
       if (app === 'main') {
         setActiveItem('overview');
+        logAuth('User Login', 'Administrator logged into main system', 'main', true);
       } else {
         setActiveItem(app);
+        logAuth('User Login', `User logged into ${app} application`, app as any, true);
       }
     } else {
+      logAuth('Login Failed', 'Invalid credentials provided', 'main', false);
       alert('Invalid credentials. Please try again.');
     }
   };
