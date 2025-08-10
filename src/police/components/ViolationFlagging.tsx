@@ -74,7 +74,10 @@ const ViolationFlagging = () => {
     setTimeout(() => {
       setIsSubmitting(false);
       setSubmitStatus('success');
-      
+
+      // Log violation submission
+      logViolation('Violation Flagged', `Flagged violation: ${formData.violationType} for plate ${formData.licensePlate}`, 'police', 'high');
+
       // Reset form after successful submission
       setTimeout(() => {
         setFormData({
