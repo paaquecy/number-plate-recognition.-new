@@ -162,8 +162,13 @@ function App() {
 
   const handleLogout = () => {
     logAuth('User Logout', 'User logged out of system', 'main', true);
+
+    // Clear session
+    logoutWithSession();
+
     setIsLoggedIn(false);
     setActiveItem('violation-management');
+    setCurrentPage('dashboard');
   };
 
   const handleShowRegister = () => {
