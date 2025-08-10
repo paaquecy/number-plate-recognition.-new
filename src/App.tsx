@@ -124,6 +124,7 @@ function App() {
   };
 
   const handleLogout = () => {
+    logAuth('User Logout', 'User logged out of system', 'main', true);
     setIsLoggedIn(false);
     setActiveItem('violation-management');
   };
