@@ -131,7 +131,10 @@ function App({ onLogout }: PoliceAppProps) {
         setActiveNav={setActiveNav}
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
-        onLogout={onLogout}
+        onLogout={() => {
+          logAuth('User Logout', 'Police officer logged out of police system', 'police', true);
+          onLogout?.();
+        }}
       />
 
       {/* Mobile Overlay */}
