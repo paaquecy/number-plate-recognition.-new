@@ -8,117 +8,15 @@ interface UserAccountManagementProps {
 }
 
 const UserAccountManagement: React.FC<UserAccountManagementProps> = ({ searchQuery }) => {
-  const [users, setUsers] = useState<User[]>([
-    // Main App Admin Users
-    {
-      id: 'USR001',
-      username: '4231220075',
-      name: 'Obeng Addo Paa kwesi',
-      email: 'admin@vpr.gov.gh',
-      role: 'Admin',
-      system: 'Main App',
-      status: 'active',
-      lastLogin: '2024-01-07 11:00 AM'
-    },
-    {
-      id: 'USR002',
-      username: '0203549815',
-      name: 'Martin Mensah',
-      email: 'supervisor@vpr.gov.gh',
-      role: 'Supervisor',
-      system: 'Main App',
-      status: 'active',
-      lastLogin: '2024-01-07 09:45 AM'
-    },
-
-    // Police App Users
-    {
-      id: 'USR003',
-      username: '1234567890',
-      name: 'Officer Michael Osei',
-      email: 'michael.osei@police.gov.gh',
-      role: 'Police Officer',
-      system: 'Police App',
-      status: 'active',
-      lastLogin: '2024-01-07 08:30 AM'
-    },
-
-    // DVLA App Users
-    {
-      id: 'USR004',
-      username: '0987654321',
-      name: 'Kwame Asante',
-      email: 'kwame.asante@dvla.gov.gh',
-      role: 'DVLA Officer',
-      system: 'DVLA App',
-      status: 'active',
-      lastLogin: '2024-01-07 10:15 AM'
-    },
-    {
-      id: 'USR005',
-      username: 'admin',
-      name: 'DVLA Admin',
-      email: 'admin@dvla.gov.gh',
-      role: 'Admin',
-      system: 'DVLA App',
-      status: 'active',
-      lastLogin: '2024-01-06 04:20 PM'
-    },
-
-    // Supervisor App Users
-    {
-      id: 'USR006',
-      username: 'supervisor1',
-      name: 'Martin Mensah',
-      email: 'martinmen53@traffic.gov.gh',
-      role: 'Supervisor',
-      system: 'Supervisor App',
-      status: 'active',
-      lastLogin: '2024-01-07 02:30 PM'
-    },
-
-    // Additional system users
-    {
-      id: 'USR007',
-      username: 'police001',
-      name: 'Sarah Agyemang',
-      email: 'sarah.agyemang@police.gov.gh',
-      role: 'Police Officer',
-      system: 'Police App',
-      status: 'inactive',
-      lastLogin: '2024-01-05 03:00 PM'
-    },
-    {
-      id: 'USR008',
-      username: 'dvla001',
-      name: 'Joseph Nkrumah',
-      email: 'joseph.nkrumah@dvla.gov.gh',
-      role: 'DVLA Officer',
-      system: 'DVLA App',
-      status: 'pending',
-      lastLogin: null
-    },
-    {
-      id: 'USR009',
-      username: 'operator001',
-      name: 'Alice Boateng',
-      email: 'alice.boateng@vpr.gov.gh',
-      role: 'Operator',
-      system: 'Main App',
-      status: 'active',
-      lastLogin: '2024-01-07 12:45 PM'
-    },
-    {
-      id: 'USR010',
-      username: 'viewer001',
-      name: 'Robert Amankwah',
-      email: 'robert.amankwah@vpr.gov.gh',
-      role: 'Viewer',
-      system: 'Main App',
-      status: 'active',
-      lastLogin: '2024-01-06 01:20 PM'
-    }
-  ]);
+  const {
+    users,
+    updateUser,
+    addUser,
+    deleteUser,
+    isLoading,
+    exportAllData,
+    addNotification
+  } = useData();
 
   const [nameEmailFilter, setNameEmailFilter] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
