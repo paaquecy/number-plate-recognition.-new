@@ -97,14 +97,17 @@ function App({ onLogout }: DvlaAppProps) {
         {/* Status Bar */}
         {activeMenuItem === 'overview' && <StatusBar />}
       </div>
-      
+
       {/* Mobile Overlay */}
       {sidebarOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
+
+      {/* Session Status Indicator */}
+      <SessionStatusIndicator isLoggedIn={true} />
     </div>
   );
 }
