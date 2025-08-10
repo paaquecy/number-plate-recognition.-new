@@ -321,13 +321,22 @@ const UserAccountManagement: React.FC<UserAccountManagementProps> = ({ searchQue
             </div>
           </div>
           
-          <button
-            onClick={handleAddNewUser}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium flex items-center"
-          >
-            <Plus size={16} className="mr-2" />
-            Add New User
-          </button>
+          <div className="flex space-x-2">
+            <button
+              onClick={handleExportData}
+              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors font-medium flex items-center"
+            >
+              <Download size={16} className="mr-2" />
+              Export Data
+            </button>
+            <button
+              onClick={handleAddNewUser}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium flex items-center"
+            >
+              <Plus size={16} className="mr-2" />
+              Add New User
+            </button>
+          </div>
         </div>
       </div>
 
