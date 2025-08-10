@@ -11,10 +11,13 @@ import { logViolation } from '../../utils/auditLog';
 import { useData } from '../../contexts/DataContext';
 
 const ViolationFlagging = () => {
+  const { addViolation, addNotification, getUserByUsername } = useData();
   const [formData, setFormData] = useState({
     licensePlate: '',
     violationType: '',
-    violationDetails: ''
+    violationDetails: '',
+    location: '',
+    fine: 0
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState('');
