@@ -38,6 +38,14 @@ import {
 } from './utils/sessionManager';
 
 function App() {
+  return (
+    <DataProvider>
+      <AppContent />
+    </DataProvider>
+  );
+}
+
+function AppContent() {
   // Initialize state from session or defaults
   const initialSession = initializeSession();
 
