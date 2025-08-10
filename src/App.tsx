@@ -200,6 +200,13 @@ function App() {
     if (page === 'dashboard') {
       setActiveItem('overview');
     }
+
+    // Save page navigation state to session
+    saveSessionState({
+      currentPage: page,
+      activeItem: page === 'dashboard' ? 'overview' : activeItem
+    });
+    updateActivity();
   };
 
   const getPageTitle = () => {
