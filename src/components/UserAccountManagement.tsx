@@ -1,16 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import { ChevronDown, Plus, Edit, UserCheck, UserX, UserPlus, X, Save } from 'lucide-react';
-
-interface User {
-  id: string;
-  username: string;
-  name: string;
-  email: string;
-  role: 'Admin' | 'Police Officer' | 'DVLA Officer' | 'Supervisor' | 'Operator' | 'Viewer';
-  system: 'Main App' | 'Police App' | 'DVLA App' | 'Supervisor App';
-  status: 'active' | 'inactive' | 'pending';
-  lastLogin: string | null;
-}
+import { ChevronDown, Plus, Edit, UserCheck, UserX, UserPlus, X, Save, Download } from 'lucide-react';
+import { useData } from '../contexts/DataContext';
+import type { User } from '../utils/dataStorage';
 
 interface UserAccountManagementProps {
   searchQuery: string;
