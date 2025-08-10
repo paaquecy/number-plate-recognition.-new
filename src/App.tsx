@@ -23,6 +23,7 @@ import SupervisorApp from './supervisor/SupervisorApp';
 import './dvla/index.css';
 import './police/index.css';
 import type { PendingApproval } from './components/PendingApprovalsTable';
+import { initializeDemoUsers, getPendingUsers } from './utils/userStorage';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
