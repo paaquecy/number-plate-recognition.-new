@@ -26,6 +26,7 @@ const VehicleScanner = () => {
   const [isScanning, setIsScanning] = useState(false);
   const [detectionResult, setDetectionResult] = useState<PlateDetectionResult | null>(null);
   const [scanInterval, setScanInterval] = useState<NodeJS.Timeout | null>(null);
+  const [permissionStatus, setPermissionStatus] = useState<'granted' | 'denied' | 'prompt' | 'unknown'>('unknown');
 
   const {
     videoRef,
