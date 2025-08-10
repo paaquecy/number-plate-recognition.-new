@@ -70,17 +70,17 @@ export class PlateDetector {
   }
 
   async detectPlate(imageElement: HTMLImageElement | HTMLVideoElement | HTMLCanvasElement): Promise<PlateDetectionResult | null> {
-    if (!this.isInitialized) {
-      try {
-        await this.initialize();
-      } catch (error) {
-        console.warn('OpenCV not available, using fallback detection');
-        return this.fallbackDetection();
-      }
+    // Always try to initialize first
+    await this.initialize();
+
+    // Check if OpenCV is actually available and working
+    if (typeof cv === 'undefined' || !cv.getBuildInformation) {
+      console.warn('OpenCV not loaded or not working, using fallback detection');
+      return this.fallbackDetection();
     }
 
-    if (typeof cv === 'undefined') {
-      console.warn('OpenCV not loaded, using fallback detection');
+    if (!this.isInitialized) {
+      console.warn('OpenCV initialization failed, using fallback detection');
       return this.fallbackDetection();
     }
 
