@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { 
-  Eye, 
-  EyeOff, 
-  ArrowRight, 
-  Info, 
-  User, 
+import {
+  Eye,
+  EyeOff,
+  ArrowRight,
+  Info,
+  User,
   Shield,
   Lock
 } from 'lucide-react';
+import { authenticateUser } from '../utils/userStorage';
 
 interface LoginPageProps {
   onLogin: (app: 'main' | 'dvla' | 'police' | 'supervisor' | null) => void;
