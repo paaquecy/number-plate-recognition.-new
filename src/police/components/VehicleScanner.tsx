@@ -39,6 +39,27 @@ const VehicleScanner = () => {
     captureFrame
   } = useCamera();
 
+  // Check camera permissions on mount
+  useEffect(() => {
+    const checkPermissions = async () => {
+      try {
+        if (navigator.permissions && navigator.permissions.query) {
+          const permission = await navigator.permissions.query({ name: 'camera' as PermissionName });
+          setPermissionStatus(permission.state as 'granted' | 'denied' | 'prompt');
+
+          permission.addEventListener('change', () => {
+            setPermissionStatus(permission.state as 'granted' | 'denied' | 'prompt');
+          });
+        }
+      } catch (error) {
+        console.log('Permissions API not supported');
+        setPermissionStatus('unknown');
+      }
+    };
+
+    checkPermissions();
+  }, []);
+
   // Initialize OpenCV when component mounts
   useEffect(() => {
     const initializeDetector = async () => {
@@ -59,6 +80,18 @@ const VehicleScanner = () => {
       }
     };
   }, [scanInterval]);
+
+  const requestCameraPermission = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      stream.getTracks().forEach(track => track.stop());
+      setPermissionStatus('granted');
+      alert('Camera permission granted! You can now start scanning.');
+    } catch (error) {
+      setPermissionStatus('denied');
+      alert('Camera permission denied. Please enable camera access in your browser settings.');
+    }
+  };
 
   const performPlateDetection = useCallback(async () => {
     if (!cameraActive || !videoRef.current) return;
