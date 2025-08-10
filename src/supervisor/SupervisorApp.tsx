@@ -27,7 +27,7 @@ function SupervisorApp({ onLogout }: SupervisorAppProps) {
     <Router>
       <div className="min-h-screen bg-gray-50">
         <Routes>
-          <Route path="/supervisor" element={<Layout onLogout={onLogout} />}>
+          <Route path="/supervisor" element={<Layout onLogout={handleLogout} />}>
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="pending" element={<PendingViolations />} />
             <Route path="history" element={<History />} />
