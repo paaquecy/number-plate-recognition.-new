@@ -12,6 +12,17 @@ import {
 } from 'lucide-react';
 
 const OverviewDashboard = () => {
+  // Get setActiveNav from parent component via props or context
+  // For now, we'll use a placeholder function
+  const handleQuickAction = (action: string) => {
+    console.log(`Quick action clicked: ${action}`);
+    // This would normally call setActiveNav from the parent component
+    // For demonstration, we'll show an alert
+    if (action === 'verify-license') {
+      alert('Navigate to Verify License page - this would call setActiveNav("verify-license")');
+    }
+  };
+
   const activityStats = [
     { label: 'Vehicles Scanned', value: 124, icon: Car },
     { label: 'Violations Flagged', value: 32, icon: Flag },
@@ -19,10 +30,10 @@ const OverviewDashboard = () => {
   ];
 
   const quickActions = [
-    { label: 'Verify License', icon: Car },
-    { label: 'Flag Violation', icon: Flag },
-    { label: 'Vehicle Lookup', icon: BarChart3 },
-    { label: 'New Report', icon: FileText }
+    { id: 'verify-license', label: 'Verify License', icon: Car },
+    { id: 'flagging', label: 'Flag Violation', icon: Flag },
+    { id: 'vehicle-info', label: 'Vehicle Lookup', icon: BarChart3 },
+    { id: 'field-reporting', label: 'New Report', icon: FileText }
   ];
 
   const recentActivities = [

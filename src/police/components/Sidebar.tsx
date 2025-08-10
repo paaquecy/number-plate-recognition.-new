@@ -8,7 +8,8 @@ import {
   Settings, 
   User, 
   LogOut,
-  X
+  X,
+  Shield
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -29,6 +30,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   const navigationItems = [
     { id: 'overview', label: 'Overview Dashboard', icon: BarChart3, active: true },
     { id: 'scanner', label: 'Vehicle Plate Scanner', icon: Car, active: false },
+    { id: 'verify-license', label: 'Verify License', icon: Shield, active: false },
     { id: 'flagging', label: 'Violation Flagging System', icon: Flag, active: false },
     { id: 'violations', label: 'Violations Management', icon: AlertTriangle, active: false },
     { id: 'vehicle-info', label: 'Vehicle Information Access', icon: Car, active: false },

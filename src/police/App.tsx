@@ -11,6 +11,7 @@ import ViolationsManagement from './components/ViolationsManagement';
 import VehicleInformationAccess from './components/VehicleInformationAccess';
 import FieldReporting from './components/FieldReporting';
 import PersonalSettings from './components/PersonalSettings';
+import VerifyLicense from './components/VerifyLicense';
 
 // Lazy load VehicleScanner to avoid OpenCV loading issues
 const VehicleScanner = React.lazy(() => import('./components/VehicleScanner'));
@@ -40,6 +41,8 @@ function App({ onLogout }: PoliceAppProps) {
         return 'Field Reporting';
       case 'settings':
         return 'Personal Settings';
+      case 'verify-license':
+        return 'Verify License';
       default:
         return 'Police Dashboard';
     }
@@ -70,6 +73,8 @@ function App({ onLogout }: PoliceAppProps) {
         return <FieldReporting />;
       case 'settings':
         return <PersonalSettings />;
+      case 'verify-license':
+        return <VerifyLicense />;
       default:
         return <OverviewDashboard />;
     }
