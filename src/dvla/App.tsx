@@ -18,7 +18,9 @@ interface DvlaAppProps {
 }
 
 function App({ onLogout }: DvlaAppProps) {
-  const [activeMenuItem, setActiveMenuItem] = useState('overview');
+  // Restore navigation state from session or use default
+  const savedNavState = getAppNavigationState('dvla');
+  const [activeMenuItem, setActiveMenuItem] = useState(savedNavState?.activeMenuItem || 'overview');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { darkMode } = useTheme();
 
@@ -27,11 +29,15 @@ function App({ onLogout }: DvlaAppProps) {
     logSystem('DVLA App Loaded', 'DVLA officer accessed DVLA dashboard', 'dvla');
   }, []);
 
-  // Log navigation changes
+  // Log navigation changes and save to session
   useEffect(() => {
     if (activeMenuItem !== 'overview') {
       logSystem('Navigation', `DVLA officer navigated to ${activeMenuItem}`, 'dvla');
     }
+
+    // Save navigation state to session
+    saveAppNavigationState('dvla', { activeMenuItem });
+    updateActivity();
   }, [activeMenuItem]);
 
   const handleMenuItemClick = (item: string) => {
