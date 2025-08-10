@@ -184,6 +184,43 @@ const ViolationFlagging = () => {
             </div>
           </div>
 
+          {/* Location */}
+          <div className="space-y-2">
+            <label className="block text-sm lg:text-base font-medium text-gray-700">
+              Location
+            </label>
+            <input
+              type="text"
+              placeholder="e.g., Accra-Tema Motorway, Osu Circle"
+              value={formData.location}
+              onChange={(e) => handleInputChange('location', e.target.value)}
+              className="w-full px-3 lg:px-4 py-2 lg:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200 text-sm lg:text-base"
+            />
+          </div>
+
+          {/* Fine Amount */}
+          <div className="space-y-2">
+            <label className="block text-sm lg:text-base font-medium text-gray-700">
+              Fine Amount (GH₵)
+            </label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm lg:text-base">GH₵</span>
+              <input
+                type="number"
+                placeholder="0"
+                value={formData.fine || ''}
+                onChange={(e) => handleInputChange('fine', parseInt(e.target.value) || 0)}
+                className="w-full pl-12 pr-3 lg:pr-4 py-2 lg:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200 text-sm lg:text-base"
+                min="0"
+              />
+            </div>
+            {formData.violationType && (
+              <p className="text-xs text-gray-500">
+                Default fine for {formData.violationType}: GH₵{getDefaultFine(formData.violationType)}
+              </p>
+            )}
+          </div>
+
           {/* Violation Details / Notes */}
           <div className="space-y-2">
             <label className="block text-sm lg:text-base font-medium text-gray-700">
