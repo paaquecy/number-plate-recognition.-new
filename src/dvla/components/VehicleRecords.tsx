@@ -1,20 +1,12 @@
 import React, { useState } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
-import { 
-  Search, 
-  Plus, 
-  Edit, 
-  Trash2 
+import { useData } from '../../contexts/DataContext';
+import {
+  Search,
+  Plus,
+  Edit,
+  Trash2
 } from 'lucide-react';
-
-interface VehicleRecord {
-  id: string;
-  licensePlate: string;
-  make: string;
-  model: string;
-  owner: string;
-  status: 'Active' | 'Expired' | 'Pending';
-}
 
 const VehicleRecords: React.FC = () => {
   const { darkMode } = useTheme();
