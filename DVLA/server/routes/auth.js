@@ -109,6 +109,7 @@ router.post('/login', validateLogin, async (req, res) => {
           username: user.username,
           email: user.email,
           full_name: user.full_name,
+          phone: user.phone,
           role: user.role
         },
         token
