@@ -158,11 +158,76 @@ const Settings: React.FC = () => {
       automatedBackups,
       emailNotifications,
       inAppNotifications,
-      currentPassword,
-      newPassword,
-      confirmPassword,
       twoFactorAuth
     });
+  };
+
+  const handleProfileSave = async () => {
+    setProfileSaving(true);
+    setProfileMessage('');
+
+    try {
+      const result = await updateProfile({
+        full_name: profileData.fullName,
+        email: profileData.email,
+        phone: profileData.phone
+      });
+
+      if (result.success) {
+        setIsEditingProfile(false);
+        setProfileMessage('Profile updated successfully!');
+        setTimeout(() => setProfileMessage(''), 3000);
+      } else {
+        setProfileMessage(result.message || 'Failed to update profile');
+      }
+    } catch (error) {
+      setProfileMessage('Failed to update profile');
+    } finally {
+      setProfileSaving(false);
+    }
+  };
+
+  const handlePasswordChange = async () => {
+    if (passwordData.new !== passwordData.confirm) {
+      setPasswordMessage('New passwords do not match');
+      return;
+    }
+
+    if (passwordData.new.length < 6) {
+      setPasswordMessage('New password must be at least 6 characters');
+      return;
+    }
+
+    setPasswordSaving(true);
+    setPasswordMessage('');
+
+    try {
+      const result = await changePassword(passwordData.current, passwordData.new);
+
+      if (result.success) {
+        setPasswordData({ current: '', new: '', confirm: '' });
+        setPasswordMessage('Password changed successfully!');
+        setTimeout(() => setPasswordMessage(''), 3000);
+      } else {
+        setPasswordMessage(result.message || 'Failed to change password');
+      }
+    } catch (error) {
+      setPasswordMessage('Failed to change password');
+    } finally {
+      setPasswordSaving(false);
+    }
+  };
+
+  const handleProfileCancel = () => {
+    if (user) {
+      setProfileData({
+        fullName: user.full_name || '',
+        email: user.email || '',
+        phone: ''
+      });
+    }
+    setIsEditingProfile(false);
+    setProfileMessage('');
   };
 
   const handleDarkModeToggle = (enabled: boolean) => {
