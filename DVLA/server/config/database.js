@@ -228,6 +228,17 @@ const createTables = async () => {
   for (const table of tables) {
     await database.run(table);
   }
+
+  // Add phone column to existing users table if it doesn't exist
+  try {
+    await database.run('ALTER TABLE users ADD COLUMN phone VARCHAR(20)');
+    console.log('✅ Added phone column to users table');
+  } catch (error) {
+    // Column already exists, ignore error
+    if (!error.message.includes('duplicate column name')) {
+      console.log('Phone column already exists or other error:', error.message);
+    }
+  }
 };
 
 const seedInitialData = async () => {
