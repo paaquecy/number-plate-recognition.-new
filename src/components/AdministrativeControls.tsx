@@ -157,7 +157,13 @@ const AdministrativeControls: React.FC<AdministrativeControlsProps> = ({ onNavig
   };
 
   const handleEditRole = (role: Role) => {
-    console.log(`Edit clicked for ${role.name}`);
+    setEditingRole(role);
+    setEditForm({
+      name: role.name,
+      description: role.description,
+      permissions: role.permissions
+    });
+    setIsEditModalOpen(true);
   };
 
   const handleDeleteRole = (role: Role) => {
