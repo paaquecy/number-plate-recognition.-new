@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTheme } from '../contexts/ThemeContext';
+import { useAuth } from '../contexts/AuthContext';
 import { User, Menu } from 'lucide-react';
 
 interface HeaderProps {
@@ -9,6 +10,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ onMenuClick, activeMenuItem }) => {
   const { darkMode } = useTheme();
+  const { user } = useAuth();
   
   const getPageInfo = (menuItem: string) => {
     switch (menuItem) {
@@ -93,10 +95,10 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, activeMenuItem }) => {
             <div>
               <p className={`font-semibold transition-colors duration-200 ${
                 darkMode ? 'text-gray-100' : 'text-gray-900'
-              }`}>John Doe</p>
+              }`}>{user?.full_name || 'User'}</p>
               <p className={`text-sm transition-colors duration-200 ${
                 darkMode ? 'text-gray-400' : 'text-gray-600'
-              }`}>Administrator</p>
+              }`}>{user?.role || 'Administrator'}</p>
             </div>
           </div>
           

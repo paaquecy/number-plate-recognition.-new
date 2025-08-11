@@ -10,7 +10,7 @@ const router = express.Router();
 // Register new user
 router.post('/register', validateUser, async (req, res) => {
   try {
-    const { username, email, password, full_name, role = 'user' } = req.body;
+    const { username, email, password, full_name, phone, role = 'user' } = req.body;
 
     // Check if user already exists
     const existingUser = await database.get(
@@ -30,9 +30,9 @@ router.post('/register', validateUser, async (req, res) => {
 
     // Create user
     const result = await database.run(
-      `INSERT INTO users (username, email, password_hash, full_name, role) 
-       VALUES (?, ?, ?, ?, ?)`,
-      [username, email, hashedPassword, full_name, role]
+      `INSERT INTO users (username, email, password_hash, full_name, phone, role)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [username, email, hashedPassword, full_name, phone, role]
     );
 
     // Generate JWT token
@@ -51,6 +51,7 @@ router.post('/register', validateUser, async (req, res) => {
           username,
           email,
           full_name,
+          phone,
           role
         },
         token
@@ -72,7 +73,7 @@ router.post('/login', validateLogin, async (req, res) => {
 
     // Find user
     const user = await database.get(
-      'SELECT id, username, email, password_hash, full_name, role FROM users WHERE username = ?',
+      'SELECT id, username, email, password_hash, full_name, phone, role FROM users WHERE username = ?',
       [username]
     );
 
@@ -109,6 +110,7 @@ router.post('/login', validateLogin, async (req, res) => {
           username: user.username,
           email: user.email,
           full_name: user.full_name,
+          phone: user.phone,
           role: user.role
         },
         token
@@ -127,7 +129,7 @@ router.post('/login', validateLogin, async (req, res) => {
 router.get('/profile', authenticateToken, async (req, res) => {
   try {
     const user = await database.get(
-      'SELECT id, username, email, full_name, role, created_at FROM users WHERE id = ?',
+      'SELECT id, username, email, full_name, phone, role, created_at FROM users WHERE id = ?',
       [req.user.id]
     );
 
@@ -147,7 +149,7 @@ router.get('/profile', authenticateToken, async (req, res) => {
 // Update user profile
 router.put('/profile', authenticateToken, async (req, res) => {
   try {
-    const { full_name, email } = req.body;
+    const { full_name, email, phone } = req.body;
     const userId = req.user.id;
 
     // Check if email is already taken by another user
@@ -167,13 +169,13 @@ router.put('/profile', authenticateToken, async (req, res) => {
 
     // Update user
     await database.run(
-      'UPDATE users SET full_name = ?, email = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-      [full_name, email, userId]
+      'UPDATE users SET full_name = ?, email = ?, phone = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+      [full_name, email, phone, userId]
     );
 
     // Fetch updated user
     const updatedUser = await database.get(
-      'SELECT id, username, email, full_name, role FROM users WHERE id = ?',
+      'SELECT id, username, email, full_name, phone, role FROM users WHERE id = ?',
       [userId]
     );
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTheme } from './contexts/ThemeContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import StatusBar from './components/StatusBar';
@@ -22,7 +23,9 @@ interface DvlaAppProps {
 function App({ onLogout }: DvlaAppProps) {
   return (
     <DataProvider>
-      <DvlaAppContent onLogout={onLogout} />
+      <AuthProvider>
+        <DvlaAppContent onLogout={onLogout} />
+      </AuthProvider>
     </DataProvider>
   );
 }
@@ -33,6 +36,23 @@ function DvlaAppContent({ onLogout }: DvlaAppProps) {
   const [activeMenuItem, setActiveMenuItem] = useState(savedNavState?.activeMenuItem || 'overview');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { darkMode } = useTheme();
+  const { login, isAuthenticated, isLoading } = useAuth();
+
+  // Auto-login with admin credentials for DVLA app
+  useEffect(() => {
+    const autoLogin = async () => {
+      if (!isAuthenticated && !isLoading) {
+        try {
+          await login('admin', 'admin123');
+          console.log('Auto-logged in to DVLA system');
+        } catch (error) {
+          console.error('Auto-login failed:', error);
+        }
+      }
+    };
+
+    autoLogin();
+  }, [isAuthenticated, isLoading, login]);
 
   // Initialize audit logging for DVLA app
   useEffect(() => {
@@ -74,6 +94,24 @@ function DvlaAppContent({ onLogout }: DvlaAppProps) {
         return <OverviewDashboard />;
     }
   };
+
+  // Show loading screen while authentication is in progress
+  if (isLoading || !isAuthenticated) {
+    return (
+      <div className={`min-h-screen flex items-center justify-center font-['Inter',sans-serif] transition-colors duration-200 ${
+        darkMode ? 'bg-gray-900' : 'bg-gray-50'
+      }`}>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className={`text-lg transition-colors duration-200 ${
+            darkMode ? 'text-gray-300' : 'text-gray-600'
+          }`}>
+            {isLoading ? 'Connecting to DVLA system...' : 'Authenticating...'}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex font-['Inter',sans-serif] relative">

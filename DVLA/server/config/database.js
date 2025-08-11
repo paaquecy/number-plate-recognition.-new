@@ -106,6 +106,7 @@ const createTables = async () => {
       email VARCHAR(100) UNIQUE NOT NULL,
       password_hash VARCHAR(255) NOT NULL,
       full_name VARCHAR(100) NOT NULL,
+      phone VARCHAR(20),
       role VARCHAR(20) DEFAULT 'user',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -226,6 +227,17 @@ const createTables = async () => {
 
   for (const table of tables) {
     await database.run(table);
+  }
+
+  // Add phone column to existing users table if it doesn't exist
+  try {
+    await database.run('ALTER TABLE users ADD COLUMN phone VARCHAR(20)');
+    console.log('✅ Added phone column to users table');
+  } catch (error) {
+    // Column already exists, ignore error
+    if (!error.message.includes('duplicate column name')) {
+      console.log('Phone column already exists or other error:', error.message);
+    }
   }
 };
 

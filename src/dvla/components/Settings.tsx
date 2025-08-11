@@ -1,13 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
-import { 
-  Settings as SettingsIcon, 
-  User, 
-  Bell, 
+import { useAuth } from '../contexts/AuthContext';
+import {
+  Settings as SettingsIcon,
+  User,
+  Bell,
   Lock,
   ChevronDown,
   Upload,
-  Camera
+  Camera,
+  Save,
+  Edit
 } from 'lucide-react';
 
 interface ToggleSwitchProps {
@@ -67,6 +70,37 @@ const Settings: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [twoFactorAuth, setTwoFactorAuth] = useState(true);
 
+  // Profile state
+  const { user, updateProfile, changePassword, isLoading } = useAuth();
+  const [profileData, setProfileData] = useState({
+    fullName: '',
+    email: '',
+    phone: ''
+  });
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [profileMessage, setProfileMessage] = useState('');
+
+  // Password change state
+  const [passwordData, setPasswordData] = useState({
+    current: '',
+    new: '',
+    confirm: ''
+  });
+  const [passwordSaving, setPasswordSaving] = useState(false);
+  const [passwordMessage, setPasswordMessage] = useState('');
+
+  // Load user data when component mounts or user changes
+  useEffect(() => {
+    if (user) {
+      setProfileData({
+        fullName: user.full_name || '',
+        email: user.email || '',
+        phone: user.phone || ''
+      });
+    }
+  }, [user]);
+
   const subMenuItems = [
     { id: 'general', label: 'General', icon: SettingsIcon },
     { id: 'profile', label: 'Profile', icon: User },
@@ -124,11 +158,76 @@ const Settings: React.FC = () => {
       automatedBackups,
       emailNotifications,
       inAppNotifications,
-      currentPassword,
-      newPassword,
-      confirmPassword,
       twoFactorAuth
     });
+  };
+
+  const handleProfileSave = async () => {
+    setProfileSaving(true);
+    setProfileMessage('');
+
+    try {
+      const result = await updateProfile({
+        full_name: profileData.fullName,
+        email: profileData.email,
+        phone: profileData.phone
+      });
+
+      if (result.success) {
+        setIsEditingProfile(false);
+        setProfileMessage('Profile updated successfully!');
+        setTimeout(() => setProfileMessage(''), 3000);
+      } else {
+        setProfileMessage(result.message || 'Failed to update profile');
+      }
+    } catch (error) {
+      setProfileMessage('Failed to update profile');
+    } finally {
+      setProfileSaving(false);
+    }
+  };
+
+  const handlePasswordChange = async () => {
+    if (passwordData.new !== passwordData.confirm) {
+      setPasswordMessage('New passwords do not match');
+      return;
+    }
+
+    if (passwordData.new.length < 6) {
+      setPasswordMessage('New password must be at least 6 characters');
+      return;
+    }
+
+    setPasswordSaving(true);
+    setPasswordMessage('');
+
+    try {
+      const result = await changePassword(passwordData.current, passwordData.new);
+
+      if (result.success) {
+        setPasswordData({ current: '', new: '', confirm: '' });
+        setPasswordMessage('Password changed successfully!');
+        setTimeout(() => setPasswordMessage(''), 3000);
+      } else {
+        setPasswordMessage(result.message || 'Failed to change password');
+      }
+    } catch (error) {
+      setPasswordMessage('Failed to change password');
+    } finally {
+      setPasswordSaving(false);
+    }
+  };
+
+  const handleProfileCancel = () => {
+    if (user) {
+      setProfileData({
+        fullName: user.full_name || '',
+        email: user.email || '',
+        phone: user.phone || ''
+      });
+    }
+    setIsEditingProfile(false);
+    setProfileMessage('');
   };
 
   const handleDarkModeToggle = (enabled: boolean) => {
@@ -272,91 +371,246 @@ const Settings: React.FC = () => {
   const renderProfileSettings = () => (
     <div className="space-y-6">
       {/* Profile Information Section */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-6">Profile Information</h3>
-        
+      <div className={`rounded-xl shadow-sm border p-6 transition-colors duration-200 ${
+        darkMode
+          ? 'bg-gray-800 border-gray-700'
+          : 'bg-white border-gray-100'
+      }`}>
+        <div className="flex justify-between items-center mb-6">
+          <h3 className={`text-lg font-semibold transition-colors duration-200 ${
+            darkMode ? 'text-gray-100' : 'text-gray-900'
+          }`}>Profile Information</h3>
+          <button
+            onClick={() => isEditingProfile ? handleProfileCancel() : setIsEditingProfile(true)}
+            className={`inline-flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 ${
+              isEditingProfile
+                ? `border ${
+                    darkMode
+                      ? 'border-gray-600 text-gray-300 hover:bg-gray-700'
+                      : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                  }`
+                : `bg-blue-600 text-white hover:bg-blue-700`
+            }`}
+          >
+            {isEditingProfile ? (
+              <>
+                <span>Cancel</span>
+              </>
+            ) : (
+              <>
+                <Edit size={16} />
+                <span>Edit Profile</span>
+              </>
+            )}
+          </button>
+        </div>
+
+        {profileMessage && (
+          <div className={`mb-6 p-3 rounded-lg text-sm ${
+            profileMessage.includes('success')
+              ? 'bg-green-100 text-green-800 border border-green-200'
+              : 'bg-red-100 text-red-800 border border-red-200'
+          }`}>
+            {profileMessage}
+          </div>
+        )}
+
         <div className="space-y-6">
           {/* Full Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className={`block text-sm font-medium mb-2 transition-colors duration-200 ${
+              darkMode ? 'text-gray-300' : 'text-gray-700'
+            }`}>
               Full Name
             </label>
             <input
               type="text"
-              value="John Doe"
-              readOnly
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 cursor-not-allowed"
+              value={profileData.fullName}
+              onChange={(e) => setProfileData({ ...profileData, fullName: e.target.value })}
+              readOnly={!isEditingProfile}
+              className={`w-full px-4 py-3 border rounded-lg transition-all duration-200 ${
+                isEditingProfile
+                  ? `focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      darkMode
+                        ? 'bg-gray-700 border-gray-600 text-gray-100'
+                        : 'bg-white border-gray-300 text-gray-900'
+                    }`
+                  : `cursor-not-allowed ${
+                      darkMode
+                        ? 'bg-gray-700 border-gray-600 text-gray-400'
+                        : 'bg-gray-50 border-gray-300 text-gray-600'
+                    }`
+              }`}
             />
           </div>
 
           {/* Email Address */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className={`block text-sm font-medium mb-2 transition-colors duration-200 ${
+              darkMode ? 'text-gray-300' : 'text-gray-700'
+            }`}>
               Email Address
             </label>
             <input
               type="email"
-              value="john.doe@example.com"
-              readOnly
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 cursor-not-allowed"
+              value={profileData.email}
+              onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
+              readOnly={!isEditingProfile}
+              className={`w-full px-4 py-3 border rounded-lg transition-all duration-200 ${
+                isEditingProfile
+                  ? `focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      darkMode
+                        ? 'bg-gray-700 border-gray-600 text-gray-100'
+                        : 'bg-white border-gray-300 text-gray-900'
+                    }`
+                  : `cursor-not-allowed ${
+                      darkMode
+                        ? 'bg-gray-700 border-gray-600 text-gray-400'
+                        : 'bg-gray-50 border-gray-300 text-gray-600'
+                    }`
+              }`}
             />
           </div>
 
           {/* Phone Number */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className={`block text-sm font-medium mb-2 transition-colors duration-200 ${
+              darkMode ? 'text-gray-300' : 'text-gray-700'
+            }`}>
               Phone Number
             </label>
             <input
               type="tel"
-              value="+1 (555) 123-4567"
-              readOnly
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 cursor-not-allowed"
+              value={profileData.phone}
+              onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
+              readOnly={!isEditingProfile}
+              placeholder={isEditingProfile ? "Enter your phone number" : ""}
+              className={`w-full px-4 py-3 border rounded-lg transition-all duration-200 ${
+                isEditingProfile
+                  ? `focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      darkMode
+                        ? 'bg-gray-700 border-gray-600 text-gray-100'
+                        : 'bg-white border-gray-300 text-gray-900'
+                    }`
+                  : `cursor-not-allowed ${
+                      darkMode
+                        ? 'bg-gray-700 border-gray-600 text-gray-400'
+                        : 'bg-gray-50 border-gray-300 text-gray-600'
+                    }`
+              }`}
             />
           </div>
+
+          {/* Save Button */}
+          {isEditingProfile && (
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={handleProfileSave}
+                disabled={profileSaving}
+                className="inline-flex items-center space-x-2 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Save size={16} />
+                <span>{profileSaving ? 'Saving...' : 'Save Profile'}</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Change Password Section */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-6">Change Password</h3>
-        
+      <div className={`rounded-xl shadow-sm border p-6 transition-colors duration-200 ${
+        darkMode
+          ? 'bg-gray-800 border-gray-700'
+          : 'bg-white border-gray-100'
+      }`}>
+        <h3 className={`text-lg font-semibold mb-6 transition-colors duration-200 ${
+          darkMode ? 'text-gray-100' : 'text-gray-900'
+        }`}>Change Password</h3>
+
+        {passwordMessage && (
+          <div className={`mb-6 p-3 rounded-lg text-sm ${
+            passwordMessage.includes('success')
+              ? 'bg-green-100 text-green-800 border border-green-200'
+              : 'bg-red-100 text-red-800 border border-red-200'
+          }`}>
+            {passwordMessage}
+          </div>
+        )}
+
         <div className="space-y-6">
           {/* Current Password */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className={`block text-sm font-medium mb-2 transition-colors duration-200 ${
+              darkMode ? 'text-gray-300' : 'text-gray-700'
+            }`}>
               Current Password
             </label>
             <input
               type="password"
+              value={passwordData.current}
+              onChange={(e) => setPasswordData({ ...passwordData, current: e.target.value })}
               placeholder="Enter your current password"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
+                darkMode
+                  ? 'bg-gray-700 border-gray-600 text-gray-100'
+                  : 'bg-white border-gray-300 text-gray-900'
+              }`}
             />
           </div>
 
           {/* New Password */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className={`block text-sm font-medium mb-2 transition-colors duration-200 ${
+              darkMode ? 'text-gray-300' : 'text-gray-700'
+            }`}>
               New Password
             </label>
             <input
               type="password"
+              value={passwordData.new}
+              onChange={(e) => setPasswordData({ ...passwordData, new: e.target.value })}
               placeholder="Enter your new password"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
+                darkMode
+                  ? 'bg-gray-700 border-gray-600 text-gray-100'
+                  : 'bg-white border-gray-300 text-gray-900'
+              }`}
             />
           </div>
 
           {/* Confirm New Password */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className={`block text-sm font-medium mb-2 transition-colors duration-200 ${
+              darkMode ? 'text-gray-300' : 'text-gray-700'
+            }`}>
               Confirm New Password
             </label>
             <input
               type="password"
+              value={passwordData.confirm}
+              onChange={(e) => setPasswordData({ ...passwordData, confirm: e.target.value })}
               placeholder="Confirm your new password"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
+                darkMode
+                  ? 'bg-gray-700 border-gray-600 text-gray-100'
+                  : 'bg-white border-gray-300 text-gray-900'
+              }`}
             />
           </div>
+
+          {/* Change Password Button */}
+          {(passwordData.current || passwordData.new || passwordData.confirm) && (
+            <div className="flex justify-end">
+              <button
+                onClick={handlePasswordChange}
+                disabled={passwordSaving || !passwordData.current || !passwordData.new || !passwordData.confirm}
+                className="inline-flex items-center space-x-2 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Lock size={16} />
+                <span>{passwordSaving ? 'Changing...' : 'Change Password'}</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

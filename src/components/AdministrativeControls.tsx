@@ -1,17 +1,19 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { 
-  UserCog, 
-  Plus, 
-  Edit, 
-  Trash2, 
-  Clock, 
-  User, 
+import {
+  UserCog,
+  Plus,
+  Edit,
+  Trash2,
+  Clock,
+  User,
   Activity,
   Calendar,
   Filter,
   CheckCircle,
   AlertTriangle,
-  XCircle
+  XCircle,
+  X,
+  Save
 } from 'lucide-react';
 import { getAuditLogs, AuditLogEntry as ImportedAuditLogEntry } from '../utils/auditLog';
 
@@ -70,6 +72,15 @@ const AdministrativeControls: React.FC<AdministrativeControlsProps> = ({ onNavig
   ]);
 
   const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>([]);
+
+  // Edit role modal state
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingRole, setEditingRole] = useState<Role | null>(null);
+  const [editForm, setEditForm] = useState({
+    name: '',
+    description: '',
+    permissions: ''
+  });
 
   // Load audit logs from storage
   useEffect(() => {
@@ -146,7 +157,13 @@ const AdministrativeControls: React.FC<AdministrativeControlsProps> = ({ onNavig
   };
 
   const handleEditRole = (role: Role) => {
-    console.log(`Edit clicked for ${role.name}`);
+    setEditingRole(role);
+    setEditForm({
+      name: role.name,
+      description: role.description,
+      permissions: role.permissions
+    });
+    setIsEditModalOpen(true);
   };
 
   const handleDeleteRole = (role: Role) => {
@@ -154,6 +171,54 @@ const AdministrativeControls: React.FC<AdministrativeControlsProps> = ({ onNavig
       setRoles(prev => prev.filter(r => r.id !== role.id));
       console.log(`Delete clicked for ${role.name}`);
     }
+  };
+
+  const handleCloseEditModal = () => {
+    setIsEditModalOpen(false);
+    setEditingRole(null);
+    setEditForm({ name: '', description: '', permissions: '' });
+  };
+
+  const handleEditFormChange = (field: string, value: string) => {
+    setEditForm(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleSaveRole = () => {
+    if (!editingRole) return;
+
+    // Validation
+    if (!editForm.name.trim()) {
+      alert('Role name is required');
+      return;
+    }
+
+    if (!editForm.description.trim()) {
+      alert('Role description is required');
+      return;
+    }
+
+    if (!editForm.permissions.trim()) {
+      alert('Role permissions are required');
+      return;
+    }
+
+    // Update the role in the roles array
+    setRoles(prev => prev.map(role =>
+      role.id === editingRole.id
+        ? {
+            ...role,
+            name: editForm.name.trim(),
+            description: editForm.description.trim(),
+            permissions: editForm.permissions.trim()
+          }
+        : role
+    ));
+
+    console.log(`Role ${editingRole.name} updated successfully`);
+    handleCloseEditModal();
   };
 
   const handleUserFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -417,6 +482,83 @@ const AdministrativeControls: React.FC<AdministrativeControlsProps> = ({ onNavig
           ))}
         </div>
       </div>
+
+      {/* Edit Role Modal */}
+      {isEditModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900">Edit Role</h3>
+              <button
+                onClick={handleCloseEditModal}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              {/* Role Name */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Role Name
+                </label>
+                <input
+                  type="text"
+                  value={editForm.name}
+                  onChange={(e) => handleEditFormChange('name', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Enter role name"
+                />
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Description
+                </label>
+                <textarea
+                  value={editForm.description}
+                  onChange={(e) => handleEditFormChange('description', e.target.value)}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                  placeholder="Enter role description"
+                />
+              </div>
+
+              {/* Permissions */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Permissions
+                </label>
+                <textarea
+                  value={editForm.permissions}
+                  onChange={(e) => handleEditFormChange('permissions', e.target.value)}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                  placeholder="Enter permissions (comma separated)"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end space-x-3 p-6 border-t border-gray-200">
+              <button
+                onClick={handleCloseEditModal}
+                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveRole}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center"
+              >
+                <Save size={16} className="mr-2" />
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
