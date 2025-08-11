@@ -96,7 +96,7 @@ const Settings: React.FC = () => {
       setProfileData({
         fullName: user.full_name || '',
         email: user.email || '',
-        phone: '' // We'll add phone support later
+        phone: user.phone || ''
       });
     }
   }, [user]);
