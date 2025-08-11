@@ -70,6 +70,37 @@ const Settings: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [twoFactorAuth, setTwoFactorAuth] = useState(true);
 
+  // Profile state
+  const { user, updateProfile, changePassword, isLoading } = useAuth();
+  const [profileData, setProfileData] = useState({
+    fullName: '',
+    email: '',
+    phone: ''
+  });
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [profileMessage, setProfileMessage] = useState('');
+
+  // Password change state
+  const [passwordData, setPasswordData] = useState({
+    current: '',
+    new: '',
+    confirm: ''
+  });
+  const [passwordSaving, setPasswordSaving] = useState(false);
+  const [passwordMessage, setPasswordMessage] = useState('');
+
+  // Load user data when component mounts or user changes
+  useEffect(() => {
+    if (user) {
+      setProfileData({
+        fullName: user.full_name || '',
+        email: user.email || '',
+        phone: '' // We'll add phone support later
+      });
+    }
+  }, [user]);
+
   const subMenuItems = [
     { id: 'general', label: 'General', icon: SettingsIcon },
     { id: 'profile', label: 'Profile', icon: User },
