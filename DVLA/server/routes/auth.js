@@ -30,9 +30,9 @@ router.post('/register', validateUser, async (req, res) => {
 
     // Create user
     const result = await database.run(
-      `INSERT INTO users (username, email, password_hash, full_name, role) 
-       VALUES (?, ?, ?, ?, ?)`,
-      [username, email, hashedPassword, full_name, role]
+      `INSERT INTO users (username, email, password_hash, full_name, phone, role)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [username, email, hashedPassword, full_name, phone, role]
     );
 
     // Generate JWT token
