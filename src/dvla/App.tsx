@@ -23,7 +23,9 @@ interface DvlaAppProps {
 function App({ onLogout }: DvlaAppProps) {
   return (
     <DataProvider>
-      <DvlaAppContent onLogout={onLogout} />
+      <AuthProvider>
+        <DvlaAppContent onLogout={onLogout} />
+      </AuthProvider>
     </DataProvider>
   );
 }
