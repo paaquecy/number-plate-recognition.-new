@@ -518,45 +518,99 @@ const Settings: React.FC = () => {
       </div>
 
       {/* Change Password Section */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-6">Change Password</h3>
-        
+      <div className={`rounded-xl shadow-sm border p-6 transition-colors duration-200 ${
+        darkMode
+          ? 'bg-gray-800 border-gray-700'
+          : 'bg-white border-gray-100'
+      }`}>
+        <h3 className={`text-lg font-semibold mb-6 transition-colors duration-200 ${
+          darkMode ? 'text-gray-100' : 'text-gray-900'
+        }`}>Change Password</h3>
+
+        {passwordMessage && (
+          <div className={`mb-6 p-3 rounded-lg text-sm ${
+            passwordMessage.includes('success')
+              ? 'bg-green-100 text-green-800 border border-green-200'
+              : 'bg-red-100 text-red-800 border border-red-200'
+          }`}>
+            {passwordMessage}
+          </div>
+        )}
+
         <div className="space-y-6">
           {/* Current Password */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className={`block text-sm font-medium mb-2 transition-colors duration-200 ${
+              darkMode ? 'text-gray-300' : 'text-gray-700'
+            }`}>
               Current Password
             </label>
             <input
               type="password"
+              value={passwordData.current}
+              onChange={(e) => setPasswordData({ ...passwordData, current: e.target.value })}
               placeholder="Enter your current password"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
+                darkMode
+                  ? 'bg-gray-700 border-gray-600 text-gray-100'
+                  : 'bg-white border-gray-300 text-gray-900'
+              }`}
             />
           </div>
 
           {/* New Password */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className={`block text-sm font-medium mb-2 transition-colors duration-200 ${
+              darkMode ? 'text-gray-300' : 'text-gray-700'
+            }`}>
               New Password
             </label>
             <input
               type="password"
+              value={passwordData.new}
+              onChange={(e) => setPasswordData({ ...passwordData, new: e.target.value })}
               placeholder="Enter your new password"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
+                darkMode
+                  ? 'bg-gray-700 border-gray-600 text-gray-100'
+                  : 'bg-white border-gray-300 text-gray-900'
+              }`}
             />
           </div>
 
           {/* Confirm New Password */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className={`block text-sm font-medium mb-2 transition-colors duration-200 ${
+              darkMode ? 'text-gray-300' : 'text-gray-700'
+            }`}>
               Confirm New Password
             </label>
             <input
               type="password"
+              value={passwordData.confirm}
+              onChange={(e) => setPasswordData({ ...passwordData, confirm: e.target.value })}
               placeholder="Confirm your new password"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
+                darkMode
+                  ? 'bg-gray-700 border-gray-600 text-gray-100'
+                  : 'bg-white border-gray-300 text-gray-900'
+              }`}
             />
           </div>
+
+          {/* Change Password Button */}
+          {(passwordData.current || passwordData.new || passwordData.confirm) && (
+            <div className="flex justify-end">
+              <button
+                onClick={handlePasswordChange}
+                disabled={passwordSaving || !passwordData.current || !passwordData.new || !passwordData.confirm}
+                className="inline-flex items-center space-x-2 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Lock size={16} />
+                <span>{passwordSaving ? 'Changing...' : 'Change Password'}</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
