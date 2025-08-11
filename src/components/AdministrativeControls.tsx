@@ -73,6 +73,15 @@ const AdministrativeControls: React.FC<AdministrativeControlsProps> = ({ onNavig
 
   const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>([]);
 
+  // Edit role modal state
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingRole, setEditingRole] = useState<Role | null>(null);
+  const [editForm, setEditForm] = useState({
+    name: '',
+    description: '',
+    permissions: ''
+  });
+
   // Load audit logs from storage
   useEffect(() => {
     const logs = getAuditLogs();
