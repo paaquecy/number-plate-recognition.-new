@@ -51,7 +51,7 @@ class ApiClient {
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
     const url = `${this.baseURL}${endpoint}`;
-    
+
     const config: RequestInit = {
       headers: {
         'Content-Type': 'application/json',
@@ -63,15 +63,38 @@ class ApiClient {
 
     try {
       const response = await fetch(url, config);
-      const data = await response.json();
+
+      // Check if we can parse the response as JSON
+      let data;
+      try {
+        data = await response.json();
+      } catch (parseError) {
+        // If JSON parsing fails, create a generic error response
+        data = {
+          success: false,
+          message: `Server error: ${response.status} ${response.statusText}`
+        };
+      }
 
       if (!response.ok) {
+        // Handle specific HTTP status codes
+        if (response.status === 401) {
+          // Clear invalid token
+          this.clearToken();
+          throw new Error('Authentication required. Please log in.');
+        }
         throw new Error(data.message || `HTTP error! status: ${response.status}`);
       }
 
       return data;
     } catch (error) {
       console.error('API request failed:', error);
+
+      // Handle network errors more gracefully
+      if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+        throw new Error('Unable to connect to server. Please check if the backend is running.');
+      }
+
       throw error;
     }
   }
