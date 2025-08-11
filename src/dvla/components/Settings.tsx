@@ -1,13 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
-import { 
-  Settings as SettingsIcon, 
-  User, 
-  Bell, 
+import { useAuth } from '../contexts/AuthContext';
+import {
+  Settings as SettingsIcon,
+  User,
+  Bell,
   Lock,
   ChevronDown,
   Upload,
-  Camera
+  Camera,
+  Save,
+  Edit
 } from 'lucide-react';
 
 interface ToggleSwitchProps {
