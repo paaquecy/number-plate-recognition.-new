@@ -10,6 +10,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ onMenuClick, activeMenuItem }) => {
   const { darkMode } = useTheme();
+  const { user } = useAuth();
   
   const getPageInfo = (menuItem: string) => {
     switch (menuItem) {
