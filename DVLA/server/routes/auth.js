@@ -51,6 +51,7 @@ router.post('/register', validateUser, async (req, res) => {
           username,
           email,
           full_name,
+          phone,
           role
         },
         token
