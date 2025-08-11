@@ -173,6 +173,54 @@ const AdministrativeControls: React.FC<AdministrativeControlsProps> = ({ onNavig
     }
   };
 
+  const handleCloseEditModal = () => {
+    setIsEditModalOpen(false);
+    setEditingRole(null);
+    setEditForm({ name: '', description: '', permissions: '' });
+  };
+
+  const handleEditFormChange = (field: string, value: string) => {
+    setEditForm(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleSaveRole = () => {
+    if (!editingRole) return;
+
+    // Validation
+    if (!editForm.name.trim()) {
+      alert('Role name is required');
+      return;
+    }
+
+    if (!editForm.description.trim()) {
+      alert('Role description is required');
+      return;
+    }
+
+    if (!editForm.permissions.trim()) {
+      alert('Role permissions are required');
+      return;
+    }
+
+    // Update the role in the roles array
+    setRoles(prev => prev.map(role =>
+      role.id === editingRole.id
+        ? {
+            ...role,
+            name: editForm.name.trim(),
+            description: editForm.description.trim(),
+            permissions: editForm.permissions.trim()
+          }
+        : role
+    ));
+
+    console.log(`Role ${editingRole.name} updated successfully`);
+    handleCloseEditModal();
+  };
+
   const handleUserFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUserFilter(e.target.value);
     console.log('User filter changed to:', e.target.value);
