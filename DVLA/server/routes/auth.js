@@ -72,7 +72,7 @@ router.post('/login', validateLogin, async (req, res) => {
 
     // Find user
     const user = await database.get(
-      'SELECT id, username, email, password_hash, full_name, role FROM users WHERE username = ?',
+      'SELECT id, username, email, password_hash, full_name, phone, role FROM users WHERE username = ?',
       [username]
     );
 
