@@ -1,17 +1,19 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { 
-  UserCog, 
-  Plus, 
-  Edit, 
-  Trash2, 
-  Clock, 
-  User, 
+import {
+  UserCog,
+  Plus,
+  Edit,
+  Trash2,
+  Clock,
+  User,
   Activity,
   Calendar,
   Filter,
   CheckCircle,
   AlertTriangle,
-  XCircle
+  XCircle,
+  X,
+  Save
 } from 'lucide-react';
 import { getAuditLogs, AuditLogEntry as ImportedAuditLogEntry } from '../utils/auditLog';
 
