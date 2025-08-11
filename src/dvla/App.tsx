@@ -36,6 +36,23 @@ function DvlaAppContent({ onLogout }: DvlaAppProps) {
   const [activeMenuItem, setActiveMenuItem] = useState(savedNavState?.activeMenuItem || 'overview');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { darkMode } = useTheme();
+  const { login, isAuthenticated, isLoading } = useAuth();
+
+  // Auto-login with admin credentials for DVLA app
+  useEffect(() => {
+    const autoLogin = async () => {
+      if (!isAuthenticated && !isLoading) {
+        try {
+          await login('admin', 'admin123');
+          console.log('Auto-logged in to DVLA system');
+        } catch (error) {
+          console.error('Auto-login failed:', error);
+        }
+      }
+    };
+
+    autoLogin();
+  }, [isAuthenticated, isLoading, login]);
 
   // Initialize audit logging for DVLA app
   useEffect(() => {
