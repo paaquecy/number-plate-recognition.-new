@@ -147,7 +147,7 @@ router.get('/profile', authenticateToken, async (req, res) => {
 // Update user profile
 router.put('/profile', authenticateToken, async (req, res) => {
   try {
-    const { full_name, email } = req.body;
+    const { full_name, email, phone } = req.body;
     const userId = req.user.id;
 
     // Check if email is already taken by another user
