@@ -106,6 +106,7 @@ const createTables = async () => {
       email VARCHAR(100) UNIQUE NOT NULL,
       password_hash VARCHAR(255) NOT NULL,
       full_name VARCHAR(100) NOT NULL,
+      phone VARCHAR(20),
       role VARCHAR(20) DEFAULT 'user',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
