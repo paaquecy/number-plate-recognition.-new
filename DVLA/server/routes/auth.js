@@ -167,13 +167,13 @@ router.put('/profile', authenticateToken, async (req, res) => {
 
     // Update user
     await database.run(
-      'UPDATE users SET full_name = ?, email = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-      [full_name, email, userId]
+      'UPDATE users SET full_name = ?, email = ?, phone = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+      [full_name, email, phone, userId]
     );
 
     // Fetch updated user
     const updatedUser = await database.get(
-      'SELECT id, username, email, full_name, role FROM users WHERE id = ?',
+      'SELECT id, username, email, full_name, phone, role FROM users WHERE id = ?',
       [userId]
     );
 
