@@ -223,7 +223,7 @@ const Settings: React.FC = () => {
       setProfileData({
         fullName: user.full_name || '',
         email: user.email || '',
-        phone: ''
+        phone: user.phone || ''
       });
     }
     setIsEditingProfile(false);
