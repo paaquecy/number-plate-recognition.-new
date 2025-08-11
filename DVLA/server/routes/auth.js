@@ -128,7 +128,7 @@ router.post('/login', validateLogin, async (req, res) => {
 router.get('/profile', authenticateToken, async (req, res) => {
   try {
     const user = await database.get(
-      'SELECT id, username, email, full_name, role, created_at FROM users WHERE id = ?',
+      'SELECT id, username, email, full_name, phone, role, created_at FROM users WHERE id = ?',
       [req.user.id]
     );
 
