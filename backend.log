@@ -1,0 +1,431 @@
+INFO:     Will watch for changes in these directories: ['/workspace/backend']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [6923] using WatchFiles
+🔧 ANPR Backend Startup
+==================================================
+✅ Python version: 3.13.3 (main, Jun 16 2025, 18:15:32) [GCC 14.2.0]
+⚠️ OpenCV (cv2) not installed. OCR features will be disabled.
+⚠️ EasyOCR not installed. OCR features will be limited.
+✅ Core dependencies are installed
+✅ .env file found
+✅ Environment variables loaded
+❌ Supabase connection failed: [Errno -2] Name or service not known
+❌ Supabase connection failed
+⚠️  Supabase connection failed, but continuing...
+Make sure your database is set up correctly
+==================================================
+✅ All checks passed!
+==================================================
+🚀 Starting ANPR Backend Server...
+📡 API will be available at: http://localhost:8000
+📚 Documentation at: http://localhost:8000/docs
+🛑 Press Ctrl+C to stop the server
+--------------------------------------------------
+Process SpawnProcess-1:
+Traceback (most recent call last):
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/pydantic/networks.py", line 946, in import_email_validator
+    import email_validator
+ModuleNotFoundError: No module named 'email_validator'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 313, in _bootstrap
+    self.run()
+    ~~~~~~~~^^
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/uvicorn/_subprocess.py", line 80, in subprocess_started
+    target(sockets=sockets)
+    ~~~~~~^^^^^^^^^^^^^^^^^
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/uvicorn/server.py", line 67, in run
+    return asyncio.run(self.serve(sockets=sockets))
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "/usr/lib/python3.13/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "uvloop/loop.pyx", line 1518, in uvloop.loop.Loop.run_until_complete
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/uvicorn/server.py", line 71, in serve
+    await self._serve(sockets)
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/uvicorn/server.py", line 78, in _serve
+    config.load()
+    ~~~~~~~~~~~^^
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/uvicorn/config.py", line 436, in load
+    self.loaded_app = import_from_string(self.app)
+                      ~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/uvicorn/importer.py", line 19, in import_from_string
+    module = importlib.import_module(module_str)
+  File "/usr/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1026, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/workspace/backend/main.py", line 19, in <module>
+    from models.user import User, UserCreate, UserLogin
+  File "/workspace/backend/models/user.py", line 17, in <module>
+    class UserBase(BaseModel):
+    ...<5 lines>...
+        phone_number: Optional[str] = None
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/pydantic/_internal/_model_construction.py", line 237, in __new__
+    complete_model_class(
+    ~~~~~~~~~~~~~~~~~~~~^
+        cls,
+        ^^^^
+    ...<3 lines>...
+        create_model_module=_create_model_module,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/pydantic/_internal/_model_construction.py", line 597, in complete_model_class
+    schema = gen_schema.generate_schema(cls)
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/pydantic/_internal/_generate_schema.py", line 711, in generate_schema
+    schema = self._generate_schema_inner(obj)
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/pydantic/_internal/_generate_schema.py", line 1004, in _generate_schema_inner
+    return self._model_schema(obj)
+           ~~~~~~~~~~~~~~~~~~^^^^^
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/pydantic/_internal/_generate_schema.py", line 837, in _model_schema
+    {k: self._generate_md_field_schema(k, v, decorators) for k, v in fields.items()},
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/pydantic/_internal/_generate_schema.py", line 1206, in _generate_md_field_schema
+    common_field = self._common_field_schema(name, field_info, decorators)
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/pydantic/_internal/_generate_schema.py", line 1372, in _common_field_schema
+    schema = self._apply_annotations(
+        source_type,
+        annotations + validators_from_decorators,
+    )
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/pydantic/_internal/_generate_schema.py", line 2297, in _apply_annotations
+    schema = get_inner_schema(source_type)
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/pydantic/_internal/_schema_generation_shared.py", line 83, in __call__
+    schema = self._handler(source_type)
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/pydantic/_internal/_generate_schema.py", line 2276, in inner_handler
+    schema = self._generate_schema_from_get_schema_method(obj, source_type)
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/pydantic/_internal/_generate_schema.py", line 900, in _generate_schema_from_get_schema_method
+    schema = get_schema(
+        source, CallbackGetCoreSchemaHandler(self._generate_schema_inner, self, ref_mode=ref_mode)
+    )
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/pydantic/networks.py", line 986, in __get_pydantic_core_schema__
+    import_email_validator()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/pydantic/networks.py", line 948, in import_email_validator
+    raise ImportError('email-validator is not installed, run `pip install pydantic[email]`') from e
+ImportError: email-validator is not installed, run `pip install pydantic[email]`
+WARNING:  WatchFiles detected changes in '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/ISDN.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/AMTRELAY.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/CNAME.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/PTR.py', '.venv/lib64/python3.13/site-packages/dns/resolver.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/__init__.py', '.venv/lib64/python3.13/site-packages/dns/tokenizer.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/SSHFP.py', '.venv/lib64/python3.13/site-packages/dns/rdataset.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/OPT.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/RRSIG.py', '.venv/lib64/python3.13/site-packages/dns/dnssecalgs/cryptography.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/euibase.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/L64.py', '.venv/lib64/python3.13/site-packages/dns/quic/__init__.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/TSIG.py', '.venv/lib64/python3.13/site-packages/dns/edns.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/TKEY.py', '.venv/lib64/python3.13/site-packages/dns/grange.py', '.venv/lib64/python3.13/site-packages/dns/_trio_backend.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/CERT.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/X25.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/dsbase.py', '.venv/lib64/python3.13/site-packages/dns/rcode.py', '.venv/lib64/python3.13/site-packages/dns/quic/_sync.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/IN/PX.py', '.venv/lib64/python3.13/site-packages/email_validator/version.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/IN/NAPTR.py', '.venv/lib64/python3.13/site-packages/dns/_ddr.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/IN/WKS.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/CDS.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/nsbase.py', '.venv/lib64/python3.13/site-packages/dns/message.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/NSEC3PARAM.py', '.venv/lib64/python3.13/site-packages/dns/zone.py', '.venv/lib64/python3.13/site-packages/dns/_immutable_ctx.py', '.venv/lib64/python3.13/site-packages/dns/transaction.py', '.venv/lib64/python3.13/site-packages/dns/name.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/EUI64.py', '.venv/lib64/python3.13/site-packages/dns/ipv4.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/NINFO.py', '.venv/lib64/python3.13/site-packages/email_validator/syntax.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/DNAME.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/svcbbase.py', '.venv/lib64/python3.13/site-packages/dns/exception.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/DLV.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/GPOS.py', '.venv/lib64/python3.13/site-packages/dns/_features.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/SPF.py', '.venv/lib64/python3.13/site-packages/dns/flags.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/dnskeybase.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/MX.py', '.venv/lib64/python3.13/site-packages/dns/zonefile.py', '.venv/lib64/python3.13/site-packages/email_validator/deliverability.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/NSEC3.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/IN/APL.py', '.venv/lib64/python3.13/site-packages/dns/reversename.py', '.venv/lib64/python3.13/site-packages/dns/node.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/tlsabase.py', '.venv/lib64/python3.13/site-packages/dns/asyncresolver.py', '.venv/lib64/python3.13/site-packages/email_validator/exceptions_types.py', '.venv/lib64/python3.13/site-packages/dns/quic/_common.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/AVC.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/IN/IPSECKEY.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/OPENPGPKEY.py', '.venv/lib64/python3.13/site-packages/email_validator/__main__.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/NID.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/CSYNC.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/IN/__init__.py', '.venv/lib64/python3.13/site-packages/dns/serial.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/txtbase.py', '.venv/lib64/python3.13/site-packages/dns/version.py', '.venv/lib64/python3.13/site-packages/dns/asyncbackend.py', '.venv/lib64/python3.13/site-packages/dns/update.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/IN/AAAA.py', '.venv/lib64/python3.13/site-packages/dns/rdata.py', '.venv/lib64/python3.13/site-packages/email_validator/rfc_constants.py', '.venv/lib64/python3.13/site-packages/dns/dnssecalgs/__init__.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/IN/A.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/NSEC.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/HIP.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/CH/__init__.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/NS.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/ZONEMD.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/mxbase.py', '.venv/lib64/python3.13/site-packages/dns/inet.py', '.venv/lib64/python3.13/site-packages/email_validator/validate_email.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/SMIMEA.py', '.venv/lib64/python3.13/site-packages/dns/rrset.py', '.venv/lib64/python3.13/site-packages/dns/tsig.py', '.venv/lib64/python3.13/site-packages/dns/dnssecalgs/eddsa.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/TXT.py', '.venv/lib64/python3.13/site-packages/dns/win32util.py', '.venv/lib64/python3.13/site-packages/dns/query.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/SOA.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/IN/SRV.py', '.venv/lib64/python3.13/site-packages/dns/rdatatype.py', '.venv/lib64/python3.13/site-packages/dns/entropy.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/CDNSKEY.py', '.venv/lib64/python3.13/site-packages/dns/rdataclass.py', '.venv/lib64/python3.13/site-packages/dns/tsigkeyring.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/HINFO.py', '.venv/lib64/python3.13/site-packages/dns/versioned.py', '.venv/lib64/python3.13/site-packages/dns/dnssec.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/TLSA.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/CAA.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/__init__.py', '.venv/lib64/python3.13/site-packages/dns/quic/_trio.py', '.venv/lib64/python3.13/site-packages/email_validator/__init__.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/RESINFO.py', '.venv/lib64/python3.13/site-packages/dns/namedict.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/IN/NSAP_PTR.py', '.venv/lib64/python3.13/site-packages/dns/opcode.py', '.venv/lib64/python3.13/site-packages/dns/set.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/WALLET.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/L32.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/CH/A.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/LOC.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/LP.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/IN/HTTPS.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/AFSDB.py', '.venv/lib64/python3.13/site-packages/dns/asyncquery.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/DS.py', '.venv/lib64/python3.13/site-packages/dns/immutable.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/IN/DHCID.py', '.venv/lib64/python3.13/site-packages/dns/dnssecalgs/base.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/EUI48.py', '.venv/lib64/python3.13/site-packages/dns/wire.py', '.venv/lib64/python3.13/site-packages/dns/dnssecalgs/rsa.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/URI.py', '.venv/lib64/python3.13/site-packages/dns/quic/_asyncio.py', '.venv/lib64/python3.13/site-packages/dns/xfr.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/IN/SVCB.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/IN/NSAP.py', '.venv/lib64/python3.13/site-packages/dns/nameserver.py', '.venv/lib64/python3.13/site-packages/dns/ttl.py', '.venv/lib64/python3.13/site-packages/dns/zonetypes.py', '.venv/lib64/python3.13/site-packages/dns/renderer.py', '.venv/lib64/python3.13/site-packages/dns/dnssecalgs/ecdsa.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/RP.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/DNSKEY.py', '.venv/lib64/python3.13/site-packages/dns/e164.py', '.venv/lib64/python3.13/site-packages/dns/dnssecalgs/dsa.py', '.venv/lib64/python3.13/site-packages/dns/dnssectypes.py', '.venv/lib64/python3.13/site-packages/dns/_asyncio_backend.py', '.venv/lib64/python3.13/site-packages/dns/enum.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/util.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/IN/KX.py', '.venv/lib64/python3.13/site-packages/dns/ipv6.py', '.venv/lib64/python3.13/site-packages/dns/rdtypes/ANY/RT.py'. Reloading...
+Process SpawnProcess-2:
+Traceback (most recent call last):
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 313, in _bootstrap
+    self.run()
+    ~~~~~~~~^^
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/uvicorn/_subprocess.py", line 80, in subprocess_started
+    target(sockets=sockets)
+    ~~~~~~^^^^^^^^^^^^^^^^^
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/uvicorn/server.py", line 67, in run
+    return asyncio.run(self.serve(sockets=sockets))
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "/usr/lib/python3.13/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "uvloop/loop.pyx", line 1518, in uvloop.loop.Loop.run_until_complete
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/uvicorn/server.py", line 71, in serve
+    await self._serve(sockets)
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/uvicorn/server.py", line 78, in _serve
+    config.load()
+    ~~~~~~~~~~~^^
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/uvicorn/config.py", line 436, in load
+    self.loaded_app = import_from_string(self.app)
+                      ~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/uvicorn/importer.py", line 19, in import_from_string
+    module = importlib.import_module(module_str)
+  File "/usr/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1026, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/workspace/backend/main.py", line 23, in <module>
+    from services.plate_recognition_service import PlateRecognitionService
+  File "/workspace/backend/services/plate_recognition_service.py", line 24, in <module>
+    class PlateRecognitionService:
+    ...<165 lines>...
+            print(f"Debug image saved as {filename}")
+  File "/workspace/backend/services/plate_recognition_service.py", line 51, in PlateRecognitionService
+    def preprocess_image(self, image: np.ndarray) -> np.ndarray:
+                                      ^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'ndarray'
+WARNING:  WatchFiles detected changes in 'services/plate_recognition_service.py'. Reloading...
+Process SpawnProcess-3:
+Traceback (most recent call last):
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 313, in _bootstrap
+    self.run()
+    ~~~~~~~~^^
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/uvicorn/_subprocess.py", line 80, in subprocess_started
+    target(sockets=sockets)
+    ~~~~~~^^^^^^^^^^^^^^^^^
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/uvicorn/server.py", line 67, in run
+    return asyncio.run(self.serve(sockets=sockets))
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "/usr/lib/python3.13/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "uvloop/loop.pyx", line 1518, in uvloop.loop.Loop.run_until_complete
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/uvicorn/server.py", line 71, in serve
+    await self._serve(sockets)
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/uvicorn/server.py", line 78, in _serve
+    config.load()
+    ~~~~~~~~~~~^^
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/uvicorn/config.py", line 436, in load
+    self.loaded_app = import_from_string(self.app)
+                      ~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/uvicorn/importer.py", line 19, in import_from_string
+    module = importlib.import_module(module_str)
+  File "/usr/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1026, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/workspace/backend/main.py", line 23, in <module>
+    from services.plate_recognition_service import PlateRecognitionService
+  File "/workspace/backend/services/plate_recognition_service.py", line 24, in <module>
+    class PlateRecognitionService:
+    ...<165 lines>...
+            print(f"Debug image saved as {filename}")
+  File "/workspace/backend/services/plate_recognition_service.py", line 51, in PlateRecognitionService
+    def preprocess_image(self, image: np.ndarray) -> np.ndarray:
+                                      ^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'ndarray'
+WARNING:  WatchFiles detected changes in 'services/plate_recognition_service.py'. Reloading...
+Process SpawnProcess-4:
+Traceback (most recent call last):
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 313, in _bootstrap
+    self.run()
+    ~~~~~~~~^^
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/uvicorn/_subprocess.py", line 80, in subprocess_started
+    target(sockets=sockets)
+    ~~~~~~^^^^^^^^^^^^^^^^^
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/uvicorn/server.py", line 67, in run
+    return asyncio.run(self.serve(sockets=sockets))
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "/usr/lib/python3.13/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "uvloop/loop.pyx", line 1518, in uvloop.loop.Loop.run_until_complete
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/uvicorn/server.py", line 71, in serve
+    await self._serve(sockets)
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/uvicorn/server.py", line 78, in _serve
+    config.load()
+    ~~~~~~~~~~~^^
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/uvicorn/config.py", line 436, in load
+    self.loaded_app = import_from_string(self.app)
+                      ~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/uvicorn/importer.py", line 19, in import_from_string
+    module = importlib.import_module(module_str)
+  File "/usr/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1026, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/workspace/backend/main.py", line 23, in <module>
+    from services.plate_recognition_service import PlateRecognitionService
+  File "/workspace/backend/services/plate_recognition_service.py", line 24, in <module>
+    class PlateRecognitionService:
+    ...<165 lines>...
+            print(f"Debug image saved as {filename}")
+  File "/workspace/backend/services/plate_recognition_service.py", line 62, in PlateRecognitionService
+    def detect_plate_regions(self, image: np.ndarray) -> list:
+                                          ^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'ndarray'
+WARNING:  WatchFiles detected changes in 'services/plate_recognition_service.py'. Reloading...
+Process SpawnProcess-5:
+Traceback (most recent call last):
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 313, in _bootstrap
+    self.run()
+    ~~~~~~~~^^
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/uvicorn/_subprocess.py", line 80, in subprocess_started
+    target(sockets=sockets)
+    ~~~~~~^^^^^^^^^^^^^^^^^
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/uvicorn/server.py", line 67, in run
+    return asyncio.run(self.serve(sockets=sockets))
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "/usr/lib/python3.13/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "uvloop/loop.pyx", line 1518, in uvloop.loop.Loop.run_until_complete
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/uvicorn/server.py", line 71, in serve
+    await self._serve(sockets)
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/uvicorn/server.py", line 78, in _serve
+    config.load()
+    ~~~~~~~~~~~^^
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/uvicorn/config.py", line 436, in load
+    self.loaded_app = import_from_string(self.app)
+                      ~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/uvicorn/importer.py", line 19, in import_from_string
+    module = importlib.import_module(module_str)
+  File "/usr/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1026, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/workspace/backend/main.py", line 23, in <module>
+    from services.plate_recognition_service import PlateRecognitionService
+  File "/workspace/backend/services/plate_recognition_service.py", line 24, in <module>
+    class PlateRecognitionService:
+    ...<165 lines>...
+            print(f"Debug image saved as {filename}")
+  File "/workspace/backend/services/plate_recognition_service.py", line 79, in PlateRecognitionService
+    def extract_text_from_region(self, image: np.ndarray, region: Tuple[int, int, int, int]) -> str:
+                                              ^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'ndarray'
+WARNING:  WatchFiles detected changes in 'services/plate_recognition_service.py'. Reloading...
+Process SpawnProcess-6:
+Traceback (most recent call last):
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 313, in _bootstrap
+    self.run()
+    ~~~~~~~~^^
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/uvicorn/_subprocess.py", line 80, in subprocess_started
+    target(sockets=sockets)
+    ~~~~~~^^^^^^^^^^^^^^^^^
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/uvicorn/server.py", line 67, in run
+    return asyncio.run(self.serve(sockets=sockets))
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "/usr/lib/python3.13/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "uvloop/loop.pyx", line 1518, in uvloop.loop.Loop.run_until_complete
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/uvicorn/server.py", line 71, in serve
+    await self._serve(sockets)
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/uvicorn/server.py", line 78, in _serve
+    config.load()
+    ~~~~~~~~~~~^^
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/uvicorn/config.py", line 436, in load
+    self.loaded_app = import_from_string(self.app)
+                      ~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/uvicorn/importer.py", line 19, in import_from_string
+    module = importlib.import_module(module_str)
+  File "/usr/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1026, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/workspace/backend/main.py", line 23, in <module>
+    from services.plate_recognition_service import PlateRecognitionService
+  File "/workspace/backend/services/plate_recognition_service.py", line 24, in <module>
+    class PlateRecognitionService:
+    ...<165 lines>...
+            print(f"Debug image saved as {filename}")
+  File "/workspace/backend/services/plate_recognition_service.py", line 171, in PlateRecognitionService
+    def enhance_image(self, image: np.ndarray) -> np.ndarray:
+                                   ^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'ndarray'
+WARNING:  WatchFiles detected changes in 'services/plate_recognition_service.py'. Reloading...
+Process SpawnProcess-7:
+Traceback (most recent call last):
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 313, in _bootstrap
+    self.run()
+    ~~~~~~~~^^
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/uvicorn/_subprocess.py", line 80, in subprocess_started
+    target(sockets=sockets)
+    ~~~~~~^^^^^^^^^^^^^^^^^
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/uvicorn/server.py", line 67, in run
+    return asyncio.run(self.serve(sockets=sockets))
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "/usr/lib/python3.13/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "uvloop/loop.pyx", line 1518, in uvloop.loop.Loop.run_until_complete
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/uvicorn/server.py", line 71, in serve
+    await self._serve(sockets)
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/uvicorn/server.py", line 78, in _serve
+    config.load()
+    ~~~~~~~~~~~^^
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/uvicorn/config.py", line 436, in load
+    self.loaded_app = import_from_string(self.app)
+                      ~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/workspace/backend/.venv/lib/python3.13/site-packages/uvicorn/importer.py", line 19, in import_from_string
+    module = importlib.import_module(module_str)
+  File "/usr/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1026, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/workspace/backend/main.py", line 23, in <module>
+    from services.plate_recognition_service import PlateRecognitionService
+  File "/workspace/backend/services/plate_recognition_service.py", line 24, in <module>
+    class PlateRecognitionService:
+    ...<165 lines>...
+            print(f"Debug image saved as {filename}")
+  File "/workspace/backend/services/plate_recognition_service.py", line 181, in PlateRecognitionService
+    def save_debug_image(self, image: np.ndarray, plate_regions: list, filename: str = "debug_plate.jpg"):
+                                      ^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'ndarray'
+WARNING:  WatchFiles detected changes in 'services/plate_recognition_service.py'. Reloading...
+INFO:     Started server process [8117]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:34096 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46004 - "GET /docs HTTP/1.1" 200 OK

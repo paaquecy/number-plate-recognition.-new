@@ -19,19 +19,26 @@ def check_python_version():
     return True
 
 def check_dependencies():
-    """Check if required dependencies are installed"""
+    """Check required deps; warn on optional OCR deps"""
     try:
         import fastapi
         import uvicorn
         import supabase
-        import cv2
-        import easyocr
-        print("✅ All dependencies are installed")
-        return True
     except ImportError as e:
-        print(f"❌ Missing dependency: {e}")
-        print("Run: pip install -r requirements.txt")
+        print(f"❌ Missing core dependency: {e}")
+        print("Run: pip install fastapi uvicorn supabase python-dotenv")
         return False
+    # Optional heavy deps
+    try:
+        import cv2  # type: ignore
+    except Exception:
+        print("⚠️ OpenCV (cv2) not installed. OCR features will be disabled.")
+    try:
+        import easyocr  # type: ignore
+    except Exception:
+        print("⚠️ EasyOCR not installed. OCR features will be limited.")
+    print("✅ Core dependencies are installed")
+    return True
 
 def check_env_file():
     """Check if .env file exists"""
