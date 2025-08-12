@@ -347,7 +347,7 @@ function AppContent() {
               onStatusChange={handleViolationStatusChange}
               onDateChange={handleDateChange}
             />
-            
+
             <ViolationTable
               searchQuery={searchQuery}
               plateNumberFilter={plateNumberFilter}
@@ -357,6 +357,8 @@ function AppContent() {
             />
           </>
         );
+      case 'notifications':
+        return <NotificationsContent />;
       case 'user-accounts':
         return <UserAccountManagement searchQuery={searchQuery} />;
       case 'vehicle-registry':
