@@ -69,7 +69,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem, onItemClick, onLogout, da
         {/* Header */}
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center justify-between">
-            <h1 className="text-lg lg:text-xl font-bold text-gray-900">Plate Recognition</h1>
+            <h1 className="text-lg lg:text-xl font-bold text-gray-900">Admin Dashboard</h1>
             <button
               onClick={() => setIsMobileMenuOpen(false)}
               className="lg:hidden p-2 rounded-md hover:bg-gray-100"

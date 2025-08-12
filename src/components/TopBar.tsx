@@ -19,9 +19,12 @@ const TopBar: React.FC<TopBarProps> = ({ title, onSearch, darkMode, onNavigate }
   };
 
   const handleNotificationClick = () => {
+    console.log('Notification bell clicked!');
     if (onNavigate) {
+      console.log('Calling onNavigate with "notifications"');
       onNavigate('notifications');
     } else {
+      console.log('No onNavigate prop, opening modal');
       setIsNotifOpen(true);
     }
   };

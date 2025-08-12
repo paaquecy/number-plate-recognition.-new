@@ -253,6 +253,8 @@ function AppContent() {
       activeItem: page === 'dashboard' ? 'overview' : page === 'notifications' ? 'notifications' : activeItem
     });
     updateActivity();
+    
+    console.log(`Page navigation: ${page}, Active item set to: ${page === 'dashboard' ? 'overview' : page === 'notifications' ? 'notifications' : activeItem}`);
   };
 
   const getPageTitle = () => {
@@ -305,15 +307,8 @@ function AppContent() {
     );
   }
 
-  // Render notifications page if currentPage is 'notifications'
-  if (currentPage === 'notifications') {
-    return (
-      <NotificationsPage 
-        onNavigate={handlePageNavigation} 
-        currentPage={currentPage} 
-      />
-    );
-  }
+  // Note: We're removing the separate NotificationsPage rendering
+  // and instead using the main app layout with sidebar navigation
 
   const renderMainContent = () => {
     switch (activeItem) {

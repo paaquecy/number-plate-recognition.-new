@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Shield, 
   Plus, 
@@ -12,8 +12,16 @@ import {
   EyeOff,
   Lock,
   Globe,
-  Save
+  Save,
+  AlertCircle,
+  CheckCircle
 } from 'lucide-react';
+import { 
+  getSecurityConfig, 
+  saveSecurityConfig, 
+  addSecurityConfigHistoryEntry,
+  SecurityConfig 
+} from '../utils/securityConfig';
 
 interface Role {
   id: string;
@@ -84,10 +92,14 @@ const SecurityManagement: React.FC = () => {
   ]);
 
   // Security Settings State
-  const [passwordPolicy, setPasswordPolicy] = useState('strong');
-  const [sessionTimeout, setSessionTimeout] = useState('30');
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(true);
-  const [ipWhitelistEnabled, setIpWhitelistEnabled] = useState(false);
+  const [securityConfig, setSecurityConfig] = useState<SecurityConfig>(getSecurityConfig());
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<{ type: 'success' | 'error' | null; message: string }>({ type: null, message: '' });
+
+  // Load security configuration on component mount
+  useEffect(() => {
+    setSecurityConfig(getSecurityConfig());
+  }, []);
 
   const handleAddNewRole = () => {
     console.log('Add New Role button clicked');
@@ -105,35 +117,79 @@ const SecurityManagement: React.FC = () => {
   };
 
   const handlePasswordPolicyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setPasswordPolicy(e.target.value);
-    console.log('Password Policy changed to:', e.target.value);
+    setSecurityConfig(prev => ({
+      ...prev,
+      passwordPolicy: e.target.value as 'weak' | 'medium' | 'strong' | 'very-strong'
+    }));
   };
 
   const handleSessionTimeoutChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSessionTimeout(e.target.value);
-    console.log('Session Timeout changed to:', e.target.value);
+    const value = parseInt(e.target.value);
+    if (value >= 5 && value <= 480) {
+      setSecurityConfig(prev => ({
+        ...prev,
+        sessionTimeout: value
+      }));
+    }
   };
 
   const handleTwoFactorToggle = () => {
-    const newState = !twoFactorEnabled;
-    setTwoFactorEnabled(newState);
-    console.log('Two-Factor Authentication toggled to:', newState);
+    setSecurityConfig(prev => ({
+      ...prev,
+      twoFactorEnabled: !prev.twoFactorEnabled
+    }));
   };
 
   const handleIpWhitelistToggle = () => {
-    const newState = !ipWhitelistEnabled;
-    setIpWhitelistEnabled(newState);
-    console.log('IP Whitelisting toggled to:', newState);
+    setSecurityConfig(prev => ({
+      ...prev,
+      ipWhitelistEnabled: !prev.ipWhitelistEnabled
+    }));
   };
 
-  const handleSaveSecuritySettings = () => {
-    console.log('Save Security Settings button clicked');
-    console.log('Current settings:', {
-      passwordPolicy,
-      sessionTimeout,
-      twoFactorEnabled,
-      ipWhitelistEnabled
-    });
+  const handleSaveSecuritySettings = async () => {
+    setIsSaving(true);
+    setSaveStatus({ type: null, message: '' });
+
+    try {
+      const success = saveSecurityConfig({
+        passwordPolicy: securityConfig.passwordPolicy,
+        sessionTimeout: securityConfig.sessionTimeout,
+        twoFactorEnabled: securityConfig.twoFactorEnabled,
+        ipWhitelistEnabled: securityConfig.ipWhitelistEnabled
+      }, 'Admin User');
+
+      if (success) {
+        // Add to history
+        addSecurityConfigHistoryEntry(
+          'Security Settings Updated',
+          `Password Policy: ${securityConfig.passwordPolicy}, Session Timeout: ${securityConfig.sessionTimeout} minutes, 2FA: ${securityConfig.twoFactorEnabled ? 'Enabled' : 'Disabled'}, IP Whitelist: ${securityConfig.ipWhitelistEnabled ? 'Enabled' : 'Disabled'}`,
+          'Admin User'
+        );
+
+        setSaveStatus({
+          type: 'success',
+          message: 'Security settings saved successfully! Changes will apply to all applications.'
+        });
+
+        // Clear success message after 3 seconds
+        setTimeout(() => {
+          setSaveStatus({ type: null, message: '' });
+        }, 3000);
+      } else {
+        setSaveStatus({
+          type: 'error',
+          message: 'Failed to save security settings. Please try again.'
+        });
+      }
+    } catch (error) {
+      setSaveStatus({
+        type: 'error',
+        message: 'An error occurred while saving security settings.'
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const ToggleSwitch: React.FC<{ enabled: boolean; onToggle: () => void }> = ({ enabled, onToggle }) => (
@@ -305,6 +361,22 @@ const SecurityManagement: React.FC = () => {
         </div>
 
         <div className="space-y-6">
+          {/* Status Message */}
+          {saveStatus.type && (
+            <div className={`p-4 rounded-md flex items-center ${
+              saveStatus.type === 'success' 
+                ? 'bg-green-50 border border-green-200 text-green-800' 
+                : 'bg-red-50 border border-red-200 text-red-800'
+            }`}>
+              {saveStatus.type === 'success' ? (
+                <CheckCircle size={20} className="mr-2" />
+              ) : (
+                <AlertCircle size={20} className="mr-2" />
+              )}
+              <span className="text-sm font-medium">{saveStatus.message}</span>
+            </div>
+          )}
+
           {/* Password Policy */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -312,7 +384,7 @@ const SecurityManagement: React.FC = () => {
             </label>
             <div className="relative">
               <select
-                value={passwordPolicy}
+                value={securityConfig.passwordPolicy}
                 onChange={handlePasswordPolicyChange}
                 className="appearance-none bg-white border border-gray-300 rounded-md px-4 py-2 pr-8 w-full max-w-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
@@ -323,6 +395,9 @@ const SecurityManagement: React.FC = () => {
               </select>
               <ChevronDown size={16} className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
             </div>
+            <p className="text-xs text-gray-500 mt-1">
+              This policy will apply to all user registrations and password changes across all applications.
+            </p>
           </div>
 
           {/* Session Timeout */}
@@ -332,12 +407,15 @@ const SecurityManagement: React.FC = () => {
             </label>
             <input
               type="number"
-              value={sessionTimeout}
+              value={securityConfig.sessionTimeout}
               onChange={handleSessionTimeoutChange}
               min="5"
               max="480"
               className="border border-gray-300 rounded-md px-4 py-2 w-32 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
+            <p className="text-xs text-gray-500 mt-1">
+              Users will be automatically logged out after this period of inactivity across all applications.
+            </p>
           </div>
 
           {/* Two-Factor Authentication */}
@@ -348,7 +426,7 @@ const SecurityManagement: React.FC = () => {
                 Enable Two-Factor Authentication (2FA)
               </label>
             </div>
-            <ToggleSwitch enabled={twoFactorEnabled} onToggle={handleTwoFactorToggle} />
+            <ToggleSwitch enabled={securityConfig.twoFactorEnabled} onToggle={handleTwoFactorToggle} />
           </div>
 
           {/* IP Whitelisting */}
@@ -359,17 +437,39 @@ const SecurityManagement: React.FC = () => {
                 Enable IP Whitelisting
               </label>
             </div>
-            <ToggleSwitch enabled={ipWhitelistEnabled} onToggle={handleIpWhitelistToggle} />
+            <ToggleSwitch enabled={securityConfig.ipWhitelistEnabled} onToggle={handleIpWhitelistToggle} />
+          </div>
+
+          {/* Configuration Info */}
+          <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
+            <div className="flex items-start">
+              <Shield size={20} className="text-blue-600 mr-2 mt-0.5" />
+              <div>
+                <h4 className="text-sm font-medium text-blue-900">Unified Security Configuration</h4>
+                <p className="text-xs text-blue-700 mt-1">
+                  These security settings will be applied across all applications (Main, DVLA, Police, Supervisor). 
+                  Changes take effect immediately and affect all users.
+                </p>
+                <p className="text-xs text-blue-600 mt-2">
+                  Last updated: {new Date(securityConfig.lastUpdated).toLocaleString()} by {securityConfig.updatedBy}
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* Save Button */}
           <div className="pt-4 border-t border-gray-200">
             <button
               onClick={handleSaveSecuritySettings}
-              className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium flex items-center"
+              disabled={isSaving}
+              className={`px-6 py-2 text-white rounded-md transition-colors font-medium flex items-center ${
+                isSaving 
+                  ? 'bg-gray-400 cursor-not-allowed' 
+                  : 'bg-blue-600 hover:bg-blue-700'
+              }`}
             >
               <Save size={16} className="mr-2" />
-              Save Security Settings
+              {isSaving ? 'Saving...' : 'Save Security Settings'}
             </button>
           </div>
         </div>

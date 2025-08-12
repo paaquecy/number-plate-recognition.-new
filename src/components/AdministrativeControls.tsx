@@ -13,9 +13,11 @@ import {
   AlertTriangle,
   XCircle,
   X,
-  Save
+  Save,
+  Mail
 } from 'lucide-react';
 import { getAuditLogs, AuditLogEntry as ImportedAuditLogEntry } from '../utils/auditLog';
+import EmailNotificationHistory from './EmailNotificationHistory';
 
 interface Role {
   id: string;
@@ -481,6 +483,15 @@ const AdministrativeControls: React.FC<AdministrativeControlsProps> = ({ onNavig
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Email Notification History Section */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="flex items-center mb-6">
+          <Mail className="w-5 h-5 mr-2 text-gray-500" />
+          <h2 className="text-lg font-semibold text-gray-900">Email Notification History</h2>
+        </div>
+        <EmailNotificationHistory />
       </div>
 
       {/* Edit Role Modal */}

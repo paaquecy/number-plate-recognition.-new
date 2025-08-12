@@ -337,5 +337,24 @@ async def get_dvla_analytics(current_user: str = Depends(get_current_user)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+# Supervisor Analytics Endpoints
+@app.get("/analytics/violations")
+async def get_violation_stats(current_user: str = Depends(get_current_user)):
+    """Get violation statistics for supervisor dashboard"""
+    try:
+        stats = await violation_service.get_violation_stats()
+        return stats
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/analytics/officers")
+async def get_officer_stats(current_user: str = Depends(get_current_user)):
+    """Get officer performance statistics"""
+    try:
+        stats = await violation_service.get_officer_stats()
+        return stats
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { approveUser, rejectUser } from '../utils/userStorage';
 import { logApproval } from '../utils/auditLog';
+import { sendEmailNotification, EmailNotificationData } from '../utils/emailService';
 
 export interface PendingApproval {
   id: string;
@@ -47,7 +48,7 @@ const PendingApprovalsTable: React.FC<PendingApprovalsTableProps> = ({
     });
   }, [approvals, searchQuery, filterQuery]);
 
-  const handleApprove = (approval: PendingApproval) => {
+  const handleApprove = async (approval: PendingApproval) => {
     console.log(`Approve clicked for ${approval.userName}`);
 
     // Approve in storage system
@@ -65,7 +66,28 @@ const PendingApprovalsTable: React.FC<PendingApprovalsTableProps> = ({
       // Log approval action
       logApproval('Account Approved', `Approved ${approval.accountType} officer account for ${approval.userName} (${loginCredential})`, 'main', 'high');
 
-      alert(`Account for ${approval.userName} (${approval.role}) has been approved.\nDetails: ${additionalDetails}\n\nLogin Credentials:\nUsername: ${loginCredential}\nPassword: [The password they provided during registration]\n\nThey can now login to the ${approval.accountType === 'police' ? 'Police' : 'DVLA'} system.`);
+      // Send email notification
+      const emailData: EmailNotificationData = {
+        recipientEmail: approval.email,
+        recipientName: approval.userName,
+        accountType: approval.accountType,
+        loginCredential,
+        role: approval.role,
+        additionalInfo: approval.additionalInfo
+      };
+
+      try {
+        const emailSent = await sendEmailNotification(emailData, 'approval');
+        if (emailSent) {
+          console.log(`✅ Approval email sent to ${approval.email}`);
+        } else {
+          console.warn(`⚠️ Failed to send approval email to ${approval.email}`);
+        }
+      } catch (error) {
+        console.error('Error sending approval email:', error);
+      }
+
+      alert(`Account for ${approval.userName} (${approval.role}) has been approved.\nDetails: ${additionalDetails}\n\nLogin Credentials:\nUsername: ${loginCredential}\nPassword: [The password they provided during registration]\n\nThey can now login to the ${approval.accountType === 'police' ? 'Police' : 'DVLA'} system.\n\n📧 An approval notification has been sent to ${approval.email}`);
 
       if (onRefresh) {
         onRefresh();
@@ -77,7 +99,7 @@ const PendingApprovalsTable: React.FC<PendingApprovalsTableProps> = ({
     }
   };
 
-  const handleReject = (approval: PendingApproval) => {
+  const handleReject = async (approval: PendingApproval) => {
     console.log(`Reject clicked for ${approval.userName}`);
 
     // Reject in storage system
@@ -91,7 +113,28 @@ const PendingApprovalsTable: React.FC<PendingApprovalsTableProps> = ({
       // Log rejection action
       logApproval('Account Rejected', `Rejected ${approval.accountType} officer account for ${approval.userName} (${credential})`, 'main', 'medium');
 
-      alert(`Account for ${approval.userName} (${approval.role}) has been rejected. They will be notified of the decision.`);
+      // Send email notification
+      const emailData: EmailNotificationData = {
+        recipientEmail: approval.email,
+        recipientName: approval.userName,
+        accountType: approval.accountType,
+        loginCredential: credential,
+        role: approval.role,
+        additionalInfo: approval.additionalInfo
+      };
+
+      try {
+        const emailSent = await sendEmailNotification(emailData, 'rejection');
+        if (emailSent) {
+          console.log(`✅ Rejection email sent to ${approval.email}`);
+        } else {
+          console.warn(`⚠️ Failed to send rejection email to ${approval.email}`);
+        }
+      } catch (error) {
+        console.error('Error sending rejection email:', error);
+      }
+
+      alert(`Account for ${approval.userName} (${approval.role}) has been rejected.\n\n📧 A rejection notification has been sent to ${approval.email}`);
 
       if (onRefresh) {
         onRefresh();

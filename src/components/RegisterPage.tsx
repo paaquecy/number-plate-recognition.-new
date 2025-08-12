@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft, User, Shield, Car, Phone, Mail, Lock, CheckCircle, XCircle, Eye, EyeOff } from 'lucide-react';
 import { addUser, isUsernameExists } from '../utils/userStorage';
+import { validatePassword, getSecurityConfig } from '../utils/securityConfig';
 
 interface RegisterPageProps {
   onBackToLogin: () => void;
@@ -48,33 +49,96 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onBackToLogin, onRegisterSu
     confirmPassword: ''
   });
 
-  const passwordRequirements: PasswordRequirement[] = [
-    {
-      id: 'length',
-      text: 'Minimum 8 characters',
-      met: formData.password.length >= 8
-    },
-    {
-      id: 'uppercase',
-      text: 'At least one uppercase letter',
-      met: /[A-Z]/.test(formData.password)
-    },
-    {
-      id: 'lowercase',
-      text: 'At least one lowercase letter',
-      met: /[a-z]/.test(formData.password)
-    },
-    {
-      id: 'number',
-      text: 'At least one number',
-      met: /\d/.test(formData.password)
-    },
-    {
-      id: 'special',
-      text: 'At least one special character',
-      met: /[!@#$%^&*(),.?":{}|<>]/.test(formData.password)
+  const [securityConfig, setSecurityConfig] = useState(getSecurityConfig());
+
+  // Update security config when it changes
+  useEffect(() => {
+    setSecurityConfig(getSecurityConfig());
+  }, []);
+
+  // Dynamic password requirements based on security configuration
+  const getPasswordRequirements = (): PasswordRequirement[] => {
+    const requirements: PasswordRequirement[] = [];
+    
+    switch (securityConfig.passwordPolicy) {
+      case 'weak':
+        requirements.push({
+          id: 'length',
+          text: 'Minimum 6 characters',
+          met: formData.password.length >= 6
+        });
+        break;
+        
+      case 'medium':
+        requirements.push(
+          {
+            id: 'length',
+            text: 'Minimum 8 characters',
+            met: formData.password.length >= 8
+          },
+          {
+            id: 'case',
+            text: 'Both uppercase and lowercase letters',
+            met: /[A-Z]/.test(formData.password) && /[a-z]/.test(formData.password)
+          }
+        );
+        break;
+        
+      case 'strong':
+        requirements.push(
+          {
+            id: 'length',
+            text: 'Minimum 8 characters',
+            met: formData.password.length >= 8
+          },
+          {
+            id: 'case',
+            text: 'Both uppercase and lowercase letters',
+            met: /[A-Z]/.test(formData.password) && /[a-z]/.test(formData.password)
+          },
+          {
+            id: 'number',
+            text: 'At least one number',
+            met: /\d/.test(formData.password)
+          },
+          {
+            id: 'special',
+            text: 'At least one special character',
+            met: /[!@#$%^&*(),.?":{}|<>]/.test(formData.password)
+          }
+        );
+        break;
+        
+      case 'very-strong':
+        requirements.push(
+          {
+            id: 'length',
+            text: 'Minimum 12 characters',
+            met: formData.password.length >= 12
+          },
+          {
+            id: 'case',
+            text: 'Both uppercase and lowercase letters',
+            met: /[A-Z]/.test(formData.password) && /[a-z]/.test(formData.password)
+          },
+          {
+            id: 'number',
+            text: 'At least one number',
+            met: /\d/.test(formData.password)
+          },
+          {
+            id: 'special',
+            text: 'At least one special character',
+            met: /[!@#$%^&*(),.?":{}|<>]/.test(formData.password)
+          }
+        );
+        break;
     }
-  ];
+    
+    return requirements;
+  };
+
+  const passwordRequirements = getPasswordRequirements();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -118,10 +182,10 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onBackToLogin, onRegisterSu
       }
     }
 
-    // Check password requirements
-    const unmetRequirements = passwordRequirements.filter(req => !req.met);
-    if (unmetRequirements.length > 0) {
-      alert('Password does not meet all requirements');
+    // Check password requirements using centralized validation
+    const passwordValidation = validatePassword(formData.password);
+    if (!passwordValidation.isValid) {
+      alert(`Password validation failed:\n${passwordValidation.errors.join('\n')}`);
       return false;
     }
 
@@ -170,10 +234,10 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onBackToLogin, onRegisterSu
       }
     }
 
-    // Check password requirements
-    const unmetRequirements = passwordRequirements.filter(req => !req.met);
-    if (unmetRequirements.length > 0) {
-      alert('Password does not meet all requirements');
+    // Check password requirements using centralized validation
+    const passwordValidation = validatePassword(formData.password);
+    if (!passwordValidation.isValid) {
+      alert(`Password validation failed:\n${passwordValidation.errors.join('\n')}`);
       return;
     }
 
@@ -533,6 +597,21 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onBackToLogin, onRegisterSu
               <div className="flex items-center mb-4">
                 <Lock className="w-5 h-5 mr-2 text-gray-500" />
                 <h3 className="text-lg font-semibold text-gray-900">Security</h3>
+              </div>
+              
+              {/* Security Policy Indicator */}
+              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                <div className="flex items-center">
+                  <Shield size={16} className="text-blue-600 mr-2" />
+                  <div>
+                    <p className="text-sm font-medium text-blue-900">
+                      Current Password Policy: {securityConfig.passwordPolicy.charAt(0).toUpperCase() + securityConfig.passwordPolicy.slice(1)}
+                    </p>
+                    <p className="text-xs text-blue-700 mt-1">
+                      This policy applies to all applications in the system
+                    </p>
+                  </div>
+                </div>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

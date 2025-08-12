@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   BarChart3, 
   TrendingUp, 
@@ -10,86 +10,107 @@ import {
   Calendar,
   Activity,
   PieChart,
-  LineChart
+  LineChart,
+  TrendingDown,
+  Minus
 } from 'lucide-react';
+import { fetchAnalyticsData, generateReport, exportData, AnalyticsData } from '../utils/analyticsService';
 
 const AnalyticsReporting: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const kpiData = [
-    {
-      value: '1,234',
-      label: 'Total Vehicle Scans',
-      icon: Car,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50'
-    },
-    {
-      value: '87',
-      label: 'Total Violations',
-      icon: AlertTriangle,
-      color: 'text-red-600',
-      bgColor: 'bg-red-50'
-    },
-    {
-      value: '56',
-      label: 'Active Users',
-      icon: Users,
-      color: 'text-green-600',
-      bgColor: 'bg-green-50'
-    },
-    {
-      value: '450',
-      label: 'Registered Vehicles',
-      icon: Car,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50'
-    }
-  ];
+  // Fetch analytics data on component mount
+  useEffect(() => {
+    const loadAnalyticsData = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const data = await fetchAnalyticsData();
+        setAnalyticsData(data);
+      } catch (err) {
+        setError('Failed to load analytics data');
+        console.error('Error loading analytics:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const recentReports = [
-    {
-      title: 'Violation Summary - Q1 2024',
-      date: '2024-03-31',
-      type: 'Quarterly Report'
-    },
-    {
-      title: 'Daily Scan Report - 2024-04-20',
-      date: '2024-04-20',
-      type: 'Daily Report'
-    },
-    {
-      title: 'User Login Activity - April',
-      date: '2024-04-19',
-      type: 'Activity Report'
-    },
-    {
-      title: 'Vehicle Registration Summary',
-      date: '2024-04-18',
-      type: 'Registry Report'
-    },
-    {
-      title: 'System Performance Metrics',
-      date: '2024-04-17',
-      type: 'Performance Report'
-    }
-  ];
+    loadAnalyticsData();
+  }, []);
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="p-6 flex items-center justify-center min-h-96">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading analytics data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error || !analyticsData) {
+    return (
+      <div className="p-6">
+        <div className="bg-red-50 border border-red-200 rounded-md p-4">
+          <div className="flex items-center">
+            <AlertTriangle className="w-5 h-5 text-red-600 mr-2" />
+            <div>
+              <h3 className="text-sm font-medium text-red-800">Error Loading Analytics</h3>
+                             <p className="text-sm text-red-700 mt-1">
+                 {error || 'Failed to load analytics data. Please try again later.'}
+               </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Use analytics data for reports
+  const { recentReports } = analyticsData;
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
     console.log('Search query:', e.target.value);
   };
 
-  const handleGenerateViolationReport = () => {
-    console.log('Generate Violation Report clicked');
+  const handleGenerateViolationReport = async () => {
+    try {
+      const report = await generateReport('Violation Summary');
+      console.log('Generated report:', report);
+      alert(`Report generated successfully: ${report.title}`);
+    } catch (error) {
+      console.error('Failed to generate report:', error);
+      alert('Failed to generate report. Please try again.');
+    }
   };
 
-  const handleExportVehicleRegistry = () => {
-    console.log('Export Vehicle Registry clicked');
+  const handleExportVehicleRegistry = async () => {
+    try {
+      const downloadUrl = await exportData('vehicle-registry', 'csv');
+      console.log('Export URL:', downloadUrl);
+      alert('Vehicle registry exported successfully!');
+    } catch (error) {
+      console.error('Failed to export data:', error);
+      alert('Failed to export data. Please try again.');
+    }
   };
 
-  const handleUserActivityLog = () => {
-    console.log('User Activity Log clicked');
+  const handleUserActivityLog = async () => {
+    try {
+      const downloadUrl = await exportData('user-activity', 'pdf');
+      console.log('Export URL:', downloadUrl);
+      alert('User activity log exported successfully!');
+    } catch (error) {
+      console.error('Failed to export data:', error);
+      alert('Failed to export data. Please try again.');
+    }
   };
 
   const handleViewReport = (reportTitle: string) => {
@@ -100,21 +121,51 @@ const AnalyticsReporting: React.FC = () => {
     console.log(`Download Report clicked: ${reportTitle}`);
   };
 
+  // Helper function to get icon components
+  const getIconComponent = (iconName: string) => {
+    const iconMap: { [key: string]: any } = {
+      'Car': Car,
+      'AlertTriangle': AlertTriangle,
+      'Users': Users,
+      'BarChart3': BarChart3,
+      'Activity': Activity,
+      'PieChart': PieChart
+    };
+    return iconMap[iconName] || BarChart3;
+  };
+
   return (
     <div className="p-6 space-y-6">
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {kpiData.map((kpi, index) => {
-          const Icon = kpi.icon;
+        {analyticsData.kpiData.map((kpi, index) => {
+          const IconComponent = getIconComponent(kpi.icon);
           return (
             <div key={index} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-2xl font-bold text-gray-900">{kpi.value}</p>
                   <p className="text-sm text-gray-600 mt-1">{kpi.label}</p>
+                  {kpi.trend && (
+                    <div className="flex items-center mt-2">
+                      {kpi.trend === 'up' ? (
+                        <TrendingUp className="w-4 h-4 text-green-600 mr-1" />
+                      ) : kpi.trend === 'down' ? (
+                        <TrendingDown className="w-4 h-4 text-red-600 mr-1" />
+                      ) : (
+                        <Minus className="w-4 h-4 text-gray-600 mr-1" />
+                      )}
+                      <span className={`text-xs font-medium ${
+                        kpi.trend === 'up' ? 'text-green-600' : 
+                        kpi.trend === 'down' ? 'text-red-600' : 'text-gray-600'
+                      }`}>
+                        {kpi.changePercent}%
+                      </span>
+                    </div>
+                  )}
                 </div>
                 <div className={`p-3 rounded-full ${kpi.bgColor} ${kpi.color}`}>
-                  <Icon size={24} />
+                  <IconComponent size={24} />
                 </div>
               </div>
             </div>
@@ -128,13 +179,41 @@ const AnalyticsReporting: React.FC = () => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center mb-4">
             <TrendingUp className="w-5 h-5 text-gray-500 mr-2" />
-            <h2 className="text-lg font-semibold text-gray-900">Violation Trends</h2>
+            <h2 className="text-lg font-semibold text-gray-900">Violation Trends (Last 7 Days)</h2>
           </div>
-          <div className="h-64 bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
-            <div className="text-center">
-              <LineChart className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-              <p className="text-gray-500 font-medium">Line Chart: Violations Over Time</p>
-              <p className="text-sm text-gray-400 mt-1">Chart visualization will be displayed here</p>
+          <div className="h-64 bg-gray-50 rounded-lg p-4">
+            <div className="grid grid-cols-7 gap-2 h-full">
+              {analyticsData.violationTrends.map((trend, index) => (
+                <div key={index} className="flex flex-col justify-end space-y-1">
+                  <div className="text-xs text-gray-500 text-center mb-2">
+                    {new Date(trend.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  </div>
+                  <div className="flex flex-col space-y-1">
+                    <div className="bg-red-500 rounded-t-sm" style={{ height: `${(trend.violations / 25) * 100}%` }}></div>
+                    <div className="bg-green-500 rounded-t-sm" style={{ height: `${(trend.resolved / 20) * 100}%` }}></div>
+                    <div className="bg-yellow-500 rounded-t-sm" style={{ height: `${(trend.pending / 15) * 100}%` }}></div>
+                  </div>
+                  <div className="text-xs text-center mt-1">
+                    <div className="text-red-600 font-medium">{trend.violations}</div>
+                    <div className="text-green-600 text-xs">{trend.resolved}</div>
+                    <div className="text-yellow-600 text-xs">{trend.pending}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="flex justify-center space-x-4 mt-4 text-xs">
+              <div className="flex items-center">
+                <div className="w-3 h-3 bg-red-500 rounded mr-1"></div>
+                <span>Violations</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-3 h-3 bg-green-500 rounded mr-1"></div>
+                <span>Resolved</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-3 h-3 bg-yellow-500 rounded mr-1"></div>
+                <span>Pending</span>
+              </div>
             </div>
           </div>
         </div>
@@ -143,13 +222,25 @@ const AnalyticsReporting: React.FC = () => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center mb-4">
             <BarChart3 className="w-5 h-5 text-gray-500 mr-2" />
-            <h2 className="text-lg font-semibold text-gray-900">Vehicle Scan Activity</h2>
+            <h2 className="text-lg font-semibold text-gray-900">Vehicle Scan Activity by Type</h2>
           </div>
-          <div className="h-64 bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
-            <div className="text-center">
-              <BarChart3 className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-              <p className="text-gray-500 font-medium">Bar Chart: Scans by Vehicle Type</p>
-              <p className="text-sm text-gray-400 mt-1">Chart visualization will be displayed here</p>
+          <div className="h-64 bg-gray-50 rounded-lg p-4">
+            <div className="flex items-end justify-between h-full space-x-2">
+              {analyticsData.vehicleScanActivity.map((vehicle, index) => (
+                <div key={index} className="flex flex-col items-center flex-1">
+                  <div className="text-xs text-gray-500 text-center mb-2">
+                    {vehicle.vehicleType}
+                  </div>
+                  <div 
+                    className="w-full bg-blue-500 rounded-t-sm transition-all duration-300 hover:bg-blue-600"
+                    style={{ height: `${(vehicle.count / 500) * 100}%` }}
+                  ></div>
+                  <div className="text-xs text-center mt-2">
+                    <div className="font-medium text-gray-900">{vehicle.count}</div>
+                    <div className="text-blue-600">{vehicle.percentage}%</div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -163,11 +254,32 @@ const AnalyticsReporting: React.FC = () => {
             <Activity className="w-5 h-5 text-gray-500 mr-2" />
             <h2 className="text-lg font-semibold text-gray-900">System Performance</h2>
           </div>
-          <div className="h-48 bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
-            <div className="text-center">
-              <Activity className="w-10 h-10 text-gray-400 mx-auto mb-2" />
-              <p className="text-gray-500 font-medium">Performance Metrics</p>
-              <p className="text-xs text-gray-400 mt-1">Real-time system data</p>
+          <div className="h-48 bg-gray-50 rounded-lg p-4">
+            <div className="grid grid-cols-2 gap-4 h-full">
+              <div className="flex flex-col justify-center">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-blue-600">{analyticsData.systemPerformance.responseTime}ms</div>
+                  <div className="text-xs text-gray-600">Response Time</div>
+                </div>
+              </div>
+              <div className="flex flex-col justify-center">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-600">{analyticsData.systemPerformance.uptime}%</div>
+                  <div className="text-xs text-gray-600">Uptime</div>
+                </div>
+              </div>
+              <div className="flex flex-col justify-center">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-purple-600">{analyticsData.systemPerformance.activeUsers}</div>
+                  <div className="text-xs text-gray-600">Active Users</div>
+                </div>
+              </div>
+              <div className="flex flex-col justify-center">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-orange-600">{analyticsData.systemPerformance.systemLoad}%</div>
+                  <div className="text-xs text-gray-600">System Load</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -178,11 +290,31 @@ const AnalyticsReporting: React.FC = () => {
             <PieChart className="w-5 h-5 text-gray-500 mr-2" />
             <h2 className="text-lg font-semibold text-gray-900">User Activity Distribution</h2>
           </div>
-          <div className="h-48 bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
-            <div className="text-center">
-              <PieChart className="w-10 h-10 text-gray-400 mx-auto mb-2" />
-              <p className="text-gray-500 font-medium">Pie Chart: User Roles</p>
-              <p className="text-xs text-gray-400 mt-1">Activity by user type</p>
+          <div className="h-48 bg-gray-50 rounded-lg p-4">
+            <div className="flex items-center justify-center h-full">
+              <div className="relative w-32 h-32">
+                {/* Simple pie chart representation */}
+                <div className="absolute inset-0 rounded-full border-8 border-transparent" 
+                     style={{
+                       background: `conic-gradient(
+                         ${analyticsData.userActivityDistribution[0]?.color || '#3B82F6'} 0deg ${(analyticsData.userActivityDistribution[0]?.percentage || 0) * 3.6}deg,
+                         ${analyticsData.userActivityDistribution[1]?.color || '#10B981'} ${(analyticsData.userActivityDistribution[0]?.percentage || 0) * 3.6}deg ${((analyticsData.userActivityDistribution[0]?.percentage || 0) + (analyticsData.userActivityDistribution[1]?.percentage || 0)) * 3.6}deg,
+                         ${analyticsData.userActivityDistribution[2]?.color || '#F59E0B'} ${((analyticsData.userActivityDistribution[0]?.percentage || 0) + (analyticsData.userActivityDistribution[1]?.percentage || 0)) * 3.6}deg ${((analyticsData.userActivityDistribution[0]?.percentage || 0) + (analyticsData.userActivityDistribution[1]?.percentage || 0) + (analyticsData.userActivityDistribution[2]?.percentage || 0)) * 3.6}deg,
+                         ${analyticsData.userActivityDistribution[3]?.color || '#EF4444'} ${((analyticsData.userActivityDistribution[0]?.percentage || 0) + (analyticsData.userActivityDistribution[1]?.percentage || 0) + (analyticsData.userActivityDistribution[2]?.percentage || 0)) * 3.6}deg 360deg
+                       )`
+                     }}>
+                </div>
+                <div className="absolute inset-0 rounded-full bg-white w-16 h-16 top-8 left-8"></div>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2 mt-4 text-xs">
+              {analyticsData.userActivityDistribution.map((user, index) => (
+                <div key={index} className="flex items-center">
+                  <div className="w-3 h-3 rounded mr-2" style={{ backgroundColor: user.color }}></div>
+                  <span className="truncate">{user.role}</span>
+                  <span className="ml-auto font-medium">{user.count}</span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -196,19 +328,19 @@ const AnalyticsReporting: React.FC = () => {
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">Today's Scans</span>
-              <span className="text-lg font-semibold text-gray-900">127</span>
+              <span className="text-lg font-semibold text-gray-900">{analyticsData.quickStats.todayScans}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">New Violations</span>
-              <span className="text-lg font-semibold text-red-600">8</span>
+              <span className="text-lg font-semibold text-red-600">{analyticsData.quickStats.newViolations}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">Resolved Today</span>
-              <span className="text-lg font-semibold text-green-600">15</span>
+              <span className="text-lg font-semibold text-green-600">{analyticsData.quickStats.resolvedToday}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">Active Sessions</span>
-              <span className="text-lg font-semibold text-blue-600">23</span>
+              <span className="text-lg font-semibold text-blue-600">{analyticsData.quickStats.activeSessions}</span>
             </div>
           </div>
         </div>
@@ -284,6 +416,13 @@ const AnalyticsReporting: React.FC = () => {
                       {report.type}
                     </span>
                     <span className="text-xs text-gray-500">{report.date}</span>
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                      report.status === 'completed' ? 'bg-green-100 text-green-800' :
+                      report.status === 'processing' ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-red-100 text-red-800'
+                    }`}>
+                      {report.status}
+                    </span>
                   </div>
                 </div>
                 <div className="flex space-x-2 ml-4">
@@ -294,13 +433,15 @@ const AnalyticsReporting: React.FC = () => {
                   >
                     <FileText size={16} />
                   </button>
-                  <button
-                    onClick={() => handleDownloadReport(report.title)}
-                    className="p-2 text-gray-400 hover:text-green-600 transition-colors"
-                    title="Download Report"
-                  >
-                    <Download size={16} />
-                  </button>
+                  {report.status === 'completed' && (
+                    <button
+                      onClick={() => handleDownloadReport(report.title)}
+                      className="p-2 text-gray-400 hover:text-green-600 transition-colors"
+                      title="Download Report"
+                    >
+                      <Download size={16} />
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
