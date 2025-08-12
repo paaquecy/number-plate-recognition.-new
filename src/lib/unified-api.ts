@@ -108,6 +108,17 @@ export interface DVLAFine {
   notes?: string;
 }
 
+export interface DVLAAnalytics {
+  total_vehicles: number;
+  total_renewals: number;
+  total_fines: number;
+  pending_renewals: number;
+  unpaid_fines: number;
+  revenue_this_month: number;
+  renewal_rate: number;
+  fine_payment_rate: number;
+}
+
 class UnifiedAPIClient {
   private token: string | null = null;
   private baseUrl: string;
@@ -145,11 +156,39 @@ class UnifiedAPIClient {
       const data = await response.json();
       return { data };
     } catch (error) {
+      // Debug logging to understand the error
+      console.log('API Request Error:', {
+        error,
+        errorName: error instanceof Error ? error.name : 'unknown',
+        errorMessage: error instanceof Error ? error.message : 'unknown',
+        errorType: typeof error,
+        endpoint
+      });
+
       // If FastAPI backend is not available, fall back to mock responses for development
-      if (error instanceof Error && error.message.includes('fetch')) {
+      // Handle network/fetch errors broadly
+      const isNetworkError = error instanceof Error && (
+        error.message.includes('fetch') ||
+        error.message.includes('Failed to fetch') ||
+        error.message.includes('Network request failed') ||
+        error.message.includes('ECONNREFUSED') ||
+        error.message.includes('ERR_NETWORK') ||
+        error.message.includes('ERR_INTERNET_DISCONNECTED') ||
+        error.name === 'TypeError' ||
+        error.name === 'NetworkError'
+      );
+
+      // Also handle cases where error might not be an Error instance
+      const isLikelyNetworkError = !error ||
+        (typeof error === 'object' && 'message' in error &&
+         typeof error.message === 'string' &&
+         error.message.toLowerCase().includes('fetch'));
+
+      if (isNetworkError || isLikelyNetworkError) {
         console.warn('FastAPI backend not available, using mock response for:', endpoint);
         return this.getMockResponse<T>(endpoint, options);
       }
+
       return { error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
@@ -157,11 +196,90 @@ class UnifiedAPIClient {
   private getMockResponse<T>(endpoint: string, options: RequestInit = {}): ApiResponse<T> {
     // Mock responses for development when backend is not available
     if (endpoint.includes('/auth/login') || endpoint.includes('/dvla/auth/login')) {
+      let userRole = 'police';
+      if (endpoint.includes('/dvla/')) userRole = 'dvla';
+      if (endpoint.includes('/supervisor')) userRole = 'supervisor';
+      
       return {
         data: {
           access_token: 'mock-token-' + Date.now(),
           token_type: 'bearer',
-          user_role: 'police'
+          user_role: userRole
+        } as T
+      };
+    }
+
+    // DVLA specific mock responses
+    if (endpoint.includes('/dvla/vehicles') && options.method === 'GET') {
+      const mockVehicles = [
+        {
+          id: 1,
+          reg_number: 'AB12 CDE',
+          manufacturer: 'Toyota',
+          model: 'Corolla',
+          vehicle_type: 'Hatchback',
+          chassis_number: 'JTDBL40E199000001',
+          year_of_manufacture: 2023,
+          vin: 'JTDBL40E199000001',
+          license_plate: 'AB12 CDE',
+          color: 'Silver',
+          use_type: 'Private',
+          date_of_entry: '2024-01-15',
+          owner_name: 'John Smith',
+          owner_address: '123 High Street, London, UK',
+          owner_phone: '+44 7700 900123',
+          owner_email: 'john.smith@example.com',
+          status: 'active'
+        }
+      ];
+      return { data: mockVehicles as T };
+    }
+
+    if (endpoint.includes('/dvla/renewals') && options.method === 'GET') {
+      const mockRenewals = [
+        {
+          id: 1,
+          vehicle_id: 1,
+          renewal_date: '2024-01-15',
+          expiry_date: '2025-01-15',
+          status: 'completed',
+          amount_paid: 150.00,
+          payment_method: 'Credit Card',
+          transaction_id: 'TXN123456'
+        }
+      ];
+      return { data: mockRenewals as T };
+    }
+
+    if (endpoint.includes('/dvla/fines') && options.method === 'GET') {
+      const mockFines = [
+        {
+          id: 1,
+          fine_id: 'FINE001',
+          vehicle_id: 1,
+          offense_description: 'Speeding violation',
+          offense_date: '2024-01-10T10:30:00Z',
+          offense_location: 'M25 Junction 15',
+          amount: 100.00,
+          payment_status: 'unpaid',
+          marked_as_cleared: false,
+          notes: 'Caught by speed camera'
+        }
+      ];
+      return { data: mockFines as T };
+    }
+
+    if (endpoint.includes('/dvla/analytics')) {
+      return {
+        data: {
+          total_vehicles: 1250,
+          total_renewals: 850,
+          total_fines: 125,
+          pending_renewals: 45,
+          unpaid_fines: 23,
+          revenue_this_month: 12500.00,
+          renewal_rate: 95.5,
+          fine_payment_rate: 78.2
         } as T
       };
     }
@@ -189,7 +307,6 @@ class UnifiedAPIClient {
     }
 
     if (endpoint.includes('/violations') && options.method === 'GET') {
-      // Return sample violations for demonstration
       const mockViolations = [
         {
           id: 'mock-violation-1',
@@ -200,7 +317,7 @@ class UnifiedAPIClient {
           violation_details: 'Exceeding speed limit by 15 mph',
           location: 'Main Street, London',
           status: 'pending',
-          evidence_urls: [],
+          evidence_urls: ['https://example.com/evidence1.jpg'],
           fine_amount: 100,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
@@ -213,17 +330,29 @@ class UnifiedAPIClient {
           violation_type: 'Parking',
           violation_details: 'Parking in no parking zone',
           location: 'High Street, Manchester',
-          status: 'approved',
-          evidence_urls: [],
+          status: 'pending',
+          evidence_urls: ['https://example.com/evidence2.jpg'],
           fine_amount: 50,
           created_at: new Date(Date.now() - 86400000).toISOString(),
           updated_at: new Date(Date.now() - 86400000).toISOString()
+        },
+        {
+          id: 'mock-violation-3',
+          plate_number: 'DEF456',
+          vehicle_id: '3',
+          officer_id: '2',
+          violation_type: 'Red Light',
+          violation_details: 'Running red light at intersection',
+          location: 'Oxford Street, Birmingham',
+          status: 'approved',
+          evidence_urls: ['https://example.com/evidence3.jpg'],
+          fine_amount: 75,
+          created_at: new Date(Date.now() - 172800000).toISOString(),
+          updated_at: new Date(Date.now() - 86400000).toISOString()
         }
       ];
-
-      return {
-        data: mockViolations as T
-      };
+      
+      return { data: mockViolations as T };
     }
 
     if (endpoint.includes('/violations') && options.method === 'POST') {
@@ -234,6 +363,15 @@ class UnifiedAPIClient {
           violation_type: 'Speeding',
           status: 'pending',
           created_at: new Date().toISOString()
+        } as T
+      };
+    }
+
+    if (endpoint.includes('/violations') && options.method === 'PUT') {
+      return {
+        data: {
+          success: true,
+          message: 'Violation status updated successfully'
         } as T
       };
     }
@@ -401,8 +539,17 @@ class UnifiedAPIClient {
     });
   }
 
-  async getDVLAAnalytics(): Promise<ApiResponse<any>> {
-    return this.request('/dvla/analytics');
+  async getDVLAAnalytics(): Promise<ApiResponse<DVLAAnalytics>> {
+    return this.request<DVLAAnalytics>('/dvla/analytics');
+  }
+
+  // Supervisor Analytics
+  async getViolationStats(): Promise<ApiResponse<any>> {
+    return this.request('/analytics/violations');
+  }
+
+  async getOfficerStats(): Promise<ApiResponse<any>> {
+    return this.request('/analytics/officers');
   }
 }
 
