@@ -263,6 +263,8 @@ function AppContent() {
         return 'Pending Approvals';
       case 'violation-management':
         return 'Violation Management';
+      case 'notifications':
+        return 'Notifications';
       case 'user-accounts':
         return 'User Account Management';
       case 'vehicle-registry':
