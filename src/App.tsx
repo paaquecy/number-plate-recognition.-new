@@ -243,12 +243,14 @@ function AppContent() {
     setCurrentPage(page);
     if (page === 'dashboard') {
       setActiveItem('overview');
+    } else if (page === 'notifications') {
+      setActiveItem('notifications');
     }
 
     // Save page navigation state to session
     saveSessionState({
       currentPage: page,
-      activeItem: page === 'dashboard' ? 'overview' : activeItem
+      activeItem: page === 'dashboard' ? 'overview' : page === 'notifications' ? 'notifications' : activeItem
     });
     updateActivity();
   };
