@@ -189,8 +189,40 @@ class UnifiedAPIClient {
     }
 
     if (endpoint.includes('/violations') && options.method === 'GET') {
+      // Return sample violations for demonstration
+      const mockViolations = [
+        {
+          id: 'mock-violation-1',
+          plate_number: 'ABC123',
+          vehicle_id: '1',
+          officer_id: '1',
+          violation_type: 'Speeding',
+          violation_details: 'Exceeding speed limit by 15 mph',
+          location: 'Main Street, London',
+          status: 'pending',
+          evidence_urls: [],
+          fine_amount: 100,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        },
+        {
+          id: 'mock-violation-2',
+          plate_number: 'XYZ789',
+          vehicle_id: '2',
+          officer_id: '1',
+          violation_type: 'Parking',
+          violation_details: 'Parking in no parking zone',
+          location: 'High Street, Manchester',
+          status: 'approved',
+          evidence_urls: [],
+          fine_amount: 50,
+          created_at: new Date(Date.now() - 86400000).toISOString(),
+          updated_at: new Date(Date.now() - 86400000).toISOString()
+        }
+      ];
+
       return {
-        data: [] as T
+        data: mockViolations as T
       };
     }
 
