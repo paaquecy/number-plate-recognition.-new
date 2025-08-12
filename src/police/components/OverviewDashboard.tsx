@@ -11,7 +11,21 @@ import {
   Target
 } from 'lucide-react';
 
-const OverviewDashboard = () => {
+interface OverviewDashboardProps {
+  onNavigate?: (page: string) => void;
+}
+
+const OverviewDashboard: React.FC<OverviewDashboardProps> = ({ onNavigate }) => {
+  // Get setActiveNav from parent component via props or context
+  // For now, we'll use a placeholder function
+  const handleQuickAction = (action: string) => {
+    console.log(`Quick action clicked: ${action}`);
+    // Navigate to the selected page
+    if (onNavigate) {
+      onNavigate(action);
+    }
+  };
+
   const activityStats = [
     { label: 'Vehicles Scanned', value: 124, icon: Car },
     { label: 'Violations Flagged', value: 32, icon: Flag },
@@ -19,10 +33,10 @@ const OverviewDashboard = () => {
   ];
 
   const quickActions = [
-    { label: 'Verify License', icon: Car },
-    { label: 'Flag Violation', icon: Flag },
-    { label: 'Vehicle Lookup', icon: BarChart3 },
-    { label: 'New Report', icon: FileText }
+    { id: 'verify-license', label: 'Verify License', icon: Car },
+    { id: 'flagging', label: 'Flag Violation', icon: Flag },
+    { id: 'vehicle-info', label: 'Vehicle Lookup', icon: BarChart3 },
+    { id: 'field-reporting', label: 'New Report', icon: FileText }
   ];
 
   const recentActivities = [
