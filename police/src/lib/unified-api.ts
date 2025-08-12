@@ -156,17 +156,39 @@ class UnifiedAPIClient {
       const data = await response.json();
       return { data };
     } catch (error) {
+      // Debug logging to understand the error
+      console.log('API Request Error:', {
+        error,
+        errorName: error instanceof Error ? error.name : 'unknown',
+        errorMessage: error instanceof Error ? error.message : 'unknown',
+        errorType: typeof error,
+        endpoint
+      });
+
       // If FastAPI backend is not available, fall back to mock responses for development
-      if (error instanceof Error && (
+      // Handle network/fetch errors broadly
+      const isNetworkError = error instanceof Error && (
         error.message.includes('fetch') ||
         error.message.includes('Failed to fetch') ||
         error.message.includes('Network request failed') ||
         error.message.includes('ECONNREFUSED') ||
-        error.name === 'TypeError'
-      )) {
+        error.message.includes('ERR_NETWORK') ||
+        error.message.includes('ERR_INTERNET_DISCONNECTED') ||
+        error.name === 'TypeError' ||
+        error.name === 'NetworkError'
+      );
+
+      // Also handle cases where error might not be an Error instance
+      const isLikelyNetworkError = !error ||
+        (typeof error === 'object' && 'message' in error &&
+         typeof error.message === 'string' &&
+         error.message.toLowerCase().includes('fetch'));
+
+      if (isNetworkError || isLikelyNetworkError) {
         console.warn('FastAPI backend not available, using mock response for:', endpoint);
         return this.getMockResponse<T>(endpoint, options);
       }
+
       return { error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
