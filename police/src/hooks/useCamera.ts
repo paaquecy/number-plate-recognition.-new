@@ -23,7 +23,7 @@ export function useCamera(): CameraHook {
 
   // Check for HTTPS and browser compatibility on mount
   useEffect(() => {
-    const checkCompatibility = () => {
+    const checkCompatibility = async () => {
       // Check for HTTPS (required for camera access in production)
       if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
         setError('Camera access requires a secure connection (HTTPS). Please use HTTPS or localhost for development.');
@@ -34,6 +34,20 @@ export function useCamera(): CameraHook {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         setError('Your browser does not support camera access. Please use a modern browser like Chrome, Firefox, or Safari.');
         return;
+      }
+
+      // Check permission status if supported
+      try {
+        if ('permissions' in navigator) {
+          const permission = await navigator.permissions.query({ name: 'camera' as PermissionName });
+          setPermissionStatus(permission.state);
+
+          permission.onchange = () => {
+            setPermissionStatus(permission.state);
+          };
+        }
+      } catch (err) {
+        console.warn('Could not check camera permission status:', err);
       }
     };
 
