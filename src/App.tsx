@@ -16,6 +16,7 @@ import AdministrativeControls from './components/AdministrativeControls';
 import SystemSettings from './components/SystemSettings';
 import AddNewRole from './components/AddNewRole';
 import NotificationsPage from './components/NotificationsPage';
+import NotificationsContent from './components/NotificationsContent';
 import AuditLogViewer from './components/AuditLogViewer';
 import SessionStatusIndicator from './components/SessionStatusIndicator';
 import DataPersistenceTest from './components/DataPersistenceTest';
