@@ -19,6 +19,7 @@ export function useCamera(): CameraHook {
   const [isActive, setIsActive] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [permissionStatus, setPermissionStatus] = useState<'unknown' | 'granted' | 'denied' | 'prompt'>('unknown');
 
   // Check for HTTPS and browser compatibility on mount
   useEffect(() => {
