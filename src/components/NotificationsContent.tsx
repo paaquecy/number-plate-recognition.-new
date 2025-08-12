@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import { 
-  AlertTriangle, 
-  CheckCircle, 
-  Info, 
+import {
+  AlertTriangle,
+  CheckCircle,
+  Info,
   Bell,
   BellOff,
   Trash2,
   Archive,
-  MarkEmailRead
+  Check
 } from 'lucide-react';
 
 interface Notification {
