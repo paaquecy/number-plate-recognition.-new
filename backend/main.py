@@ -19,6 +19,10 @@ from database.supabase_client import supabase
 from models.user import User, UserCreate, UserLogin
 from models.vehicle import Vehicle, VehicleCreate
 from models.violation import Violation, ViolationCreate
+from models.dvla import (
+    DVLAUser, DVLAUserCreate, DVLAVehicle, DVLAVehicleCreate,
+    DVLARenewal, DVLARenewalCreate, DVLAFine, DVLAFineCreate, DVLAAnalytics
+)
 from services.auth_service import AuthService
 from services.plate_recognition_service import PlateRecognitionService
 from services.vehicle_service import VehicleService
