@@ -168,7 +168,7 @@ class ApiClient {
 
       // Get violations for this plate
       const violationsResponse = await unifiedAPI.getViolations(plateNumber);
-      const violations = violationsResponse.data || [];
+      const violations = Array.isArray(violationsResponse.data) ? violationsResponse.data : [];
 
       const mappedViolations = violations.map(v => ({
         id: v.id,
