@@ -6,6 +6,7 @@ export interface CameraHook {
   isActive: boolean;
   isLoading: boolean;
   error: string | null;
+  permissionStatus: 'unknown' | 'granted' | 'denied' | 'prompt';
   startCamera: () => Promise<void>;
   stopCamera: () => void;
   captureFrame: () => HTMLCanvasElement | null;
