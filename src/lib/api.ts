@@ -251,12 +251,15 @@ class ApiClient {
   async getViolations(): Promise<Violation[]> {
     try {
       const response = await unifiedAPI.getViolations();
-      
+
       if (response.error || !response.data) {
         return [];
       }
 
-      return response.data.map(v => ({
+      // Ensure response.data is an array
+      const violationsData = Array.isArray(response.data) ? response.data : [];
+
+      return violationsData.map(v => ({
         id: v.id,
         plate_number: v.plate_number,
         vehicle_id: v.vehicle_id,
@@ -272,7 +275,7 @@ class ApiClient {
       }));
     } catch (error) {
       console.error('Get violations error:', error);
-      throw error;
+      return []; // Return empty array instead of throwing
     }
   }
 
