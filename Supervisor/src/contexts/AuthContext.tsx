@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { User } from '../types';
 import { mockUser } from '../data/mockData';
+import { unifiedAPI } from '../lib/unified-api';
 
 interface AuthContextType {
   user: User | null;
