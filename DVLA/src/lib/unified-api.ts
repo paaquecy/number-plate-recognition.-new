@@ -108,6 +108,17 @@ export interface DVLAFine {
   notes?: string;
 }
 
+export interface DVLAAnalytics {
+  total_vehicles: number;
+  total_renewals: number;
+  total_fines: number;
+  pending_renewals: number;
+  unpaid_fines: number;
+  revenue_this_month: number;
+  renewal_rate: number;
+  fine_payment_rate: number;
+}
+
 class UnifiedAPIClient {
   private token: string | null = null;
   private baseUrl: string;
@@ -157,11 +168,15 @@ class UnifiedAPIClient {
   private getMockResponse<T>(endpoint: string, options: RequestInit = {}): ApiResponse<T> {
     // Mock responses for development when backend is not available
     if (endpoint.includes('/auth/login') || endpoint.includes('/dvla/auth/login')) {
+      let userRole = 'police';
+      if (endpoint.includes('/dvla/')) userRole = 'dvla';
+      if (endpoint.includes('/supervisor')) userRole = 'supervisor';
+      
       return {
         data: {
           access_token: 'mock-token-' + Date.now(),
           token_type: 'bearer',
-          user_role: endpoint.includes('/dvla/') ? 'dvla' : 'police'
+          user_role: userRole
         } as T
       };
     }
@@ -263,6 +278,76 @@ class UnifiedAPIClient {
       };
     }
 
+    if (endpoint.includes('/violations') && options.method === 'GET') {
+      const mockViolations = [
+        {
+          id: 'mock-violation-1',
+          plate_number: 'ABC123',
+          vehicle_id: '1',
+          officer_id: '1',
+          violation_type: 'Speeding',
+          violation_details: 'Exceeding speed limit by 15 mph',
+          location: 'Main Street, London',
+          status: 'pending',
+          evidence_urls: ['https://example.com/evidence1.jpg'],
+          fine_amount: 100,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        },
+        {
+          id: 'mock-violation-2',
+          plate_number: 'XYZ789',
+          vehicle_id: '2',
+          officer_id: '1',
+          violation_type: 'Parking',
+          violation_details: 'Parking in no parking zone',
+          location: 'High Street, Manchester',
+          status: 'pending',
+          evidence_urls: ['https://example.com/evidence2.jpg'],
+          fine_amount: 50,
+          created_at: new Date(Date.now() - 86400000).toISOString(),
+          updated_at: new Date(Date.now() - 86400000).toISOString()
+        },
+        {
+          id: 'mock-violation-3',
+          plate_number: 'DEF456',
+          vehicle_id: '3',
+          officer_id: '2',
+          violation_type: 'Red Light',
+          violation_details: 'Running red light at intersection',
+          location: 'Oxford Street, Birmingham',
+          status: 'approved',
+          evidence_urls: ['https://example.com/evidence3.jpg'],
+          fine_amount: 75,
+          created_at: new Date(Date.now() - 172800000).toISOString(),
+          updated_at: new Date(Date.now() - 86400000).toISOString()
+        }
+      ];
+      
+      return { data: mockViolations as T };
+    }
+
+    if (endpoint.includes('/violations') && options.method === 'POST') {
+      return {
+        data: {
+          id: 'mock-violation-' + Date.now(),
+          plate_number: 'ABC123',
+          violation_type: 'Speeding',
+          status: 'pending',
+          created_at: new Date().toISOString()
+        } as T
+      };
+    }
+
+    if (endpoint.includes('/violations') && options.method === 'PUT') {
+      return {
+        data: {
+          success: true,
+          message: 'Violation status updated successfully'
+        } as T
+      };
+    }
+
     // Default mock response
     return {
       data: { success: true } as T
@@ -270,7 +355,7 @@ class UnifiedAPIClient {
   }
 
   // Authentication
-  async login(username: string, password: string, loginType: 'police' | 'dvla' | 'supervisor' = 'dvla'): Promise<ApiResponse<AuthResponse>> {
+  async login(username: string, password: string, loginType: 'police' | 'dvla' | 'supervisor' = 'police'): Promise<ApiResponse<AuthResponse>> {
     const endpoint = loginType === 'dvla' ? '/dvla/auth/login' : '/auth/login';
     const response = await this.request<AuthResponse>(endpoint, {
       method: 'POST',
@@ -286,7 +371,7 @@ class UnifiedAPIClient {
     return response;
   }
 
-  async register(userData: any, userType: 'police' | 'dvla' = 'dvla'): Promise<ApiResponse<User>> {
+  async register(userData: any, userType: 'police' | 'dvla' = 'police'): Promise<ApiResponse<User>> {
     const endpoint = userType === 'dvla' ? '/dvla/auth/register' : '/auth/register';
     return this.request<User>(endpoint, {
       method: 'POST',
@@ -298,6 +383,47 @@ class UnifiedAPIClient {
     this.token = null;
     localStorage.removeItem('auth_token');
     localStorage.removeItem('user_role');
+  }
+
+  // Police/General Vehicle Operations
+  async getVehicleByPlate(plateNumber: string): Promise<ApiResponse<Vehicle>> {
+    return this.request<Vehicle>(`/vehicles/${plateNumber}`);
+  }
+
+  async recognizePlate(imageData: string, userId: string): Promise<ApiResponse<any>> {
+    return this.request(`/plate-recognition`, {
+      method: 'POST',
+      body: JSON.stringify({ image_data: imageData, user_id: userId }),
+    });
+  }
+
+  // Violation Management
+  async createViolation(violationData: any): Promise<ApiResponse<Violation>> {
+    return this.request<Violation>('/violations', {
+      method: 'POST',
+      body: JSON.stringify(violationData),
+    });
+  }
+
+  async getViolations(plateNumber?: string, status?: string): Promise<ApiResponse<Violation[]>> {
+    const params = new URLSearchParams();
+    if (plateNumber) params.append('plate_number', plateNumber);
+    if (status) params.append('status', status);
+    
+    return this.request<Violation[]>(`/violations?${params.toString()}`);
+  }
+
+  async approveViolation(violationId: string): Promise<ApiResponse<any>> {
+    return this.request(`/violations/${violationId}/approve`, {
+      method: 'PUT',
+    });
+  }
+
+  async rejectViolation(violationId: string, reason: string): Promise<ApiResponse<any>> {
+    return this.request(`/violations/${violationId}/reject`, {
+      method: 'PUT',
+      body: JSON.stringify({ reason }),
+    });
   }
 
   // DVLA Operations
@@ -385,8 +511,17 @@ class UnifiedAPIClient {
     });
   }
 
-  async getDVLAAnalytics(): Promise<ApiResponse<any>> {
-    return this.request('/dvla/analytics');
+  async getDVLAAnalytics(): Promise<ApiResponse<DVLAAnalytics>> {
+    return this.request<DVLAAnalytics>('/dvla/analytics');
+  }
+
+  // Supervisor Analytics
+  async getViolationStats(): Promise<ApiResponse<any>> {
+    return this.request('/analytics/violations');
+  }
+
+  async getOfficerStats(): Promise<ApiResponse<any>> {
+    return this.request('/analytics/officers');
   }
 }
 
