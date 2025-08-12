@@ -56,6 +56,7 @@ auth_service = AuthService()
 plate_recognition_service = PlateRecognitionService()
 vehicle_service = VehicleService()
 violation_service = ViolationService()
+dvla_service = DVLAService()
 
 # Models
 class Token(BaseModel):
