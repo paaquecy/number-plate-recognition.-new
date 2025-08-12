@@ -15,10 +15,29 @@ export function useCamera(): CameraHook {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  
+
   const [isActive, setIsActive] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Check for HTTPS and browser compatibility on mount
+  useEffect(() => {
+    const checkCompatibility = () => {
+      // Check for HTTPS (required for camera access in production)
+      if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+        setError('Camera access requires a secure connection (HTTPS). Please use HTTPS or localhost for development.');
+        return;
+      }
+
+      // Check browser support
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        setError('Your browser does not support camera access. Please use a modern browser like Chrome, Firefox, or Safari.');
+        return;
+      }
+    };
+
+    checkCompatibility();
+  }, []);
 
   const startCamera = useCallback(async () => {
     setIsLoading(true);
