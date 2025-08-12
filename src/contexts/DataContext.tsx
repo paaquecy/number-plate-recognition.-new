@@ -1,16 +1,59 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { 
-  dataStorage, 
-  User, 
-  ViolationRecord, 
-  VehicleRecord, 
-  DVLAFine, 
-  Notification 
-} from '../utils/dataStorage';
+import { api, User, Vehicle, Violation } from '../lib/api';
+
+export interface ViolationRecord {
+  id: string;
+  plateNumber: string;
+  violationType: string;
+  location: string;
+  timestamp: string;
+  officerId: string;
+  officerName: string;
+  status: 'pending' | 'approved' | 'rejected';
+  evidence?: string;
+  description?: string;
+  fine?: number;
+}
+
+export interface VehicleRecord {
+  id: string;
+  plateNumber: string;
+  make: string;
+  model: string;
+  year: number;
+  owner: string;
+  ownerContact: string;
+  registrationDate: string;
+  expiryDate: string;
+  status: 'active' | 'expired' | 'suspended';
+}
+
+export interface DVLAFine {
+  id: string;
+  plateNumber: string;
+  vehicleId: string;
+  amount: number;
+  reason: string;
+  issueDate: string;
+  dueDate: string;
+  status: 'pending' | 'paid' | 'overdue';
+  issuedBy: string;
+}
+
+export interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  type: 'info' | 'warning' | 'error' | 'success';
+  timestamp: string;
+  read: boolean;
+  userId?: string;
+  system: string;
+}
 
 interface DataContextType {
   // Data state
-  users: User[];
+  users: any[];
   violations: ViolationRecord[];
   vehicles: VehicleRecord[];
   fines: DVLAFine[];
@@ -18,24 +61,27 @@ interface DataContextType {
   
   // Loading states
   isLoading: boolean;
+  error: string | null;
   
   // User management
-  addUser: (user: Omit<User, 'id'>) => void;
-  updateUser: (user: User) => void;
+  addUser: (user: Omit<any, 'id'>) => void;
+  updateUser: (user: any) => void;
   deleteUser: (userId: string) => void;
-  getUserById: (userId: string) => User | undefined;
-  getUserByUsername: (username: string) => User | undefined;
+  getUserById: (userId: string) => any | undefined;
+  getUserByUsername: (username: string) => any | undefined;
   
   // Vehicle management
   addVehicle: (vehicle: Omit<VehicleRecord, 'id'>) => void;
   updateVehicle: (vehicle: VehicleRecord) => void;
   getVehicleByPlate: (plateNumber: string) => VehicleRecord | undefined;
+  lookupVehicle: (plateNumber: string) => Promise<any>;
   
   // Violation management
   addViolation: (violation: Omit<ViolationRecord, 'id'>) => void;
   updateViolation: (violation: ViolationRecord) => void;
   getViolationsByOfficer: (officerId: string) => ViolationRecord[];
   getViolationsByPlate: (plateNumber: string) => ViolationRecord[];
+  submitViolation: (violation: any) => Promise<void>;
   
   // Fine management
   addFine: (fine: Omit<DVLAFine, 'id'>) => void;
@@ -48,7 +94,7 @@ interface DataContextType {
   getUnreadNotifications: () => Notification[];
   
   // Authentication
-  authenticateUser: (username: string, password: string) => User | null;
+  authenticateUser: (username: string, password: string) => any | null;
   
   // Data management
   refreshData: () => void;
@@ -63,80 +109,81 @@ interface DataProviderProps {
 }
 
 export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
   const [violations, setViolations] = useState<ViolationRecord[]>([]);
   const [vehicles, setVehicles] = useState<VehicleRecord[]>([]);
   const [fines, setFines] = useState<DVLAFine[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Load initial data
   useEffect(() => {
     loadAllData();
-    
-    // Listen for storage updates from other tabs/components
-    const handleStorageUpdate = (event: CustomEvent) => {
-      const { dataType, data } = event.detail;
-      
-      switch (dataType) {
-        case 'users':
-          setUsers([...data]);
-          break;
-        case 'violations':
-          setViolations([...data]);
-          break;
-        case 'vehicles':
-          setVehicles([...data]);
-          break;
-        case 'fines':
-          setFines([...data]);
-          break;
-        case 'notifications':
-          setNotifications([...data]);
-          break;
-      }
-    };
-
-    window.addEventListener('dataStorageUpdate', handleStorageUpdate as EventListener);
-    
-    return () => {
-      window.removeEventListener('dataStorageUpdate', handleStorageUpdate as EventListener);
-    };
   }, []);
 
-  const loadAllData = () => {
+  const loadAllData = async () => {
     setIsLoading(true);
+    setError(null);
     try {
-      setUsers(dataStorage.getUsers());
-      setViolations(dataStorage.getViolations());
-      setVehicles(dataStorage.getVehicles());
-      setFines(dataStorage.getFines());
-      setNotifications(dataStorage.getNotifications());
+      // Load vehicles from Supabase
+      const vehiclesData = await api.getVehicles();
+      const convertedVehicles: VehicleRecord[] = vehiclesData.map(v => ({
+        id: v.id,
+        plateNumber: v.plate_number,
+        make: v.make,
+        model: v.model,
+        year: v.year,
+        owner: v.owner_name,
+        ownerContact: v.owner_address || '',
+        registrationDate: v.created_at,
+        expiryDate: v.registration_expiry || '',
+        status: v.registration_status === 'Active' ? 'active' : 
+               v.registration_status === 'Expired' ? 'expired' : 'suspended'
+      }));
+      setVehicles(convertedVehicles);
+
+      // Load violations from Supabase
+      const violationsData = await api.getViolations();
+      const convertedViolations: ViolationRecord[] = violationsData.map(v => ({
+        id: v.id,
+        plateNumber: v.plate_number,
+        violationType: v.violation_type,
+        location: v.location || '',
+        timestamp: v.created_at,
+        officerId: v.officer_id || '',
+        officerName: 'Officer', // Would need to join with officers table
+        status: v.status?.toLowerCase() as 'pending' | 'approved' | 'rejected' || 'pending',
+        description: v.violation_details || '',
+        fine: v.fine_amount || 0
+      }));
+      setViolations(convertedViolations);
+
+      // Initialize empty arrays for other data types
+      setUsers([]);
+      setFines([]);
+      setNotifications([]);
     } catch (error) {
-      console.error('Error loading data:', error);
+      console.error('Error loading data from Supabase:', error);
+      setError(error instanceof Error ? error.message : 'Failed to load data');
     } finally {
       setIsLoading(false);
     }
   };
 
   // User management functions
-  const addUser = (userData: Omit<User, 'id'>) => {
-    const newUser: User = {
-      ...userData,
-      id: dataStorage.generateId('USR')
-    };
-    dataStorage.addUser(newUser);
-    setUsers(dataStorage.getUsers());
+  const addUser = (userData: Omit<any, 'id'>) => {
+    // For now, keep localStorage functionality for users
+    // In a full implementation, this would use Supabase auth
+    console.log('Add user:', userData);
   };
 
-  const updateUser = (user: User) => {
-    dataStorage.updateUser(user);
-    setUsers(dataStorage.getUsers());
+  const updateUser = (user: any) => {
+    console.log('Update user:', user);
   };
 
   const deleteUser = (userId: string) => {
-    dataStorage.deleteUser(userId);
-    setUsers(dataStorage.getUsers());
+    console.log('Delete user:', userId);
   };
 
   const getUserById = (userId: string) => {
@@ -149,49 +196,49 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
 
   // Vehicle management functions
   const addVehicle = (vehicleData: Omit<VehicleRecord, 'id'>) => {
-    const newVehicle: VehicleRecord = {
-      ...vehicleData,
-      id: dataStorage.generateId('VEH')
-    };
-    dataStorage.addVehicle(newVehicle);
-    setVehicles(dataStorage.getVehicles());
+    console.log('Add vehicle:', vehicleData);
+    // Would implement Supabase insert here
   };
 
   const updateVehicle = (vehicle: VehicleRecord) => {
-    dataStorage.updateVehicle(vehicle);
-    setVehicles(dataStorage.getVehicles());
+    console.log('Update vehicle:', vehicle);
+    // Would implement Supabase update here
   };
 
   const getVehicleByPlate = (plateNumber: string) => {
     return vehicles.find(vehicle => vehicle.plateNumber === plateNumber);
   };
 
+  const lookupVehicle = async (plateNumber: string) => {
+    try {
+      const result = await api.lookupVehicle(plateNumber);
+      return result;
+    } catch (error) {
+      console.error('Vehicle lookup error:', error);
+      throw error;
+    }
+  };
   // Violation management functions
   const addViolation = (violationData: Omit<ViolationRecord, 'id'>) => {
-    const newViolation: ViolationRecord = {
-      ...violationData,
-      id: dataStorage.generateId('VIO')
-    };
-    dataStorage.addViolation(newViolation);
-    setViolations(dataStorage.getViolations());
-    
-    // Create notification for new violation
-    const notificationData: Omit<Notification, 'id'> = {
-      title: 'New Violation Reported',
-      message: `Violation reported for plate ${violationData.plateNumber}`,
-      type: 'info',
-      timestamp: new Date().toISOString(),
-      read: false,
-      system: 'Police App'
-    };
-    addNotification(notificationData);
+    console.log('Add violation:', violationData);
+    // This will be handled by submitViolation
   };
 
   const updateViolation = (violation: ViolationRecord) => {
-    dataStorage.updateViolation(violation);
-    setViolations(dataStorage.getViolations());
+    console.log('Update violation:', violation);
+    // Would implement Supabase update here
   };
 
+  const submitViolation = async (violationData: any) => {
+    try {
+      await api.submitViolation(violationData);
+      // Refresh violations after submission
+      await loadAllData();
+    } catch (error) {
+      console.error('Submit violation error:', error);
+      throw error;
+    }
+  };
   const getViolationsByOfficer = (officerId: string) => {
     return violations.filter(violation => violation.officerId === officerId);
   };
@@ -202,28 +249,13 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
 
   // Fine management functions
   const addFine = (fineData: Omit<DVLAFine, 'id'>) => {
-    const newFine: DVLAFine = {
-      ...fineData,
-      id: dataStorage.generateId('FINE')
-    };
-    dataStorage.addFine(newFine);
-    setFines(dataStorage.getFines());
-    
-    // Create notification for new fine
-    const notificationData: Omit<Notification, 'id'> = {
-      title: 'New Fine Issued',
-      message: `Fine of GH₵${fineData.amount} issued for plate ${fineData.plateNumber}`,
-      type: 'warning',
-      timestamp: new Date().toISOString(),
-      read: false,
-      system: 'DVLA App'
-    };
-    addNotification(notificationData);
+    console.log('Add fine:', fineData);
+    // Would implement Supabase insert here
   };
 
   const updateFine = (fine: DVLAFine) => {
-    dataStorage.updateFine(fine);
-    setFines(dataStorage.getFines());
+    console.log('Update fine:', fine);
+    // Would implement Supabase update here
   };
 
   const getFinesByPlate = (plateNumber: string) => {
@@ -232,12 +264,13 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
 
   // Notification management functions
   const addNotification = (notificationData: Omit<Notification, 'id'>) => {
+    console.log('Add notification:', notificationData);
+    // For now, add to local state
     const newNotification: Notification = {
       ...notificationData,
-      id: dataStorage.generateId('NOT')
+      id: Date.now().toString(),
     };
-    dataStorage.addNotification(newNotification);
-    setNotifications(dataStorage.getNotifications());
+    setNotifications(prev => [newNotification, ...prev]);
   };
 
   const markNotificationAsRead = (notificationId: string) => {
@@ -246,7 +279,6 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
         ? { ...notification, read: true }
         : notification
     );
-    dataStorage.saveNotifications(updatedNotifications);
     setNotifications(updatedNotifications);
   };
 
@@ -256,11 +288,9 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
 
   // Authentication
   const authenticateUser = (username: string, password: string) => {
-    const user = dataStorage.authenticateUser(username, password);
-    if (user) {
-      setUsers(dataStorage.getUsers()); // Refresh to get updated lastLogin
-    }
-    return user;
+    // This would use Supabase auth in a full implementation
+    console.log('Authenticate user:', username);
+    return null;
   };
 
   // Data management
@@ -269,7 +299,13 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
   };
 
   const exportAllData = () => {
-    const data = dataStorage.exportData();
+    const data = {
+      users,
+      violations,
+      vehicles,
+      fines,
+      notifications,
+    };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -282,7 +318,7 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
   };
 
   const clearAllData = () => {
-    dataStorage.clearAllData();
+    console.log('Clear all data');
     loadAllData();
   };
 
@@ -294,6 +330,7 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     fines,
     notifications,
     isLoading,
+    error,
     
     // User management
     addUser,
@@ -306,12 +343,14 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     addVehicle,
     updateVehicle,
     getVehicleByPlate,
+    lookupVehicle,
     
     // Violation management
     addViolation,
     updateViolation,
     getViolationsByOfficer,
     getViolationsByPlate,
+    submitViolation,
     
     // Fine management
     addFine,

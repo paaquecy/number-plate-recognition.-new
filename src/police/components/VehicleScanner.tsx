@@ -13,8 +13,10 @@ import {
 } from 'lucide-react';
 import { useCamera } from '../hooks/useCamera';
 import { plateDetector, PlateDetectionResult } from '../utils/plateDetection';
+import { useData } from '../../contexts/DataContext';
 
 const VehicleScanner = () => {
+  const { lookupVehicle, api } = useData();
   const [plateInput, setPlateInput] = useState('');
   const [scanResults, setScanResults] = useState({
     plateNumber: 'N/A',
@@ -155,22 +157,46 @@ const VehicleScanner = () => {
     }
   };
 
-  const handleManualLookup = () => {
+  const handleManualLookup = async () => {
     if (plateInput.trim()) {
       setIsScanning(true);
       
-      // Simulate lookup process
-      setTimeout(() => {
-        const mockResults = {
+      try {
+        const result = await lookupVehicle(plateInput.trim());
+        
+        if (result.vehicle) {
+          const vehicleResults = {
+            plateNumber: result.vehicle.plate_number,
+            vehicleModel: `${result.vehicle.year} ${result.vehicle.make} ${result.vehicle.model}`,
+            owner: result.vehicle.owner_name,
+            status: result.outstandingViolations > 0 ? `${result.outstandingViolations} Outstanding Violation(s)` : 'No Violations',
+            statusType: result.outstandingViolations > 0 ? 'violation' : 'clean'
+          };
+          setScanResults(vehicleResults);
+          
+          // Record the scan in database
+          await api.recordScan(plateInput.trim(), 'Manual', result);
+        } else {
+          setScanResults({
+            plateNumber: plateInput.toUpperCase(),
+            vehicleModel: 'Vehicle Not Found',
+            owner: 'Unknown',
+            status: 'Vehicle Not Registered',
+            statusType: 'violation'
+          });
+        }
+      } catch (error) {
+        console.error('Vehicle lookup failed:', error);
+        setScanResults({
           plateNumber: plateInput.toUpperCase(),
-          vehicleModel: '2019 Toyota Corolla',
-          owner: 'Kwame Asante',
-          status: 'Outstanding Parking Ticket',
+          vehicleModel: 'Lookup Failed',
+          owner: 'Error',
+          status: 'System Error',
           statusType: 'violation'
-        };
-        setScanResults(mockResults);
+        });
+      } finally {
         setIsScanning(false);
-      }, 2000);
+      }
     }
   };
 

@@ -21,6 +21,7 @@ import SessionStatusIndicator from './components/SessionStatusIndicator';
 import DataPersistenceTest from './components/DataPersistenceTest';
 import { ThemeProvider as DvlaThemeProvider } from './dvla/contexts/ThemeContext';
 import { DataProvider } from './contexts/DataContext';
+import { AuthProvider } from './contexts/AuthContext';
 import DvlaApp from './dvla/App';
 import PoliceApp from './police/App';
 import SupervisorApp from './supervisor/SupervisorApp';
@@ -40,9 +41,11 @@ import {
 
 function App() {
   return (
-    <DataProvider>
-      <AppContent />
-    </DataProvider>
+    <AuthProvider>
+      <DataProvider>
+        <AppContent />
+      </DataProvider>
+    </AuthProvider>
   );
 }
 

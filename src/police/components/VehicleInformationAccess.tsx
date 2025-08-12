@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useData } from '../../contexts/DataContext';
 import { 
   Search, 
   Car, 
@@ -9,6 +10,7 @@ import {
 } from 'lucide-react';
 
 const VehicleInformationAccess = () => {
+  const { lookupVehicle } = useData();
   const [lookupInput, setLookupInput] = useState('');
   const [isLookingUp, setIsLookingUp] = useState(false);
   const [vehicleDetails, setVehicleDetails] = useState({
@@ -23,27 +25,46 @@ const VehicleInformationAccess = () => {
     outstandingViolations: 0
   });
 
-  const handleLookupVehicle = () => {
+  const handleLookupVehicle = async () => {
     if (lookupInput.trim()) {
       setIsLookingUp(true);
       
-      // Simulate lookup process
-      setTimeout(() => {
-        const mockVehicleData = {
-          plateNumber: lookupInput.toUpperCase(),
-          vin: '1234567890ABCDEF',
-          make: 'Honda',
-          model: 'Civic',
-          year: '2020',
-          owner: 'John Doe',
-          registrationStatus: 'Active',
-          insuranceStatus: 'Valid',
-          outstandingViolations: 2
-        };
+      try {
+        const result = await lookupVehicle(lookupInput.trim());
         
-        setVehicleDetails(mockVehicleData);
+        if (result.vehicle) {
+          const vehicleData = {
+            plateNumber: result.vehicle.plate_number,
+            vin: result.vehicle.vin,
+            make: result.vehicle.make,
+            model: result.vehicle.model,
+            year: result.vehicle.year.toString(),
+            owner: result.vehicle.owner_name,
+            registrationStatus: result.vehicle.registration_status || 'Unknown',
+            insuranceStatus: result.vehicle.insurance_status || 'Unknown',
+            outstandingViolations: result.outstandingViolations
+          };
+          setVehicleDetails(vehicleData);
+        } else {
+          // No vehicle found
+          setVehicleDetails({
+            plateNumber: lookupInput.toUpperCase(),
+            vin: 'Not Found',
+            make: 'Not Found',
+            model: 'Not Found',
+            year: 'N/A',
+            owner: 'Not Found',
+            registrationStatus: 'Not Found',
+            insuranceStatus: 'Not Found',
+            outstandingViolations: 0
+          });
+        }
+      } catch (error) {
+        console.error('Vehicle lookup failed:', error);
+        alert('Failed to lookup vehicle. Please try again.');
+      } finally {
         setIsLookingUp(false);
-      }, 2000);
+      }
     }
   };
 

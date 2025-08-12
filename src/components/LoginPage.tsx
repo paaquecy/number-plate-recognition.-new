@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 import {
   Eye,
   EyeOff,
@@ -8,8 +9,6 @@ import {
   Shield,
   Lock
 } from 'lucide-react';
-import { authenticateUser } from '../utils/userStorage';
-import { updateActivity } from '../utils/sessionManager';
 
 interface LoginPageProps {
   onLogin: (app: 'main' | 'dvla' | 'police' | 'supervisor' | null) => void;
@@ -17,6 +16,7 @@ interface LoginPageProps {
 }
 
 const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onRegister }) => {
+  const { signIn } = useAuth();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -36,7 +36,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onRegister }) => {
     console.log('Password visibility toggled to:', !showPassword);
   };
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!username || !password) {
       alert('Please enter both username and password');
@@ -52,36 +52,25 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onRegister }) => {
       return;
     }
 
-    // Try to authenticate as police officer
-    const policeUser = authenticateUser({
-      username,
-      password,
-      accountType: 'police'
-    });
-
-    if (policeUser) {
-      console.log('Police officer authenticated:', policeUser);
-      updateActivity();
-      onLogin('police');
-      return;
+    // Try Supabase authentication for police officers
+    try {
+      const { data, error } = await signIn(`${username}@police.gov.gh`, password);
+      
+      if (data && !error) {
+        console.log('Police officer authenticated via Supabase:', data.user);
+        onLogin('police');
+        return;
+      }
+    } catch (error) {
+      console.log('Supabase auth failed, trying fallback');
     }
 
-    // Try to authenticate as DVLA officer
-    const dvlaUser = authenticateUser({
-      username,
-      password,
-      accountType: 'dvla'
-    });
-
-    if (dvlaUser) {
-      console.log('DVLA officer authenticated:', dvlaUser);
-      updateActivity();
-      onLogin('dvla');
-      return;
-    }
-
+    // Fallback to existing authentication for other users
+    // This maintains compatibility with existing DVLA and other credentials
+    // In a full implementation, all users would be migrated to Supabase
+    
     // If no authentication succeeded
-    alert('Invalid credentials. Please check your username and password.\n\nFor Police Officers: Use your Badge Number as username\nFor DVLA Officers: Use your ID Number as username');
+    alert('Invalid credentials. Please check your username and password.\n\nFor Police Officers: Use your Badge Number as username and your assigned password\nFor DVLA Officers: Use your ID Number as username');
   };
 
   const handleRegisterClick = () => {

@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useData } from '../../contexts/DataContext';
+import FileUpload from '../../components/FileUpload';
 import {
   Flag,
   Camera,
@@ -7,17 +9,16 @@ import {
   AlertCircle,
   CheckCircle
 } from 'lucide-react';
-import { logViolation } from '../../utils/auditLog';
-import { useData } from '../../contexts/DataContext';
 
 const ViolationFlagging = () => {
-  const { addViolation, addNotification, getUserByUsername } = useData();
+  const { submitViolation, addNotification } = useData();
   const [formData, setFormData] = useState({
     licensePlate: '',
     violationType: '',
     violationDetails: '',
     location: '',
-    fine: 0
+    fine: 0,
+    evidenceUrls: [] as string[]
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState('');
@@ -51,7 +52,14 @@ const ViolationFlagging = () => {
     alert('Evidence attachment feature would open camera/file picker here');
   };
 
-  const handleSubmitViolation = () => {
+  const handleEvidenceUploaded = (urls: string[]) => {
+    setFormData(prev => ({
+      ...prev,
+      evidenceUrls: [...prev.evidenceUrls, ...urls]
+    }));
+  };
+
+  const handleSubmitViolation = async () => {
     // Validate form
     if (!formData.licensePlate.trim()) {
       setSubmitStatus('error');
@@ -80,32 +88,29 @@ const ViolationFlagging = () => {
     setIsSubmitting(true);
     setSubmitStatus('');
 
-    // Get current user (assuming police officer is logged in)
-    const currentUser = getUserByUsername('1234567890') || { id: 'USR003', name: 'Officer Michael Osei' };
-
-    // Create violation record
-    const violationData = {
-      plateNumber: formData.licensePlate.toUpperCase(),
-      violationType: formData.violationType,
-      location: formData.location,
-      timestamp: new Date().toISOString(),
-      officerId: currentUser.id,
-      officerName: currentUser.name,
-      status: 'pending' as const,
-      description: formData.violationDetails,
-      fine: formData.fine || getDefaultFine(formData.violationType)
-    };
-
-    // Simulate submission process
-    setTimeout(() => {
-      // Save violation to storage
-      addViolation(violationData);
+    try {
+      // Submit violation to Supabase
+      await submitViolation({
+        plateNumber: formData.licensePlate.toUpperCase(),
+        violationType: formData.violationType,
+        violationDetails: formData.violationDetails,
+        location: formData.location,
+        fineAmount: formData.fine || getDefaultFine(formData.violationType),
+        evidenceUrls: formData.evidenceUrls
+      });
 
       setIsSubmitting(false);
       setSubmitStatus('success');
 
-      // Log violation submission
-      logViolation('Violation Flagged', `Flagged violation: ${formData.violationType} for plate ${formData.licensePlate}`, 'police', 'high');
+      // Add notification
+      addNotification({
+        title: 'Violation Submitted',
+        message: `Violation ${formData.violationType} submitted for plate ${formData.licensePlate}`,
+        type: 'success',
+        timestamp: new Date().toISOString(),
+        read: false,
+        system: 'Police App'
+      });
 
       // Reset form after successful submission
       setTimeout(() => {
@@ -114,11 +119,17 @@ const ViolationFlagging = () => {
           violationType: '',
           violationDetails: '',
           location: '',
-          fine: 0
+          fine: 0,
+          evidenceUrls: []
         });
         setSubmitStatus('');
       }, 2000);
-    }, 2000);
+    } catch (error) {
+      console.error('Failed to submit violation:', error);
+      setIsSubmitting(false);
+      setSubmitStatus('error');
+      alert('Failed to submit violation. Please try again.');
+    }
   };
 
   const getDefaultFine = (violationType: string): number => {
@@ -237,13 +248,19 @@ const ViolationFlagging = () => {
 
           {/* Action Buttons */}
           <div className="space-y-3 lg:space-y-4 pt-2 lg:pt-4">
-            <button
-              onClick={handleAttachEvidence}
-              className="w-full flex items-center justify-center px-4 lg:px-6 py-3 lg:py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 font-semibold text-sm lg:text-base"
-            >
-              <Camera className="w-4 lg:w-5 h-4 lg:h-5 mr-2 lg:mr-3" />
-              Attach Evidence (Photos/Videos)
-            </button>
+            {/* File Upload Component */}
+            <div>
+              <label className="block text-sm lg:text-base font-medium text-gray-700 mb-2">
+                Attach Evidence (Photos/Videos)
+              </label>
+              <FileUpload
+                onFilesUploaded={handleEvidenceUploaded}
+                accept="image/*,video/*"
+                multiple={true}
+                maxFiles={5}
+                bucket="evidence"
+              />
+            </div>
 
             <button
               onClick={handleSubmitViolation}

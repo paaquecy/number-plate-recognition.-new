@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { AuthProvider } from '../contexts/AuthContext';
+import { DataProvider } from '../contexts/DataContext';
 import {
   BarChart3,
   Menu,
@@ -12,10 +14,7 @@ import VehicleInformationAccess from './components/VehicleInformationAccess';
 import FieldReporting from './components/FieldReporting';
 import PersonalSettings from './components/PersonalSettings';
 import VerifyLicense from './components/VerifyLicense';
-import { logAuth, logSystem } from '../utils/auditLog';
-import { getAppNavigationState, saveAppNavigationState, updateActivity } from '../utils/sessionManager';
 import SessionStatusIndicator from '../components/SessionStatusIndicator';
-import { DataProvider } from '../contexts/DataContext';
 
 // Lazy load VehicleScanner to avoid OpenCV loading issues
 const VehicleScanner = React.lazy(() => import('./components/VehicleScanner'));
@@ -26,34 +25,18 @@ interface PoliceAppProps {
 
 function App({ onLogout }: PoliceAppProps) {
   return (
-    <DataProvider>
-      <PoliceAppContent onLogout={onLogout} />
-    </DataProvider>
+    <AuthProvider>
+      <DataProvider>
+        <PoliceAppContent onLogout={onLogout} />
+      </DataProvider>
+    </AuthProvider>
   );
 }
 
 function PoliceAppContent({ onLogout }: PoliceAppProps) {
-  // Restore navigation state from session or use default
-  const savedNavState = getAppNavigationState('police');
-  const [activeNav, setActiveNav] = useState(savedNavState?.activeNav || 'overview');
-  const [searchQuery, setSearchQuery] = useState(savedNavState?.searchQuery || '');
+  const [activeNav, setActiveNav] = useState('overview');
+  const [searchQuery, setSearchQuery] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  // Initialize audit logging for police app
-  useEffect(() => {
-    logSystem('Police App Loaded', 'Police officer accessed police dashboard', 'police');
-  }, []);
-
-  // Log navigation changes and save to session
-  useEffect(() => {
-    if (activeNav !== 'overview') {
-      logSystem('Navigation', `Police officer navigated to ${activeNav}`, 'police');
-    }
-
-    // Save navigation state to session
-    saveAppNavigationState('police', { activeNav, searchQuery });
-    updateActivity();
-  }, [activeNav, searchQuery]);
 
   const getPageTitle = () => {
     switch (activeNav) {
@@ -149,7 +132,6 @@ function PoliceAppContent({ onLogout }: PoliceAppProps) {
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
         onLogout={() => {
-          logAuth('User Logout', 'Police officer logged out of police system', 'police', true);
           onLogout?.();
         }}
       />
