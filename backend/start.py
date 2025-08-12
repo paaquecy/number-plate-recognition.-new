@@ -24,9 +24,8 @@ def check_dependencies():
         import fastapi
         import uvicorn
         import supabase
-        import cv2
-        import easyocr
-        print("✅ All dependencies are installed")
+        print("ℹ️ Skipping heavy OCR libs check (cv2, easyocr). Set DISABLE_OCR=1 to run without them.")
+        print("✅ Core dependencies are installed")
         return True
     except ImportError as e:
         print(f"❌ Missing dependency: {e}")
@@ -127,8 +126,8 @@ def main():
         return
     
     if not test_supabase_connection():
-        print("⚠️  Supabase connection failed, but continuing...")
-        print("Make sure your database is set up correctly")
+        print("⚠️  Supabase connection failed, but continuing in degraded mode...")
+        print("Set valid SUPABASE_URL and keys for full functionality.")
     
     print("=" * 50)
     print("✅ All checks passed!")
