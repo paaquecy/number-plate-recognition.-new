@@ -189,6 +189,7 @@ export function useCamera(): CameraHook {
     isActive,
     isLoading,
     error,
+    permissionStatus,
     startCamera,
     stopCamera,
     captureFrame
