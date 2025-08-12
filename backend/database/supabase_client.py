@@ -6,7 +6,7 @@ load_dotenv()
 
 # Supabase configuration
 SUPABASE_URL = os.getenv("https://lecgzbljmubqjpvjgjgk.supabase.co")
-SUPABASE_KEY = os.getenv("SUPABASE_ANON_KEY")
+SUPABASE_KEY = os.getenv("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxlY2d6YmxqbXVicWpwdmpnamdrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0OTg4OTksImV4cCI6MjA3MDA3NDg5OX0.l97M6hbWqRC4jppIHBAMjUHUyQDpFNxX2QpENFSSwwU")
 
 if not SUPABASE_URL or not SUPABASE_KEY:
     raise ValueError("SUPABASE_URL and SUPABASE_ANON_KEY must be set in environment variables")
