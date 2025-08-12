@@ -23,6 +23,7 @@ from services.auth_service import AuthService
 from services.plate_recognition_service import PlateRecognitionService
 from services.vehicle_service import VehicleService
 from services.violation_service import ViolationService
+from services.dvla_service import DVLAService
 
 # Load environment variables
 load_dotenv()
@@ -179,4 +180,4 @@ async def reject_violation(violation_id: str, reason: str, current_user: str = D
         raise HTTPException(status_code=400, detail=str(e))
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000) 
+    uvicorn.run(app, host="0.0.0.0", port=8000)
