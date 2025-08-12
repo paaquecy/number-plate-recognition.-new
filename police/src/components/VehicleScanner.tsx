@@ -154,10 +154,26 @@ const VehicleScanner = () => {
         <div className="relative w-full h-48 sm:h-64 lg:h-80 rounded-lg border-2 border-dashed overflow-hidden mb-4 lg:mb-6 transition-all duration-300 bg-gray-900">
           {cameraError ? (
             <div className="flex items-center justify-center h-full">
-              <div className="text-center text-white">
+              <div className="text-center text-white p-4">
                 <AlertCircle className="w-8 lg:w-12 h-8 lg:h-12 mx-auto mb-4 text-red-400" />
-                <p className="font-medium text-sm lg:text-base">Camera Error</p>
-                <p className="text-xs lg:text-sm text-gray-300 mt-2">{cameraError}</p>
+                <p className="font-medium text-sm lg:text-base">Camera Access Required</p>
+                <p className="text-xs lg:text-sm text-gray-300 mt-2 mb-4">{cameraError}</p>
+                {cameraError.includes('permission') && (
+                  <div className="space-y-2">
+                    <p className="text-xs text-gray-400">To use the camera scanner:</p>
+                    <ol className="text-xs text-gray-400 text-left space-y-1">
+                      <li>1. Click the camera icon in your browser's address bar</li>
+                      <li>2. Select "Allow" for camera access</li>
+                      <li>3. Click "Grant Camera Permission" below</li>
+                    </ol>
+                  </div>
+                )}
+                <button
+                  onClick={startCamera}
+                  className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
+                >
+                  Grant Camera Permission
+                </button>
               </div>
             </div>
           ) : cameraLoading ? (
