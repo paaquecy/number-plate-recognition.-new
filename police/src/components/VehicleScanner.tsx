@@ -33,6 +33,7 @@ const VehicleScanner = () => {
     isActive: cameraActive,
     isLoading: cameraLoading,
     error: cameraError,
+    permissionStatus,
     startCamera,
     stopCamera,
     captureFrame
