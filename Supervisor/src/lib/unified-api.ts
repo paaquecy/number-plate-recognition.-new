@@ -157,7 +157,13 @@ class UnifiedAPIClient {
       return { data };
     } catch (error) {
       // If FastAPI backend is not available, fall back to mock responses for development
-      if (error instanceof Error && error.message.includes('fetch')) {
+      if (error instanceof Error && (
+        error.message.includes('fetch') ||
+        error.message.includes('Failed to fetch') ||
+        error.message.includes('Network request failed') ||
+        error.message.includes('ECONNREFUSED') ||
+        error.name === 'TypeError'
+      )) {
         console.warn('FastAPI backend not available, using mock response for:', endpoint);
         return this.getMockResponse<T>(endpoint, options);
       }
