@@ -11,7 +11,7 @@ except ImportError:
         pass  # No-op if dotenv not available
 from datetime import datetime, timedelta
 from typing import Optional, List
-import jwt
+from jose import jwt, JWTError as JOSEJWTError
 from passlib.context import CryptContext
 
 # Import our modules
@@ -85,7 +85,7 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         return user_id
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token expired")
-    except jwt.JWTError:
+    except JOSEJWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
 @app.get("/")

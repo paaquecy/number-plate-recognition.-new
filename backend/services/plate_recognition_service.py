@@ -1,18 +1,34 @@
-import cv2
-import numpy as np
+try:
+    import cv2
+except Exception:
+    cv2 = None
+try:
+    import numpy as np
+except Exception:
+    np = None
 import base64
 import io
-from PIL import Image
-import easyocr
+try:
+    from PIL import Image
+except Exception:
+    Image = None
+try:
+    import easyocr
+except Exception:
+    easyocr = None
 import time
 import re
-from typing import Tuple, Optional
+from typing import Tuple, Optional, Any
 import os
 
 class PlateRecognitionService:
     def __init__(self):
-        # Initialize EasyOCR for text recognition
-        self.reader = easyocr.Reader(['en'])
+        self.reader = None
+        if easyocr is not None:
+            try:
+                self.reader = easyocr.Reader(['en'])
+            except Exception:
+                self.reader = None
         
         # Ghana license plate patterns
         self.plate_patterns = [
@@ -32,50 +48,35 @@ class PlateRecognitionService:
         except:
             print("Plate cascade classifier not found, using contour detection")
 
-    def preprocess_image(self, image: np.ndarray) -> np.ndarray:
+    def preprocess_image(self, image: Any) -> Any:
+        if cv2 is None:
+            raise RuntimeError("OpenCV not available on this server")
         """Preprocess image for better plate detection"""
-        # Convert to grayscale
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        
-        # Apply Gaussian blur to reduce noise
         blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-        
-        # Apply adaptive thresholding
         thresh = cv2.adaptiveThreshold(blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
-        
-        # Apply morphological operations
         kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
         morph = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
-        
         return morph
 
-    def detect_plate_regions(self, image: np.ndarray) -> list:
+    def detect_plate_regions(self, image: Any) -> list:
+        if cv2 is None:
+            return []
         """Detect potential license plate regions in the image"""
         plate_regions = []
-        
-        # Convert to grayscale
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        
-        # Apply edge detection
         edges = cv2.Canny(gray, 50, 150)
-        
-        # Find contours
         contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        
-        # Filter contours based on area and aspect ratio
         for contour in contours:
             area = cv2.contourArea(contour)
-            if area > 1000:  # Minimum area threshold
+            if area > 1000:
                 x, y, w, h = cv2.boundingRect(contour)
                 aspect_ratio = w / h
-                
-                # License plates typically have aspect ratios between 2.5 and 5.5
                 if 2.5 <= aspect_ratio <= 5.5:
                     plate_regions.append((x, y, w, h))
-        
         return plate_regions
 
-    def extract_text_from_region(self, image: np.ndarray, region: Tuple[int, int, int, int]) -> str:
+    def extract_text_from_region(self, image: Any, region: Tuple[int, int, int, int]) -> str:
         """Extract text from a specific region using OCR"""
         x, y, w, h = region
         roi = image[y:y+h, x:x+w]
@@ -83,12 +84,10 @@ class PlateRecognitionService:
         # Preprocess the region
         processed_roi = self.preprocess_image(roi)
         
-        # Use EasyOCR to extract text
+        if self.reader is None:
+            return ""
         results = self.reader.readtext(processed_roi)
-        
-        # Combine all detected text
         text = ' '.join([result[1] for result in results])
-        
         return text.strip()
 
     def clean_plate_text(self, text: str) -> str:
@@ -145,15 +144,12 @@ class PlateRecognitionService:
                         best_confidence = confidence
             
             # If no valid plate found, try OCR on the entire image
-            if not best_plate:
-                # Process entire image
+            if not best_plate and self.reader is not None:
                 processed_image = self.preprocess_image(image_np)
                 results = self.reader.readtext(processed_image)
-                
                 for result in results:
                     text = result[1]
                     cleaned_text = self.clean_plate_text(text)
-                    
                     if cleaned_text and self.validate_plate_format(cleaned_text):
                         confidence = min(len(cleaned_text) / 10.0, 1.0)
                         if confidence > best_confidence:
@@ -172,23 +168,17 @@ class PlateRecognitionService:
             processing_time = time.time() - start_time
             return "ERROR", 0.0, processing_time
 
-    def enhance_image(self, image: np.ndarray) -> np.ndarray:
+    def enhance_image(self, image: Any) -> Any:
+        if cv2 is None:
+            raise RuntimeError("OpenCV not available on this server")
         """Enhance image for better OCR results"""
-        # Convert to grayscale
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        
-        # Apply histogram equalization
         equalized = cv2.equalizeHist(gray)
-        
-        # Apply bilateral filter to reduce noise while preserving edges
         filtered = cv2.bilateralFilter(equalized, 9, 75, 75)
-        
-        # Apply adaptive thresholding
         thresh = cv2.adaptiveThreshold(filtered, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
-        
         return thresh
 
-    def save_debug_image(self, image: np.ndarray, plate_regions: list, filename: str = "debug_plate.jpg"):
+    def save_debug_image(self, image: Any, plate_regions: list, filename: str = "debug_plate.jpg"):
         """Save debug image with detected regions marked"""
         debug_image = image.copy()
         
