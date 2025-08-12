@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
-import { 
-  LayoutDashboard, 
-  Clock, 
-  AlertTriangle, 
-  Users, 
-  Car, 
-  BarChart3, 
-  Shield, 
-  Settings, 
-  UserCog, 
-  LogOut, 
+import {
+  LayoutDashboard,
+  Clock,
+  AlertTriangle,
+  Users,
+  Car,
+  BarChart3,
+  Shield,
+  Settings,
+  UserCog,
+  LogOut,
   Menu,
-  X
+  X,
+  Bell
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -28,6 +29,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem, onItemClick, onLogout, da
     { id: 'overview', label: 'Overview Dashboard', icon: LayoutDashboard },
     { id: 'pending-approvals', label: 'Pending Approvals', icon: Clock },
     { id: 'violation-management', label: 'Violation Management', icon: AlertTriangle },
+    { id: 'notifications', label: 'Notifications', icon: Bell },
     { id: 'user-accounts', label: 'User Account Management', icon: Users },
     { id: 'vehicle-registry', label: 'Data Entry & Vehicle Registry', icon: Car },
     { id: 'analytics', label: 'Analytics & Reporting', icon: BarChart3 },

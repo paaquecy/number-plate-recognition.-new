@@ -19,10 +19,15 @@ from database.supabase_client import supabase
 from models.user import User, UserCreate, UserLogin
 from models.vehicle import Vehicle, VehicleCreate
 from models.violation import Violation, ViolationCreate
+from models.dvla import (
+    DVLAUser, DVLAUserCreate, DVLAVehicle, DVLAVehicleCreate,
+    DVLARenewal, DVLARenewalCreate, DVLAFine, DVLAFineCreate, DVLAAnalytics
+)
 from services.auth_service import AuthService
 from services.plate_recognition_service import PlateRecognitionService
 from services.vehicle_service import VehicleService
 from services.violation_service import ViolationService
+from services.dvla_service import DVLAService
 
 # Load environment variables
 load_dotenv()
@@ -51,6 +56,7 @@ auth_service = AuthService()
 plate_recognition_service = PlateRecognitionService()
 vehicle_service = VehicleService()
 violation_service = ViolationService()
+dvla_service = DVLAService()
 
 # Models
 class Token(BaseModel):
@@ -178,5 +184,158 @@ async def reject_violation(violation_id: str, reason: str, current_user: str = D
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+# DVLA Endpoints
+@app.post("/dvla/auth/register", response_model=DVLAUser)
+async def register_dvla_user(user_data: DVLAUserCreate):
+    """Register new DVLA user"""
+    try:
+        user = await dvla_service.create_dvla_user(user_data)
+        return user
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/dvla/auth/login", response_model=Token)
+async def login_dvla_user(user_credentials: UserLogin):
+    """Login DVLA user"""
+    try:
+        user = await dvla_service.authenticate_dvla_user(user_credentials.username, user_credentials.password)
+        if not user:
+            raise HTTPException(status_code=401, detail="Invalid credentials")
+
+        access_token = auth_service.create_access_token(data={"sub": str(user.id), "role": user.role})
+        return Token(access_token=access_token, token_type="bearer", user_role=user.role)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/dvla/users", response_model=List[DVLAUser])
+async def get_dvla_users(current_user: str = Depends(get_current_user)):
+    """Get all DVLA users"""
+    try:
+        users = await dvla_service.get_dvla_users()
+        return users
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/dvla/vehicles", response_model=DVLAVehicle)
+async def create_dvla_vehicle(vehicle_data: DVLAVehicleCreate, current_user: str = Depends(get_current_user)):
+    """Create new vehicle record"""
+    try:
+        vehicle = await dvla_service.create_vehicle(vehicle_data, int(current_user))
+        return vehicle
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.get("/dvla/vehicles", response_model=List[DVLAVehicle])
+async def get_dvla_vehicles(search: Optional[str] = None, limit: int = 100, current_user: str = Depends(get_current_user)):
+    """Get vehicles with optional search"""
+    try:
+        vehicles = await dvla_service.get_vehicles(search, limit)
+        return vehicles
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/dvla/vehicles/{vehicle_id}", response_model=DVLAVehicle)
+async def get_dvla_vehicle(vehicle_id: int, current_user: str = Depends(get_current_user)):
+    """Get vehicle by ID"""
+    try:
+        vehicle = await dvla_service.get_vehicle_by_id(vehicle_id)
+        if not vehicle:
+            raise HTTPException(status_code=404, detail="Vehicle not found")
+        return vehicle
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/dvla/vehicles/reg/{reg_number}", response_model=DVLAVehicle)
+async def get_dvla_vehicle_by_reg(reg_number: str, current_user: str = Depends(get_current_user)):
+    """Get vehicle by registration number"""
+    try:
+        vehicle = await dvla_service.get_vehicle_by_reg(reg_number)
+        if not vehicle:
+            raise HTTPException(status_code=404, detail="Vehicle not found")
+        return vehicle
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.put("/dvla/vehicles/{vehicle_id}", response_model=DVLAVehicle)
+async def update_dvla_vehicle(vehicle_id: int, vehicle_data: dict, current_user: str = Depends(get_current_user)):
+    """Update vehicle record"""
+    try:
+        vehicle = await dvla_service.update_vehicle(vehicle_id, vehicle_data)
+        return vehicle
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/dvla/renewals", response_model=DVLARenewal)
+async def create_dvla_renewal(renewal_data: DVLARenewalCreate, current_user: str = Depends(get_current_user)):
+    """Create new renewal record"""
+    try:
+        renewal = await dvla_service.create_renewal(renewal_data, int(current_user))
+        return renewal
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.get("/dvla/renewals", response_model=List[DVLARenewal])
+async def get_dvla_renewals(vehicle_id: Optional[int] = None, status: Optional[str] = None, current_user: str = Depends(get_current_user)):
+    """Get renewals with optional filtering"""
+    try:
+        renewals = await dvla_service.get_renewals(vehicle_id, status)
+        return renewals
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.put("/dvla/renewals/{renewal_id}/status")
+async def update_dvla_renewal_status(renewal_id: int, status: str, current_user: str = Depends(get_current_user)):
+    """Update renewal status"""
+    try:
+        renewal = await dvla_service.update_renewal_status(renewal_id, status)
+        return renewal
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/dvla/fines", response_model=DVLAFine)
+async def create_dvla_fine(fine_data: DVLAFineCreate, current_user: str = Depends(get_current_user)):
+    """Create new fine record"""
+    try:
+        fine = await dvla_service.create_fine(fine_data, int(current_user))
+        return fine
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.get("/dvla/fines", response_model=List[DVLAFine])
+async def get_dvla_fines(vehicle_id: Optional[int] = None, payment_status: Optional[str] = None, current_user: str = Depends(get_current_user)):
+    """Get fines with optional filtering"""
+    try:
+        fines = await dvla_service.get_fines(vehicle_id, payment_status)
+        return fines
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.put("/dvla/fines/{fine_id}/payment")
+async def update_dvla_fine_payment(fine_id: str, payment_data: dict, current_user: str = Depends(get_current_user)):
+    """Update fine payment status"""
+    try:
+        fine = await dvla_service.update_fine_payment(fine_id, payment_data)
+        return fine
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.put("/dvla/fines/{fine_id}/clear")
+async def clear_dvla_fine(fine_id: str, current_user: str = Depends(get_current_user)):
+    """Clear/dismiss a fine"""
+    try:
+        fine = await dvla_service.clear_fine(fine_id, int(current_user))
+        return fine
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.get("/dvla/analytics", response_model=DVLAAnalytics)
+async def get_dvla_analytics(current_user: str = Depends(get_current_user)):
+    """Get DVLA system analytics"""
+    try:
+        analytics = await dvla_service.get_analytics()
+        return analytics
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000) 
+    uvicorn.run(app, host="0.0.0.0", port=8000)

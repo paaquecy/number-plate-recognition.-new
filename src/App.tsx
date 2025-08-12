@@ -16,6 +16,7 @@ import AdministrativeControls from './components/AdministrativeControls';
 import SystemSettings from './components/SystemSettings';
 import AddNewRole from './components/AddNewRole';
 import NotificationsPage from './components/NotificationsPage';
+import NotificationsContent from './components/NotificationsContent';
 import AuditLogViewer from './components/AuditLogViewer';
 import SessionStatusIndicator from './components/SessionStatusIndicator';
 import DataPersistenceTest from './components/DataPersistenceTest';
@@ -242,12 +243,14 @@ function AppContent() {
     setCurrentPage(page);
     if (page === 'dashboard') {
       setActiveItem('overview');
+    } else if (page === 'notifications') {
+      setActiveItem('notifications');
     }
 
     // Save page navigation state to session
     saveSessionState({
       currentPage: page,
-      activeItem: page === 'dashboard' ? 'overview' : activeItem
+      activeItem: page === 'dashboard' ? 'overview' : page === 'notifications' ? 'notifications' : activeItem
     });
     updateActivity();
   };
@@ -260,6 +263,8 @@ function AppContent() {
         return 'Pending Approvals';
       case 'violation-management':
         return 'Violation Management';
+      case 'notifications':
+        return 'Notifications';
       case 'user-accounts':
         return 'User Account Management';
       case 'vehicle-registry':
@@ -346,7 +351,7 @@ function AppContent() {
               onStatusChange={handleViolationStatusChange}
               onDateChange={handleDateChange}
             />
-            
+
             <ViolationTable
               searchQuery={searchQuery}
               plateNumberFilter={plateNumberFilter}
@@ -356,6 +361,8 @@ function AppContent() {
             />
           </>
         );
+      case 'notifications':
+        return <NotificationsContent />;
       case 'user-accounts':
         return <UserAccountManagement searchQuery={searchQuery} />;
       case 'vehicle-registry':

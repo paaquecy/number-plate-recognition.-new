@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { User } from '../types';
 import { mockUser } from '../data/mockData';
+import { unifiedAPI } from '../lib/unified-api';
 
 interface AuthContextType {
   user: User | null;
@@ -30,22 +31,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (username: string, password: string): Promise<boolean> => {
     setIsLoading(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Mock authentication - accept any supervisor credentials
-    if (username === 'supervisor1' && password === 'password123') {
-      setUser(mockUser);
+
+    try {
+      const response = await unifiedAPI.login(username, password, 'supervisor');
+
+      if (response.data && !response.error) {
+        // Use mock user data for now, but with unified API token
+        setUser(mockUser);
+        setIsLoading(false);
+        return true;
+      }
+
       setIsLoading(false);
-      return true;
+      return false;
+    } catch (error) {
+      console.error('Login error:', error);
+      setIsLoading(false);
+      return false;
     }
-    
-    setIsLoading(false);
-    return false;
   };
 
   const logout = () => {
+    unifiedAPI.logout();
     setUser(null);
   };
 

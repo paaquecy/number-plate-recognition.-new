@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Supabase configuration
-SUPABASE_URL = os.getenv("https://lecgzbljmubqjpvjgjgk.supabase.co")
+SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_ANON_KEY")
 
 if not SUPABASE_URL or not SUPABASE_KEY:
@@ -26,4 +26,4 @@ def test_connection():
         return False
 
 if __name__ == "__main__":
-    test_connection() 
+    test_connection()
