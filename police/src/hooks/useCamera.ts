@@ -25,21 +25,42 @@ export function useCamera(): CameraHook {
     setError(null);
 
     try {
-      // Request camera access with optimal settings for plate scanning
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
-          facingMode: 'environment', // Use back camera on mobile
-          frameRate: { ideal: 30 }
-        },
-        audio: false
-      });
+      // Check if mediaDevices is supported
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Camera access is not supported in this browser');
+      }
+
+      // Request camera access with fallback constraints
+      let stream: MediaStream;
+
+      try {
+        // Try with optimal settings first
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+            facingMode: 'environment', // Use back camera on mobile
+            frameRate: { ideal: 30 }
+          },
+          audio: false
+        });
+      } catch (highResError) {
+        console.warn('High resolution camera access failed, trying basic settings:', highResError);
+
+        // Fallback to basic video constraints
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            width: { ideal: 640 },
+            height: { ideal: 480 }
+          },
+          audio: false
+        });
+      }
 
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         streamRef.current = stream;
-        
+
         // Wait for video to be ready
         await new Promise<void>((resolve, reject) => {
           if (!videoRef.current) {
@@ -63,7 +84,23 @@ export function useCamera(): CameraHook {
       }
     } catch (err) {
       console.error('Error accessing camera:', err);
-      setError(err instanceof Error ? err.message : 'Failed to access camera');
+      let errorMessage = 'Failed to access camera';
+
+      if (err instanceof Error) {
+        if (err.name === 'NotAllowedError') {
+          errorMessage = 'Camera permission denied. Please grant camera access and try again.';
+        } else if (err.name === 'NotFoundError') {
+          errorMessage = 'No camera found. Please ensure a camera is connected.';
+        } else if (err.name === 'NotReadableError') {
+          errorMessage = 'Camera is already in use by another application.';
+        } else if (err.name === 'OverconstrainedError') {
+          errorMessage = 'Camera constraints could not be satisfied.';
+        } else {
+          errorMessage = err.message;
+        }
+      }
+
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
