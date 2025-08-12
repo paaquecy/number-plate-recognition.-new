@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
-import { 
-  LayoutDashboard, 
-  Clock, 
-  AlertTriangle, 
-  Users, 
-  Car, 
-  BarChart3, 
-  Shield, 
-  Settings, 
-  UserCog, 
-  LogOut, 
+import {
+  LayoutDashboard,
+  Clock,
+  AlertTriangle,
+  Users,
+  Car,
+  BarChart3,
+  Shield,
+  Settings,
+  UserCog,
+  LogOut,
   Menu,
-  X
+  X,
+  Bell
 } from 'lucide-react';
 
 interface SidebarProps {
