@@ -159,7 +159,7 @@ const VehicleScanner = () => {
                 <AlertCircle className="w-8 lg:w-12 h-8 lg:h-12 mx-auto mb-4 text-red-400" />
                 <p className="font-medium text-sm lg:text-base">Camera Access Required</p>
                 <p className="text-xs lg:text-sm text-gray-300 mt-2 mb-4">{cameraError}</p>
-                {cameraError.includes('permission') && (
+                {(cameraError?.includes('permission') || permissionStatus === 'denied') && (
                   <div className="space-y-2">
                     <p className="text-xs text-gray-400">To use the camera scanner:</p>
                     <ol className="text-xs text-gray-400 text-left space-y-1">
@@ -168,6 +168,9 @@ const VehicleScanner = () => {
                       <li>3. Click "Grant Camera Permission" below</li>
                     </ol>
                   </div>
+                )}
+                {permissionStatus === 'prompt' && !cameraError && (
+                  <p className="text-xs text-yellow-400 mb-4">Camera permission is required. Click below to grant access.</p>
                 )}
                 <button
                   onClick={startCamera}
