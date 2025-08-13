@@ -24,3 +24,19 @@ Local dev (optional):
 supabase functions serve --no-verify-jwt
 # Then POST to http://127.0.0.1:54321/functions/v1/<function-name>
 ```
+
+## Netlify: CI Deploy via GitHub Actions
+
+This repo includes `.github/workflows/netlify-deploy.yml` to build and deploy the site to Netlify.
+
+Set these GitHub repo secrets (Settings → Secrets and variables → Actions):
+- `NETLIFY_AUTH_TOKEN` (from Netlify User Settings → Applications → Personal access tokens)
+- `NETLIFY_SITE_ID` (from your Site Settings → General → Site details → API ID)
+- `SUPABASE_URL` and `SUPABASE_ANON_KEY` (used at build time for Vite)
+
+On push to `main`/`master` it deploys to production; PRs and non-main branches create preview deploys.
+
+Ensure `netlify.toml` exists (it does) with:
+- build command: `npm run build`
+- publish dir: `dist`
+- SPA redirect: `/* -> /index.html 200`
