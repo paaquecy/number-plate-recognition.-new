@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, User, Shield, Car, Phone, Mail, Lock, CheckCircle, XCircle, Eye, EyeOff } from 'lucide-react';
-import { addUser, isUsernameExists } from '../utils/userStorage';
+import unifiedAPI from '../lib/unified-api';
 import { validatePassword, getSecurityConfig } from '../utils/securityConfig';
 
 interface RegisterPageProps {
@@ -218,15 +218,12 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onBackToLogin, onRegisterSu
 
     // Basic validation - check if required fields are filled
     const requiredFields = ['firstName', 'lastName', 'telephone', 'email', 'password', 'confirmPassword'];
-    
-    // Add conditional required fields
     if (selectedAccountType === 'police') {
       requiredFields.push('badgeNumber', 'rank', 'station');
     } else if (selectedAccountType === 'dvla') {
       requiredFields.push('idNumber', 'position');
     }
 
-    // Check if all required fields are filled
     for (const field of requiredFields) {
       if (!formData[field as keyof FormData]?.trim()) {
         alert(`Please fill in the ${field.replace(/([A-Z])/g, ' $1').toLowerCase()}`);
@@ -234,82 +231,45 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onBackToLogin, onRegisterSu
       }
     }
 
-    // Check password requirements using centralized validation
     const passwordValidation = validatePassword(formData.password);
     if (!passwordValidation.isValid) {
       alert(`Password validation failed:\n${passwordValidation.errors.join('\n')}`);
       return;
     }
 
-    // Check password confirmation
     if (formData.password !== formData.confirmPassword) {
       alert('Passwords do not match');
       return;
     }
 
-    // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
       alert('Please enter a valid email address');
       return;
     }
 
-    // Check if username already exists
-    const username = selectedAccountType === 'police' ? formData.badgeNumber : formData.idNumber;
-    if (isUsernameExists(username, selectedAccountType)) {
-      alert(`${selectedAccountType === 'police' ? 'Badge number' : 'ID number'} already exists. Please use a different one.`);
-      return;
-    }
-
     setIsSubmitting(true);
-
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      // Create new user in storage
-      const newUser = addUser({
-        firstName: formData.firstName,
-        lastName: formData.lastName,
+      const role = selectedAccountType === 'police' ? 'police' : 'dvla';
+      const username = role === 'police' ? formData.badgeNumber : formData.idNumber;
+      const userPayload: any = {
+        username,
         email: formData.email,
-        telephone: formData.telephone,
-        accountType: selectedAccountType,
-        password: formData.password, // In production, this should be hashed
-        ...(selectedAccountType === 'police'
-          ? {
-              badgeNumber: formData.badgeNumber,
-              rank: formData.rank,
-              station: formData.station
-            }
-          : {
-              idNumber: formData.idNumber,
-              position: formData.position
-            }
-        )
-      });
+        password: formData.password,
+        role,
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        phone_number: formData.telephone,
+        ...(role === 'police'
+          ? { badge_number: formData.badgeNumber, rank: formData.rank, station: formData.station }
+          : { id_number: formData.idNumber, position: formData.position })
+      };
 
-      console.log('Account creation successful:', newUser);
-
-      // Add to pending approvals for the UI
-      onNewRegistration({
-        id: newUser.id,
-        accountType: selectedAccountType,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        telephone: formData.telephone,
-        ...(selectedAccountType === 'police'
-          ? {
-              badgeNumber: formData.badgeNumber,
-              rank: formData.rank,
-              station: formData.station
-            }
-          : {
-              idNumber: formData.idNumber,
-              position: formData.position
-            }
-        )
-      });
+      const response = await unifiedAPI.register(userPayload, role === 'dvla' ? 'dvla' : 'police');
+      if (response.error) {
+        alert(response.error);
+        return;
+      }
 
       alert('Account created successfully! Your account is pending admin approval. You will be notified once approved and can then login.');
       onRegisterSuccess();
