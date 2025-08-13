@@ -74,9 +74,6 @@ class PlateRecognitionResponse(BaseModel):
     vehicle_data: Optional[Vehicle] = None
     processing_time: float
 
-class ApproveUserRequest(BaseModel):
-    user_id: str
-
 # Authentication dependency
 async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
     try:
@@ -113,17 +110,6 @@ async def register(user_data: UserCreate):
     """Register new user (pending approval)"""
     try:
         user = await auth_service.create_user(user_data)
-        return user
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-@app.put("/auth/approve", response_model=User)
-async def approve_account(request: ApproveUserRequest):
-    """Approve a pending user account and make it active"""
-    try:
-        user = await auth_service.approve_user(request.user_id)
-        if not user:
-            raise HTTPException(status_code=404, detail="User not found")
         return user
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

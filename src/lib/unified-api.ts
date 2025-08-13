@@ -133,9 +133,9 @@ class UnifiedAPIClient {
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
     const url = `${this.baseUrl}${endpoint}`;
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      ...options.headers,
+      ...(options.headers as Record<string, string> || {}),
     };
 
     if (this.token) {
@@ -165,8 +165,8 @@ class UnifiedAPIClient {
         endpoint
       });
 
-      // If FastAPI backend is not available, fall back to mock responses for development
-      // Handle network/fetch errors broadly
+      // Only use mock data if the backend is completely unavailable
+      // This ensures we prioritize the real database connection
       const isNetworkError = error instanceof Error && (
         error.message.includes('fetch') ||
         error.message.includes('Failed to fetch') ||
@@ -178,14 +178,13 @@ class UnifiedAPIClient {
         error.name === 'NetworkError'
       );
 
-      // Also handle cases where error might not be an Error instance
       const isLikelyNetworkError = !error ||
         (typeof error === 'object' && 'message' in error &&
          typeof error.message === 'string' &&
          error.message.toLowerCase().includes('fetch'));
 
       if (isNetworkError || isLikelyNetworkError) {
-        console.warn('FastAPI backend not available, using mock response for:', endpoint);
+        console.warn('FastAPI backend not available, using mock response for development:', endpoint);
         return this.getMockResponse<T>(endpoint, options);
       }
 
@@ -214,21 +213,154 @@ class UnifiedAPIClient {
       const mockVehicles = [
         {
           id: 1,
-          reg_number: 'AB12 CDE',
+          reg_number: 'GR 1234 - 23',
           manufacturer: 'Toyota',
           model: 'Corolla',
-          vehicle_type: 'Hatchback',
+          vehicle_type: 'Sedan',
           chassis_number: 'JTDBL40E199000001',
           year_of_manufacture: 2023,
           vin: 'JTDBL40E199000001',
-          license_plate: 'AB12 CDE',
+          license_plate: 'GR 1234 - 23',
           color: 'Silver',
           use_type: 'Private',
           date_of_entry: '2024-01-15',
-          owner_name: 'John Smith',
-          owner_address: '123 High Street, London, UK',
-          owner_phone: '+44 7700 900123',
-          owner_email: 'john.smith@example.com',
+          owner_name: 'Kwame Asante',
+          owner_address: '123 Ring Road Central, Accra, Ghana',
+          owner_phone: '+233-24-123-4567',
+          owner_email: 'kwame.asante@email.com',
+          status: 'active'
+        },
+        {
+          id: 2,
+          reg_number: 'WR 5678 - 23',
+          manufacturer: 'Honda',
+          model: 'Civic',
+          vehicle_type: 'Sedan',
+          chassis_number: 'JTDBL40E199000002',
+          year_of_manufacture: 2023,
+          vin: 'JTDBL40E199000002',
+          license_plate: 'WR 5678 - 23',
+          color: 'Blue',
+          use_type: 'Private',
+          date_of_entry: '2024-02-20',
+          owner_name: 'Ama Osei',
+          owner_address: '456 Takoradi High Street, Takoradi, Ghana',
+          owner_phone: '+233-20-456-7890',
+          owner_email: 'ama.osei@email.com',
+          status: 'active'
+        },
+        {
+          id: 3,
+          reg_number: 'AS 9012 - 23',
+          manufacturer: 'Toyota',
+          model: 'Hilux',
+          vehicle_type: 'Pickup',
+          chassis_number: 'JTDBL40E199000003',
+          year_of_manufacture: 2023,
+          vin: 'JTDBL40E199000003',
+          license_plate: 'AS 9012 - 23',
+          color: 'White',
+          use_type: 'Commercial',
+          date_of_entry: '2024-03-10',
+          owner_name: 'Kofi Mensah',
+          owner_address: '789 Kumasi High Street, Kumasi, Ghana',
+          owner_phone: '+233-26-789-0123',
+          owner_email: 'kofi.mensah@email.com',
+          status: 'active'
+        },
+        {
+          id: 4,
+          reg_number: 'ER 3456 - 23',
+          manufacturer: 'Toyota',
+          model: 'Land Cruiser',
+          vehicle_type: 'SUV',
+          chassis_number: 'JTDBL40E199000004',
+          year_of_manufacture: 2023,
+          vin: 'JTDBL40E199000004',
+          license_plate: 'ER 3456 - 23',
+          color: 'Black',
+          use_type: 'Private',
+          date_of_entry: '2024-04-05',
+          owner_name: 'Abena Addo',
+          owner_address: '321 Koforidua Central, Koforidua, Ghana',
+          owner_phone: '+233-27-321-6540',
+          owner_email: 'abena.addo@email.com',
+          status: 'active'
+        },
+        {
+          id: 5,
+          reg_number: 'CR 7890 - 23',
+          manufacturer: 'Nissan',
+          model: 'Almera',
+          vehicle_type: 'Sedan',
+          chassis_number: 'JTDBL40E199000005',
+          year_of_manufacture: 2023,
+          vin: 'JTDBL40E199000005',
+          license_plate: 'CR 7890 - 23',
+          color: 'Red',
+          use_type: 'Private',
+          date_of_entry: '2024-05-12',
+          owner_name: 'Yaw Darko',
+          owner_address: '654 Cape Coast Road, Cape Coast, Ghana',
+          owner_phone: '+233-54-987-6543',
+          owner_email: 'yaw.darko@email.com',
+          status: 'active'
+        },
+        {
+          id: 6,
+          reg_number: 'BA 4567 - 23',
+          manufacturer: 'Toyota',
+          model: 'Camry',
+          vehicle_type: 'Sedan',
+          chassis_number: 'JTDBL40E199000006',
+          year_of_manufacture: 2023,
+          vin: 'JTDBL40E199000006',
+          license_plate: 'BA 4567 - 23',
+          color: 'Gray',
+          use_type: 'Private',
+          date_of_entry: '2024-06-18',
+          owner_name: 'Kwesi Boateng',
+          owner_address: '234 Sunyani Main Street, Sunyani, Ghana',
+          owner_phone: '+233-56-345-6789',
+          owner_email: 'kwesi.boateng@email.com',
+          status: 'active'
+        },
+        {
+          id: 7,
+          reg_number: 'NR 6789 - 23',
+          manufacturer: 'Toyota',
+          model: 'Hilux',
+          vehicle_type: 'Pickup',
+          chassis_number: 'JTDBL40E199000007',
+          year_of_manufacture: 2023,
+          vin: 'JTDBL40E199000007',
+          license_plate: 'NR 6789 - 23',
+          color: 'White',
+          use_type: 'Commercial',
+          date_of_entry: '2024-07-25',
+          owner_name: 'Fatima Alhassan',
+          owner_address: '567 Tamale Central, Tamale, Ghana',
+          owner_phone: '+233-57-456-7890',
+          owner_email: 'fatima.alhassan@email.com',
+          status: 'active'
+        },
+        {
+          id: 8,
+          reg_number: 'AA 1234 - 23',
+          manufacturer: 'Mercedes-Benz',
+          model: 'S-Class',
+          vehicle_type: 'Sedan',
+          chassis_number: 'JTDBL40E199000008',
+          year_of_manufacture: 2023,
+          vin: 'JTDBL40E199000008',
+          license_plate: 'AA 1234 - 23',
+          color: 'Black',
+          use_type: 'Diplomatic',
+          date_of_entry: '2024-08-30',
+          owner_name: 'Embassy of Germany',
+          owner_address: '123 Ring Road Central, Accra, Ghana',
+          owner_phone: '+233-65-234-5678',
+          owner_email: 'german.embassy@email.com',
           status: 'active'
         }
       ];
@@ -259,8 +391,8 @@ class UnifiedAPIClient {
           vehicle_id: 1,
           offense_description: 'Speeding violation',
           offense_date: '2024-01-10T10:30:00Z',
-          offense_location: 'M25 Junction 15',
-          amount: 100.00,
+          offense_location: 'Tema Motorway Junction',
+          amount: 200.00,
           payment_status: 'unpaid',
           marked_as_cleared: false,
           notes: 'Caught by speed camera'
@@ -288,14 +420,14 @@ class UnifiedAPIClient {
       return {
         data: {
           id: '1',
-          plate_number: 'ABC123',
-          vin: 'TEST123456789',
+          plate_number: 'GR 1234 - 23',
+          vin: 'GH123456789',
           make: 'Toyota',
           model: 'Corolla',
           year: 2023,
-          color: 'Blue',
-          owner_name: 'John Smith',
-          owner_address: '123 Test Street',
+          color: 'Silver',
+          owner_name: 'Kwame Asante',
+          owner_address: '123 Ring Road Central, Accra, Ghana',
           registration_status: 'Valid',
           registration_expiry: '2025-12-31',
           insurance_status: 'Valid',
@@ -310,45 +442,73 @@ class UnifiedAPIClient {
       const mockViolations = [
         {
           id: 'mock-violation-1',
-          plate_number: 'ABC123',
+          plate_number: 'GR 1234 - 23',
           vehicle_id: '1',
           officer_id: '1',
           violation_type: 'Speeding',
-          violation_details: 'Exceeding speed limit by 15 mph',
-          location: 'Main Street, London',
+          violation_details: 'Exceeding speed limit by 20 km/h',
+          location: 'Ring Road Central, Accra',
           status: 'pending',
           evidence_urls: ['https://example.com/evidence1.jpg'],
-          fine_amount: 100,
+          fine_amount: 200,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         },
         {
           id: 'mock-violation-2',
-          plate_number: 'XYZ789',
+          plate_number: 'WR 5678 - 23',
           vehicle_id: '2',
           officer_id: '1',
           violation_type: 'Parking',
           violation_details: 'Parking in no parking zone',
-          location: 'High Street, Manchester',
+          location: 'Takoradi High Street, Takoradi',
           status: 'pending',
           evidence_urls: ['https://example.com/evidence2.jpg'],
-          fine_amount: 50,
+          fine_amount: 100,
           created_at: new Date(Date.now() - 86400000).toISOString(),
           updated_at: new Date(Date.now() - 86400000).toISOString()
         },
         {
           id: 'mock-violation-3',
-          plate_number: 'DEF456',
+          plate_number: 'GN 4567 - 23',
           vehicle_id: '3',
           officer_id: '2',
           violation_type: 'Red Light',
           violation_details: 'Running red light at intersection',
-          location: 'Oxford Street, Birmingham',
+          location: 'Sefwi Wiawso Road, Sefwi Wiawso',
           status: 'approved',
           evidence_urls: ['https://example.com/evidence3.jpg'],
           fine_amount: 75,
           created_at: new Date(Date.now() - 172800000).toISOString(),
           updated_at: new Date(Date.now() - 86400000).toISOString()
+        },
+        {
+          id: 'mock-violation-4',
+          plate_number: 'AS 2345 - 23',
+          vehicle_id: '4',
+          officer_id: '2',
+          violation_type: 'Overloading',
+          violation_details: 'Vehicle carrying more passengers than allowed',
+          location: 'Kumasi High Street, Kumasi',
+          status: 'pending',
+          evidence_urls: ['https://example.com/evidence4.jpg'],
+          fine_amount: 150,
+          created_at: new Date(Date.now() - 259200000).toISOString(),
+          updated_at: new Date(Date.now() - 259200000).toISOString()
+        },
+        {
+          id: 'mock-violation-5',
+          plate_number: 'BA 4567 - 23',
+          vehicle_id: '5',
+          officer_id: '3',
+          violation_type: 'No Insurance',
+          violation_details: 'Vehicle operating without valid insurance',
+          location: 'Sunyani Main Street, Sunyani',
+          status: 'approved',
+          evidence_urls: ['https://example.com/evidence5.jpg'],
+          fine_amount: 300,
+          created_at: new Date(Date.now() - 345600000).toISOString(),
+          updated_at: new Date(Date.now() - 172800000).toISOString()
         }
       ];
       
@@ -418,6 +578,14 @@ class UnifiedAPIClient {
     return this.request<Vehicle>(`/vehicles/${plateNumber}`);
   }
 
+  async getVehicles(): Promise<ApiResponse<Vehicle[]>> {
+    return this.request<Vehicle[]>('/vehicles');
+  }
+
+  async lookupVehicle(plateNumber: string): Promise<ApiResponse<Vehicle>> {
+    return this.request<Vehicle>(`/vehicles/${plateNumber}`);
+  }
+
   async recognizePlate(imageData: string, userId: string): Promise<ApiResponse<any>> {
     return this.request(`/plate-recognition`, {
       method: 'POST',
@@ -427,6 +595,13 @@ class UnifiedAPIClient {
 
   // Violation Management
   async createViolation(violationData: any): Promise<ApiResponse<Violation>> {
+    return this.request<Violation>('/violations', {
+      method: 'POST',
+      body: JSON.stringify(violationData),
+    });
+  }
+
+  async submitViolation(violationData: any): Promise<ApiResponse<Violation>> {
     return this.request<Violation>('/violations', {
       method: 'POST',
       body: JSON.stringify(violationData),
@@ -486,6 +661,12 @@ class UnifiedAPIClient {
     return this.request<DVLAVehicle>(`/dvla/vehicles/${vehicleId}`, {
       method: 'PUT',
       body: JSON.stringify(vehicleData),
+    });
+  }
+
+  async deleteDVLAVehicle(vehicleId: number): Promise<ApiResponse<any>> {
+    return this.request<any>(`/dvla/vehicles/${vehicleId}`, {
+      method: 'DELETE',
     });
   }
 

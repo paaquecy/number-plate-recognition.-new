@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { api, User, Vehicle, Violation } from '../lib/api';
+import { unifiedAPI } from '../lib/unified-api';
 
 export interface ViolationRecord {
   id: string;
@@ -51,17 +51,6 @@ export interface Notification {
   system: string;
 }
 
-export interface ReportRecord {
-  id: string;
-  title: string;
-  reportType: string;
-  location: string;
-  description: string;
-  dateTime: string;
-  status: 'Submitted' | 'Approved' | 'Draft';
-  reportedBy?: string;
-}
-
 interface DataContextType {
   // Data state
   users: any[];
@@ -69,7 +58,6 @@ interface DataContextType {
   vehicles: VehicleRecord[];
   fines: DVLAFine[];
   notifications: Notification[];
-  reports: ReportRecord[];
   
   // Loading states
   isLoading: boolean;
@@ -105,10 +93,6 @@ interface DataContextType {
   markNotificationAsRead: (notificationId: string) => void;
   getUnreadNotifications: () => Notification[];
   
-  // Reports management
-  addReport: (report: Omit<ReportRecord, 'id' | 'dateTime'> & { dateTime?: string }) => void;
-  getRecentReports: (limit?: number) => ReportRecord[];
-  
   // Authentication
   authenticateUser: (username: string, password: string) => any | null;
   
@@ -130,7 +114,6 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
   const [vehicles, setVehicles] = useState<VehicleRecord[]>([]);
   const [fines, setFines] = useState<DVLAFine[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [reports, setReports] = useState<ReportRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -160,8 +143,7 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
         'vpr_violations',
         'vpr_vehicles',
         'vpr_fines',
-        'vpr_notifications',
-        'vpr_reports'
+        'vpr_notifications'
       ]);
       if (!e.key || keysToWatch.has(e.key)) {
         loadAllData();
@@ -185,53 +167,51 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     setIsLoading(true);
     setError(null);
     try {
-      // Load vehicles from Supabase
-      const vehiclesData = await api.getVehicles();
-      const convertedVehicles: VehicleRecord[] = vehiclesData.map(v => ({
-        id: v.id,
-        plateNumber: v.plate_number,
-        make: v.make,
-        model: v.model,
-        year: v.year,
-        owner: v.owner_name,
-        ownerContact: v.owner_address || '',
-        registrationDate: v.created_at,
-        expiryDate: v.registration_expiry || '',
-        status: v.registration_status === 'Active' ? 'active' : 
-               v.registration_status === 'Expired' ? 'expired' : 'suspended'
-      }));
-      setVehicles(convertedVehicles);
+      // Load vehicles from shared database
+      const vehiclesResponse = await unifiedAPI.getVehicles();
+      if (vehiclesResponse.data) {
+        const convertedVehicles: VehicleRecord[] = vehiclesResponse.data.map((v: any) => ({
+          id: v.id?.toString() || '',
+          plateNumber: v.plate_number || v.reg_number || '',
+          make: v.make || v.manufacturer || '',
+          model: v.model || '',
+          year: v.year || v.year_of_manufacture || 0,
+          owner: v.owner_name || '',
+          ownerContact: v.owner_phone || '',
+          registrationDate: v.registration_date || v.date_of_entry || '',
+          expiryDate: v.registration_expiry || '',
+          status: v.status === 'active' ? 'active' : 'expired'
+        }));
+        setVehicles(convertedVehicles);
+      } else {
+        console.warn('Failed to load vehicles from database:', vehiclesResponse.error);
+      }
 
-      // Load violations from Supabase
-      const violationsData = await api.getViolations();
-      const convertedViolations: ViolationRecord[] = violationsData.map(v => ({
-        id: v.id,
-        plateNumber: v.plate_number,
-        violationType: v.violation_type,
-        location: v.location || '',
-        timestamp: v.created_at,
-        officerId: v.officer_id || '',
-        officerName: 'Officer', // Would need to join with officers table
-        status: v.status?.toLowerCase() as 'pending' | 'approved' | 'rejected' || 'pending',
-        description: v.violation_details || '',
-        fine: v.fine_amount || 0
-      }));
-      setViolations(convertedViolations);
+      // Load violations from shared database
+      const violationsResponse = await unifiedAPI.getViolations();
+      if (violationsResponse.data) {
+        const convertedViolations: ViolationRecord[] = violationsResponse.data.map((v: any) => ({
+          id: v.id || '',
+          plateNumber: v.plate_number || '',
+          violationType: v.violation_type || '',
+          location: v.location || '',
+          timestamp: v.created_at || '',
+          officerId: v.officer_id || '',
+          officerName: v.officer_name || '',
+          status: v.status === 'approved' ? 'approved' : v.status === 'rejected' ? 'rejected' : 'pending',
+          evidence: v.evidence_urls?.[0] || '',
+          description: v.violation_details || '',
+          fine: v.fine_amount || 0
+        }));
+        setViolations(convertedViolations);
+      } else {
+        console.warn('Failed to load violations from database:', violationsResponse.error);
+      }
 
       // Initialize empty arrays for other data types
       setUsers([]);
       setFines([]);
       setNotifications([]);
-      
-      // Load recent police reports from localStorage
-      try {
-        const storedReports = localStorage.getItem('vpr_reports');
-        const parsed: ReportRecord[] = storedReports ? JSON.parse(storedReports) : [];
-        parsed.sort((a, b) => new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime());
-        setReports(parsed);
-      } catch (e) {
-        setReports([]);
-      }
     } catch (error) {
       console.error('Error loading data from Supabase:', error);
       setError(error instanceof Error ? error.message : 'Failed to load data');
@@ -280,11 +260,16 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
 
   const lookupVehicle = async (plateNumber: string) => {
     try {
-      const result = await api.lookupVehicle(plateNumber);
-      return result;
+      const result = await unifiedAPI.lookupVehicle(plateNumber);
+      if (result.data) {
+        return result.data;
+      } else {
+        console.warn('Vehicle not found in database:', result.error);
+        return null;
+      }
     } catch (error) {
-      console.error('Vehicle lookup error:', error);
-      throw error;
+      console.error('Error looking up vehicle:', error);
+      return null;
     }
   };
   // Violation management functions
@@ -300,11 +285,17 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
 
   const submitViolation = async (violationData: any) => {
     try {
-      await api.submitViolation(violationData);
-      // Refresh violations after submission
-      await loadAllData();
+      const result = await unifiedAPI.submitViolation(violationData);
+      if (result.data) {
+        console.log('Violation submitted successfully:', result.data);
+        // Refresh violations after submission
+        await loadAllData();
+      } else {
+        console.error('Failed to submit violation:', result.error);
+        throw new Error(result.error || 'Failed to submit violation');
+      }
     } catch (error) {
-      console.error('Submit violation error:', error);
+      console.error('Error submitting violation:', error);
       throw error;
     }
   };
@@ -355,34 +346,6 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     return notifications.filter(notification => !notification.read);
   };
 
-  // Reports management functions
-  const addReport = (reportInput: Omit<ReportRecord, 'id' | 'dateTime'> & { dateTime?: string }) => {
-    const newReport: ReportRecord = {
-      id: Date.now().toString() + Math.random().toString(36).slice(2),
-      title: reportInput.title,
-      reportType: reportInput.reportType,
-      location: reportInput.location,
-      description: reportInput.description,
-      dateTime: reportInput.dateTime || new Date().toISOString(),
-      status: reportInput.status,
-      reportedBy: reportInput.reportedBy
-    };
-
-    const next = [newReport, ...reports];
-    setReports(next);
-    try {
-      localStorage.setItem('vpr_reports', JSON.stringify(next));
-      // notify other tabs
-      window.dispatchEvent(new StorageEvent('storage', { key: 'vpr_reports' } as any));
-    } catch (e) {
-      console.warn('Failed to persist report');
-    }
-  };
-
-  const getRecentReports = (limit: number = 5): ReportRecord[] => {
-    return reports.slice(0, limit);
-  };
-
   // Authentication
   const authenticateUser = (username: string, password: string) => {
     // This would use Supabase auth in a full implementation
@@ -426,7 +389,6 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     vehicles,
     fines,
     notifications,
-    reports,
     isLoading,
     error,
     
@@ -459,10 +421,6 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     addNotification,
     markNotificationAsRead,
     getUnreadNotifications,
-    
-    // Reports
-    addReport,
-    getRecentReports,
     
     // Authentication
     authenticateUser,

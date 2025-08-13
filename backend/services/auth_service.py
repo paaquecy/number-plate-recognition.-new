@@ -141,40 +141,6 @@ class AuthService:
             print(f"User creation error: {e}")
             raise e
 
-    async def approve_user(self, user_id: str) -> Optional[User]:
-        try:
-            # Update user status to active
-            response = supabase.table("users").update({
-                "status": "active",
-                "updated_at": datetime.utcnow().isoformat()
-            }).eq("id", user_id).execute()
-
-            if not response.data:
-                return None
-
-            user_data = response.data[0]
-
-            return User(
-                id=user_data["id"],
-                username=user_data["username"],
-                email=user_data["email"],
-                role=UserRole(user_data["role"]),
-                first_name=user_data["first_name"],
-                last_name=user_data["last_name"],
-                phone_number=user_data.get("phone_number"),
-                status=UserStatus(user_data["status"]),
-                created_at=datetime.fromisoformat(user_data["created_at"]),
-                updated_at=datetime.fromisoformat(user_data["updated_at"]),
-                badge_number=user_data.get("badge_number"),
-                rank=user_data.get("rank"),
-                station=user_data.get("station"),
-                id_number=user_data.get("id_number"),
-                position=user_data.get("position")
-            )
-        except Exception as e:
-            print(f"Approve user error: {e}")
-            return None
-
     async def get_user_by_id(self, user_id: str) -> Optional[User]:
         try:
             response = supabase.table("users").select("*").eq("id", user_id).execute()

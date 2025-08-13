@@ -6,22 +6,64 @@ from PIL import Image
 import easyocr
 import time
 import re
-from typing import Tuple, Optional
+from typing import List, Tuple, Optional
 import os
 
 class PlateRecognitionService:
     def __init__(self):
-        # Initialize EasyOCR for text recognition
+        # Initialize EasyOCR reader for text recognition
         self.reader = easyocr.Reader(['en'])
         
-        # Ghana license plate patterns
+        # Comprehensive Ghanaian license plate patterns
+        # Format: [Regional Prefix] [3-5 Digits] - [2 Digit Year]
         self.plate_patterns = [
-            r'^[A-Z]{2,3}\s?\d{3,4}\s?[A-Z]{1,2}$',  # Standard format: AB 1234 C
-            r'^[A-Z]{2,3}\d{3,4}[A-Z]{1,2}$',         # No spaces: AB1234C
-            r'^[A-Z]{2,3}\s\d{3,4}\s[A-Z]{1,2}$',     # With spaces: AB 1234 C
-            r'^[A-Z]{2,3}\d{3,4}$',                    # Short format: AB1234
-            r'^[A-Z]{2,3}\s\d{3,4}$',                  # Short with space: AB 1234
+            # Standard regional prefixes
+            r'\b(AS|BA|CR|ER|GR|NR|UE|UW|VR|WR|GN|BT|SV|NE|OT)\s+\d{3,5}\s*-\s*\d{2}\b',  # Standard format
+            r'\b(AS|BA|CR|ER|GR|NR|UE|UW|VR|WR|GN|BT|SV|NE|OT)\s*\d{3,5}\s*-\s*\d{2}\b',   # No space after prefix
+            r'\b(AS|BA|CR|ER|GR|NR|UE|UW|VR|WR|GN|BT|SV|NE|OT)\s+\d{3,5}-\d{2}\b',         # No space before dash
+            r'\b(AS|BA|CR|ER|GR|NR|UE|UW|VR|WR|GN|BT|SV|NE|OT)\s*\d{3,5}-\d{2}\b',         # Compact format
+            
+            # Special purpose prefixes
+            r'\b(AA|CD|DP|ET|GA)\s+\d{3,5}\s*-\s*\d{2}\b',  # Special format
+            r'\b(AA|CD|DP|ET|GA)\s*\d{3,5}\s*-\s*\d{2}\b',   # No space after prefix
+            r'\b(AA|CD|DP|ET|GA)\s+\d{3,5}-\d{2}\b',         # No space before dash
+            r'\b(AA|CD|DP|ET|GA)\s*\d{3,5}-\d{2}\b',         # Compact format
+            
+            # Alternative formats (older or variations)
+            r'\b(AS|BA|CR|ER|GR|NR|UE|UW|VR|WR|GN|BT|SV|NE|OT)\s+\d{3,5}\s*/\s*\d{2}\b',   # Using slash
+            r'\b(AA|CD|DP|ET|GA)\s+\d{3,5}\s*/\s*\d{2}\b',   # Special with slash
+            
+            # Without year (older plates)
+            r'\b(AS|BA|CR|ER|GR|NR|UE|UW|VR|WR|GN|BT|SV|NE|OT)\s+\d{3,5}\b',
+            r'\b(AA|CD|DP|ET|GA)\s+\d{3,5}\b',
         ]
+        
+        # Compile patterns for better performance
+        self.compiled_patterns = [re.compile(pattern, re.IGNORECASE) for pattern in self.plate_patterns]
+        
+        # Regional prefix mapping
+        self.regional_prefixes = {
+            'AS': 'Ashanti Region',
+            'BA': 'Bono Region', 
+            'CR': 'Central Region',
+            'ER': 'Eastern Region',
+            'GR': 'Greater Accra Region',
+            'NR': 'Northern Region',
+            'UE': 'Upper East Region',
+            'UW': 'Upper West Region',
+            'VR': 'Volta Region',
+            'WR': 'Western Region',
+            'GN': 'Western North Region',
+            'BT': 'Bono East Region',
+            'SV': 'Savannah Region',
+            'NE': 'North East Region',
+            'OT': 'Oti Region',
+            'AA': 'Diplomatic Plates',
+            'CD': 'Corps Diplomatique',
+            'DP': 'Development Partners',
+            'ET': 'Electoral Commission',
+            'GA': 'Greater Accra (Older)'
+        }
         
         # Load pre-trained model for plate detection (if available)
         self.plate_cascade = None
@@ -101,8 +143,8 @@ class PlateRecognitionService:
 
     def validate_plate_format(self, text: str) -> bool:
         """Validate if the extracted text matches Ghana license plate format"""
-        for pattern in self.plate_patterns:
-            if re.match(pattern, text):
+        for pattern in self.compiled_patterns:
+            if pattern.match(text):
                 return True
         return False
 

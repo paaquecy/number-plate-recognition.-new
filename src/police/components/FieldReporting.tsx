@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useData } from '../../contexts/DataContext';
 import { 
   FileText, 
   Camera, 
@@ -35,7 +34,39 @@ const FieldReporting = () => {
     'Other'
   ];
 
-  const { addReport, getRecentReports } = useData();
+  // Mock recent reports data
+  const [recentReports] = useState([
+    {
+      id: 1,
+      title: 'Traffic Stop - Speeding',
+      dateTime: '2023-10-26 10:30 AM',
+      status: 'Submitted'
+    },
+    {
+      id: 2,
+      title: 'Suspicious Activity - Park',
+      dateTime: '2023-10-26 09:15 AM',
+      status: 'Approved'
+    },
+    {
+      id: 3,
+      title: 'Community Patrol Log',
+      dateTime: '2023-10-25 08:45 PM',
+      status: 'Draft'
+    },
+    {
+      id: 4,
+      title: 'Noise Complaint - Residential',
+      dateTime: '2023-10-25 07:20 PM',
+      status: 'Submitted'
+    },
+    {
+      id: 5,
+      title: 'Vehicle Accident Report',
+      dateTime: '2023-10-25 03:30 PM',
+      status: 'Approved'
+    }
+  ]);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -90,15 +121,6 @@ const FieldReporting = () => {
 
     // Simulate submission process
     setTimeout(() => {
-      // Persist report to shared storage via DataContext
-      addReport({
-        title: formData.reportTitle,
-        reportType: formData.reportType,
-        location: formData.location,
-        description: formData.description,
-        status: 'Submitted'
-      });
-
       setIsSubmitting(false);
       setSubmitStatus('success');
       
@@ -112,8 +134,8 @@ const FieldReporting = () => {
           dateTime: ''
         });
         setSubmitStatus('');
-      }, 1200);
-    }, 1200);
+      }, 2000);
+    }, 2000);
   };
 
   const handleViewDetails = (report) => {
@@ -296,7 +318,7 @@ const FieldReporting = () => {
           </h3>
           
           <div className="space-y-3 lg:space-y-4">
-            {getRecentReports(5).map((report) => (
+            {recentReports.map((report) => (
               <div key={report.id} className="border border-gray-200 rounded-lg p-3 lg:p-4 hover:bg-gray-50 transition-colors duration-200">
                 <div className="space-y-2 lg:space-y-3">
                   <h4 className="text-sm lg:text-base font-semibold text-gray-800 leading-tight">
@@ -304,7 +326,7 @@ const FieldReporting = () => {
                   </h4>
                   
                   <p className="text-xs lg:text-sm text-gray-600">
-                    {new Date(report.dateTime).toLocaleString()}
+                    {report.dateTime}
                   </p>
                   
                   <div className="flex items-center justify-between gap-2">
