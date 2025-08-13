@@ -4,9 +4,14 @@ import {
   Car,
   Calendar,
   Upload,
-  X
+  X,
+  Download,
+  FileText,
+  AlertCircle,
+  CheckCircle
 } from 'lucide-react';
 import { logDataOperation } from '../../utils/auditLog';
+import { unifiedAPI } from '../../lib/unified-api';
 
 interface FormData {
   // Vehicle Details
@@ -58,6 +63,41 @@ interface FormData {
   transactionId: string;
 }
 
+interface ImportedVehicle {
+  regNumber: string;
+  manufacturer: string;
+  model: string;
+  vehicleType: string;
+  chassisNumber: string;
+  yearOfManufacture: string;
+  vin: string;
+  licensePlate: string;
+  color: string;
+  use: string;
+  dateOfEntry: string;
+  length: string;
+  width: string;
+  height: string;
+  numberOfAxles: string;
+  numberOfWheels: string;
+  tyreSizeFront: string;
+  tyreSizeMiddle: string;
+  tyreSizeRear: string;
+  axleLoadFront: string;
+  axleLoadMiddle: string;
+  axleLoadRear: string;
+  weight: string;
+  engineMake: string;
+  engineNumber: string;
+  numberOfCylinders: string;
+  engineCC: string;
+  horsePower: string;
+  fullName: string;
+  address: string;
+  phoneNumber: string;
+  emailAddress: string;
+}
+
 const VehicleDataEntry: React.FC = () => {
   const { darkMode } = useTheme();
   const [formData, setFormData] = useState<FormData>({
@@ -101,6 +141,14 @@ const VehicleDataEntry: React.FC = () => {
 
   const [dragActive, setDragActive] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  
+  // Import functionality states
+  const [importModalOpen, setImportModalOpen] = useState(false);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [importedVehicles, setImportedVehicles] = useState<ImportedVehicle[]>([]);
+  const [importStatus, setImportStatus] = useState<'idle' | 'processing' | 'success' | 'error'>('idle');
+  const [importMessage, setImportMessage] = useState('');
+  const [importProgress, setImportProgress] = useState(0);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -158,17 +206,261 @@ const VehicleDataEntry: React.FC = () => {
     console.log('Form cancelled');
   };
 
+  // CSV Import functionality
+  const parseCSV = (csvText: string): ImportedVehicle[] => {
+    const lines = csvText.split('\n');
+    const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+    const vehicles: ImportedVehicle[] = [];
+
+    for (let i = 1; i < lines.length; i++) {
+      if (lines[i].trim() === '') continue;
+      
+      const values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''));
+      const vehicle: any = {};
+      
+      headers.forEach((header, index) => {
+        vehicle[header] = values[index] || '';
+      });
+      
+      vehicles.push(vehicle as ImportedVehicle);
+    }
+    
+    return vehicles;
+  };
+
+  const validateVehicleData = (vehicle: ImportedVehicle): { isValid: boolean; errors: string[] } => {
+    const errors: string[] = [];
+    
+    if (!vehicle.regNumber) errors.push('Registration number is required');
+    if (!vehicle.manufacturer) errors.push('Manufacturer is required');
+    if (!vehicle.model) errors.push('Model is required');
+    if (!vehicle.licensePlate) errors.push('License plate is required');
+    if (!vehicle.fullName) errors.push('Owner name is required');
+    if (!vehicle.phoneNumber) errors.push('Phone number is required');
+    
+    // Validate Ghanaian license plate format
+    const platePattern = /^(AS|BA|CR|ER|GR|NR|UE|UW|VR|WR|GN|BT|SV|NE|OT|AA|CD|DP|ET|GA)\s+\d{3,5}\s*-\s*\d{2}$/i;
+    if (vehicle.licensePlate && !platePattern.test(vehicle.licensePlate)) {
+      errors.push('Invalid license plate format. Use format: AS 1234 - 23');
+    }
+    
+    return { isValid: errors.length === 0, errors };
+  };
+
+  const handleImportFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && file.type === 'text/csv') {
+      setImportFile(file);
+      setImportStatus('idle');
+      setImportMessage('');
+    } else {
+      setImportMessage('Please select a valid CSV file');
+      setImportStatus('error');
+    }
+  };
+
+  const processImportFile = async () => {
+    if (!importFile) return;
+    
+    setImportStatus('processing');
+    setImportProgress(0);
+    
+    try {
+      const text = await importFile.text();
+      const vehicles = parseCSV(text);
+      
+      // Validate all vehicles
+      const validationResults = vehicles.map(vehicle => ({
+        vehicle,
+        validation: validateVehicleData(vehicle)
+      }));
+      
+      const validVehicles = validationResults
+        .filter(result => result.validation.isValid)
+        .map(result => result.vehicle);
+      
+      const invalidVehicles = validationResults
+        .filter(result => !result.validation.isValid);
+      
+      setImportedVehicles(validVehicles);
+      
+      if (validVehicles.length === 0) {
+        setImportStatus('error');
+        setImportMessage('No valid vehicles found in the CSV file');
+        return;
+      }
+      
+      if (invalidVehicles.length > 0) {
+        setImportMessage(`${validVehicles.length} valid vehicles found. ${invalidVehicles.length} vehicles have validation errors.`);
+      } else {
+        setImportMessage(`${validVehicles.length} vehicles ready for import`);
+      }
+      
+      setImportStatus('success');
+      
+    } catch (error) {
+      setImportStatus('error');
+      setImportMessage('Error processing CSV file');
+      console.error('CSV processing error:', error);
+    }
+  };
+
+  const importVehiclesToDatabase = async () => {
+    if (importedVehicles.length === 0) return;
+    
+    setImportStatus('processing');
+    setImportProgress(0);
+    
+    try {
+      let successCount = 0;
+      let errorCount = 0;
+      
+      for (let i = 0; i < importedVehicles.length; i++) {
+        const vehicle = importedVehicles[i];
+        
+        try {
+          // Convert to the format expected by the API
+          const vehicleData = {
+            reg_number: vehicle.regNumber,
+            manufacturer: vehicle.manufacturer,
+            model: vehicle.model,
+            vehicle_type: vehicle.vehicleType,
+            chassis_number: vehicle.chassisNumber,
+            year_of_manufacture: vehicle.yearOfManufacture,
+            vin: vehicle.vin,
+            license_plate: vehicle.licensePlate,
+            color: vehicle.color,
+            use: vehicle.use,
+            date_of_entry: vehicle.dateOfEntry,
+            length: vehicle.length,
+            width: vehicle.width,
+            height: vehicle.height,
+            number_of_axles: vehicle.numberOfAxles,
+            number_of_wheels: vehicle.numberOfWheels,
+            tyre_size_front: vehicle.tyreSizeFront,
+            tyre_size_middle: vehicle.tyreSizeMiddle,
+            tyre_size_rear: vehicle.tyreSizeRear,
+            axle_load_front: vehicle.axleLoadFront,
+            axle_load_middle: vehicle.axleLoadMiddle,
+            axle_load_rear: vehicle.axleLoadRear,
+            weight: vehicle.weight,
+            engine_make: vehicle.engineMake,
+            engine_number: vehicle.engineNumber,
+            number_of_cylinders: vehicle.numberOfCylinders,
+            engine_cc: vehicle.engineCC,
+            horse_power: vehicle.horsePower,
+            owner_name: vehicle.fullName,
+            owner_address: vehicle.address,
+            owner_phone: vehicle.phoneNumber,
+            owner_email: vehicle.emailAddress
+          };
+          
+          const response = await unifiedAPI.createDVLAVehicle(vehicleData);
+          
+          if (response.data) {
+            successCount++;
+            logDataOperation('Vehicle Imported', `Vehicle imported: ${vehicle.licensePlate}`, 'dvla', 'medium');
+          } else {
+            errorCount++;
+          }
+          
+        } catch (error) {
+          errorCount++;
+          console.error(`Error importing vehicle ${vehicle.licensePlate}:`, error);
+        }
+        
+        setImportProgress(((i + 1) / importedVehicles.length) * 100);
+      }
+      
+      setImportStatus('success');
+      setImportMessage(`Import completed: ${successCount} vehicles imported successfully, ${errorCount} failed`);
+      
+      // Close modal after successful import
+      setTimeout(() => {
+        setImportModalOpen(false);
+        setImportFile(null);
+        setImportedVehicles([]);
+        setImportStatus('idle');
+        setImportMessage('');
+        setImportProgress(0);
+      }, 3000);
+      
+    } catch (error) {
+      setImportStatus('error');
+      setImportMessage('Error during import process');
+      console.error('Import error:', error);
+    }
+  };
+
+  const downloadCSVTemplate = () => {
+    const headers = [
+      'regNumber', 'manufacturer', 'model', 'vehicleType', 'chassisNumber', 'yearOfManufacture',
+      'vin', 'licensePlate', 'color', 'use', 'dateOfEntry', 'length', 'width', 'height',
+      'numberOfAxles', 'numberOfWheels', 'tyreSizeFront', 'tyreSizeMiddle', 'tyreSizeRear',
+      'axleLoadFront', 'axleLoadMiddle', 'axleLoadRear', 'weight', 'engineMake', 'engineNumber',
+      'numberOfCylinders', 'engineCC', 'horsePower', 'fullName', 'address', 'phoneNumber', 'emailAddress'
+    ];
+    
+    const sampleData = [
+      'REG001', 'Toyota', 'Corolla', 'Sedan', 'CHASSIS001', '2023', 'VIN001', 'GR 1234 - 23', 'Silver', 'Private', '2023-01-15',
+      '4.5', '1.8', '1.5', '2', '4', '205/55R16', '', '', '800', '', '', '1200', 'Toyota', 'ENG001', '4', '1800', '140',
+      'Kwame Asante', '123 Ring Road, Accra', '+233-24-123-4567', 'kwame@example.com'
+    ];
+    
+    const csvContent = [headers.join(','), sampleData.join(',')].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'vehicle_import_template.csv';
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
   return (
     <div className={`p-4 sm:p-6 lg:p-8 transition-colors duration-200 ${
       darkMode ? 'bg-gray-900' : 'bg-gray-50'
     }`}>
       <div className="mb-6 sm:mb-8">
-        <h1 className={`text-2xl sm:text-3xl font-bold mb-2 transition-colors duration-200 ${
-          darkMode ? 'text-gray-100' : 'text-gray-900'
-        }`}></h1>
-        <p className={`text-sm sm:text-base transition-colors duration-200 ${
-          darkMode ? 'text-gray-400' : 'text-gray-600'
-        }`}></p>
+        <div className="flex justify-between items-center mb-4">
+          <div>
+            <h1 className={`text-2xl sm:text-3xl font-bold mb-2 transition-colors duration-200 ${
+              darkMode ? 'text-gray-100' : 'text-gray-900'
+            }`}>
+              Vehicle Data Entry
+            </h1>
+            <p className={`text-sm sm:text-base transition-colors duration-200 ${
+              darkMode ? 'text-gray-400' : 'text-gray-600'
+            }`}>
+              Register new vehicles or import vehicle data in bulk
+            </p>
+          </div>
+          
+          {/* Import Button */}
+          <div className="flex space-x-3">
+            <button
+              type="button"
+              onClick={downloadCSVTemplate}
+              className={`flex items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all duration-200 font-medium ${
+                darkMode 
+                  ? 'text-gray-300 border-gray-600 hover:bg-gray-800' 
+                  : 'text-gray-700'
+              }`}
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Template
+            </button>
+            
+            <button
+              type="button"
+              onClick={() => setImportModalOpen(true)}
+              className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-200 font-medium shadow-sm"
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              Import CSV
+            </button>
+          </div>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
@@ -826,6 +1118,232 @@ const VehicleDataEntry: React.FC = () => {
           </button>
         </div>
       </form>
+
+      {/* Import Modal */}
+      {importModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className={`w-full max-w-2xl rounded-xl shadow-xl transition-colors duration-200 ${
+            darkMode ? 'bg-gray-800' : 'bg-white'
+          }`}>
+            {/* Modal Header */}
+            <div className={`flex items-center justify-between p-6 border-b transition-colors duration-200 ${
+              darkMode ? 'border-gray-700' : 'border-gray-200'
+            }`}>
+              <h3 className={`text-lg font-semibold transition-colors duration-200 ${
+                darkMode ? 'text-gray-100' : 'text-gray-900'
+              }`}>
+                Import Vehicle Data
+              </h3>
+              <button
+                onClick={() => setImportModalOpen(false)}
+                className={`p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200 ${
+                  darkMode ? 'hover:bg-gray-700' : ''
+                }`}
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 space-y-6">
+              {/* File Upload Section */}
+              <div>
+                <label className={`block text-sm font-medium mb-3 transition-colors duration-200 ${
+                  darkMode ? 'text-gray-300' : 'text-gray-700'
+                }`}>
+                  Select CSV File
+                </label>
+                
+                <div className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors duration-200 ${
+                  darkMode 
+                    ? 'border-gray-600 bg-gray-700' 
+                    : 'border-gray-300 bg-gray-50'
+                }`}>
+                  <FileText className={`w-12 h-12 mx-auto mb-4 transition-colors duration-200 ${
+                    darkMode ? 'text-gray-400' : 'text-gray-500'
+                  }`} />
+                  
+                  <p className={`text-sm mb-4 transition-colors duration-200 ${
+                    darkMode ? 'text-gray-300' : 'text-gray-600'
+                  }`}>
+                    {importFile ? importFile.name : 'Drag and drop a CSV file here, or click to select'}
+                  </p>
+                  
+                  <input
+                    type="file"
+                    accept=".csv"
+                    onChange={handleImportFileSelect}
+                    className="hidden"
+                    id="csv-import"
+                  />
+                  <label
+                    htmlFor="csv-import"
+                    className={`inline-flex items-center px-4 py-2 border border-transparent rounded-lg font-medium cursor-pointer transition-colors duration-200 ${
+                      darkMode
+                        ? 'bg-blue-600 text-white hover:bg-blue-700'
+                        : 'bg-blue-600 text-white hover:bg-blue-700'
+                    }`}
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    Choose File
+                  </label>
+                </div>
+              </div>
+
+              {/* Status and Progress */}
+              {importStatus !== 'idle' && (
+                <div className="space-y-4">
+                  {/* Progress Bar */}
+                  {importStatus === 'processing' && (
+                    <div>
+                      <div className="flex justify-between text-sm mb-2">
+                        <span className={darkMode ? 'text-gray-300' : 'text-gray-600'}>
+                          Processing...
+                        </span>
+                        <span className={darkMode ? 'text-gray-300' : 'text-gray-600'}>
+                          {Math.round(importProgress)}%
+                        </span>
+                      </div>
+                      <div className={`w-full bg-gray-200 rounded-full h-2 transition-colors duration-200 ${
+                        darkMode ? 'bg-gray-700' : ''
+                      }`}>
+                        <div 
+                          className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${importProgress}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Status Message */}
+                  {importMessage && (
+                    <div className={`flex items-center p-4 rounded-lg ${
+                      importStatus === 'error' 
+                        ? 'bg-red-50 border border-red-200' 
+                        : importStatus === 'success'
+                        ? 'bg-green-50 border border-green-200'
+                        : 'bg-blue-50 border border-blue-200'
+                    }`}>
+                      {importStatus === 'error' ? (
+                        <AlertCircle className="w-5 h-5 text-red-500 mr-3" />
+                      ) : importStatus === 'success' ? (
+                        <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
+                      ) : (
+                        <FileText className="w-5 h-5 text-blue-500 mr-3" />
+                      )}
+                      <span className={`text-sm ${
+                        importStatus === 'error' 
+                          ? 'text-red-700' 
+                          : importStatus === 'success'
+                          ? 'text-green-700'
+                          : 'text-blue-700'
+                      }`}>
+                        {importMessage}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Import Preview */}
+              {importedVehicles.length > 0 && (
+                <div>
+                  <h4 className={`text-sm font-medium mb-3 transition-colors duration-200 ${
+                    darkMode ? 'text-gray-300' : 'text-gray-700'
+                  }`}>
+                    Preview ({importedVehicles.length} vehicles)
+                  </h4>
+                  <div className={`max-h-48 overflow-y-auto border rounded-lg transition-colors duration-200 ${
+                    darkMode ? 'border-gray-600' : 'border-gray-200'
+                  }`}>
+                    <table className="w-full text-sm">
+                      <thead className={`transition-colors duration-200 ${
+                        darkMode ? 'bg-gray-700' : 'bg-gray-50'
+                      }`}>
+                        <tr>
+                          <th className={`px-3 py-2 text-left transition-colors duration-200 ${
+                            darkMode ? 'text-gray-300' : 'text-gray-700'
+                          }`}>Plate</th>
+                          <th className={`px-3 py-2 text-left transition-colors duration-200 ${
+                            darkMode ? 'text-gray-300' : 'text-gray-700'
+                          }`}>Make</th>
+                          <th className={`px-3 py-2 text-left transition-colors duration-200 ${
+                            darkMode ? 'text-gray-300' : 'text-gray-700'
+                          }`}>Owner</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {importedVehicles.slice(0, 5).map((vehicle, index) => (
+                          <tr key={index} className={`border-t transition-colors duration-200 ${
+                            darkMode ? 'border-gray-600' : 'border-gray-200'
+                          }`}>
+                            <td className={`px-3 py-2 transition-colors duration-200 ${
+                              darkMode ? 'text-gray-300' : 'text-gray-900'
+                            }`}>{vehicle.licensePlate}</td>
+                            <td className={`px-3 py-2 transition-colors duration-200 ${
+                              darkMode ? 'text-gray-300' : 'text-gray-900'
+                            }`}>{vehicle.manufacturer} {vehicle.model}</td>
+                            <td className={`px-3 py-2 transition-colors duration-200 ${
+                              darkMode ? 'text-gray-300' : 'text-gray-900'
+                            }`}>{vehicle.fullName}</td>
+                          </tr>
+                        ))}
+                        {importedVehicles.length > 5 && (
+                          <tr className={`border-t transition-colors duration-200 ${
+                            darkMode ? 'border-gray-600' : 'border-gray-200'
+                          }`}>
+                            <td colSpan={3} className={`px-3 py-2 text-center text-sm transition-colors duration-200 ${
+                              darkMode ? 'text-gray-400' : 'text-gray-500'
+                            }`}>
+                              ... and {importedVehicles.length - 5} more vehicles
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className={`flex justify-end space-x-3 p-6 border-t transition-colors duration-200 ${
+              darkMode ? 'border-gray-700' : 'border-gray-200'
+            }`}>
+              <button
+                onClick={() => setImportModalOpen(false)}
+                className={`px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all duration-200 font-medium ${
+                  darkMode 
+                    ? 'text-gray-300 border-gray-600 hover:bg-gray-700' 
+                    : 'text-gray-700'
+                }`}
+              >
+                Cancel
+              </button>
+              
+              {importFile && !importedVehicles.length && (
+                <button
+                  onClick={processImportFile}
+                  disabled={importStatus === 'processing'}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Process File
+                </button>
+              )}
+              
+              {importedVehicles.length > 0 && (
+                <button
+                  onClick={importVehiclesToDatabase}
+                  disabled={importStatus === 'processing'}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Import to Database
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

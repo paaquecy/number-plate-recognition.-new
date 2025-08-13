@@ -193,69 +193,73 @@ const INITIAL_USERS: User[] = [
   }
 ];
 
+// Mock vehicle data with Ghanaian number plates
 const INITIAL_VEHICLES: VehicleRecord[] = [
   {
-    id: 'VEH001',
-    plateNumber: 'GH-1234-20',
+    id: '1',
+    plateNumber: 'GR 1234 - 23',
     make: 'Toyota',
     model: 'Corolla',
-    year: 2019,
+    year: 2023,
     owner: 'Kwame Asante',
-    ownerContact: '+233 24 123 4567',
-    registrationDate: '2019-03-15',
-    expiryDate: '2025-03-15',
+    ownerContact: '+233-24-123-4567',
+    registrationDate: '2023-01-15',
+    expiryDate: '2025-01-15',
     status: 'active'
   },
   {
-    id: 'VEH002',
-    plateNumber: 'AS-5678-21',
+    id: '2',
+    plateNumber: 'AS 5678 - 23',
     make: 'Honda',
     model: 'Civic',
-    year: 2020,
-    owner: 'Ama Serwaa',
-    ownerContact: '+233 20 987 6543',
-    registrationDate: '2020-07-20',
-    expiryDate: '2025-07-20',
+    year: 2023,
+    owner: 'Ama Osei',
+    ownerContact: '+233-20-456-7890',
+    registrationDate: '2023-02-20',
+    expiryDate: '2025-02-20',
     status: 'active'
   },
   {
-    id: 'VEH003',
-    plateNumber: 'BA-9876-19',
-    make: 'Nissan',
-    model: 'Sentra',
-    year: 2018,
+    id: '3',
+    plateNumber: 'WR 9876 - 23',
+    make: 'Toyota',
+    model: 'Hilux',
+    year: 2023,
     owner: 'Kofi Mensah',
-    ownerContact: '+233 26 555 7777',
-    registrationDate: '2018-11-10',
-    expiryDate: '2024-11-10',
-    status: 'expired'
+    ownerContact: '+233-26-789-0123',
+    registrationDate: '2023-03-10',
+    expiryDate: '2025-03-10',
+    status: 'active'
   }
 ];
 
+// Mock violation data with Ghanaian number plates
 const INITIAL_VIOLATIONS: ViolationRecord[] = [
   {
-    id: 'VIO001',
-    plateNumber: 'GH-1234-20',
+    id: '1',
+    plateNumber: 'GR 1234 - 23',
     violationType: 'Speeding',
-    location: 'Accra-Tema Motorway',
-    timestamp: '2024-01-07 14:30:00',
-    officerId: 'USR003',
-    officerName: 'Officer Michael Osei',
+    location: 'Ring Road Central, Accra',
+    timestamp: '2024-01-15T10:30:00Z',
+    officerId: 'OFF001',
+    officerName: 'Officer Kwame',
     status: 'pending',
-    description: 'Vehicle exceeding speed limit by 20km/h',
-    fine: 150
+    evidence: 'speed_camera_evidence.jpg',
+    description: 'Exceeding speed limit by 20 km/h',
+    fine: 200
   },
   {
-    id: 'VIO002',
-    plateNumber: 'AS-5678-21',
-    violationType: 'Illegal Parking',
-    location: 'Osu, Accra',
-    timestamp: '2024-01-06 09:15:00',
-    officerId: 'USR003',
-    officerName: 'Officer Michael Osei',
+    id: '2',
+    plateNumber: 'AS 5678 - 23',
+    violationType: 'Parking',
+    location: 'Kumasi High Street, Kumasi',
+    timestamp: '2024-01-14T14:15:00Z',
+    officerId: 'OFF002',
+    officerName: 'Officer Ama',
     status: 'approved',
-    description: 'Parked in no-parking zone',
-    fine: 50
+    evidence: 'parking_violation.jpg',
+    description: 'Parking in no parking zone',
+    fine: 100
   }
 ];
 

@@ -207,9 +207,28 @@ export class PlateDetector {
     
     // Simulate OCR result based on image characteristics
     // In a real implementation, you would use a proper OCR library
+    // Simulated plate numbers for testing (Ghanaian format)
     const simulatedPlates = [
-      'ABC123', 'XYZ789', 'DEF456', 'GHI012', 'JKL345',
-      'MNO678', 'PQR901', 'STU234', 'VWX567', 'YZA890'
+      'GR 1234 - 23',
+      'AS 5678 - 23', 
+      'WR 9876 - 23',
+      'ER 3456 - 23',
+      'CR 7890 - 23',
+      'BA 4567 - 23',
+      'NR 6789 - 23',
+      'UE 8901 - 23',
+      'UW 0123 - 23',
+      'VR 2345 - 23',
+      'GN 9012 - 23',
+      'BT 4567 - 23',
+      'SV 6789 - 23',
+      'NE 8901 - 23',
+      'OT 0123 - 23',
+      'AA 1234 - 23',
+      'CD 5678 - 23',
+      'DP 9012 - 23',
+      'ET 3456 - 23',
+      'GA 7890 - 23'
     ];
     
     // Return a random plate for demonstration
@@ -252,9 +271,28 @@ export class PlateDetector {
 
   private fallbackDetection(): PlateDetectionResult | null {
     // Simulate plate detection when OpenCV is not available
+    // Simulated plate numbers for testing (Ghanaian format)
     const simulatedPlates = [
-      'ABC123', 'XYZ789', 'DEF456', 'GHI012', 'JKL345',
-      'MNO678', 'PQR901', 'STU234', 'VWX567', 'YZA890'
+      'GR 1234 - 23',
+      'AS 5678 - 23', 
+      'WR 9876 - 23',
+      'ER 3456 - 23',
+      'CR 7890 - 23',
+      'BA 4567 - 23',
+      'NR 6789 - 23',
+      'UE 8901 - 23',
+      'UW 0123 - 23',
+      'VR 2345 - 23',
+      'GN 9012 - 23',
+      'BT 4567 - 23',
+      'SV 6789 - 23',
+      'NE 8901 - 23',
+      'OT 0123 - 23',
+      'AA 1234 - 23',
+      'CD 5678 - 23',
+      'DP 9012 - 23',
+      'ET 3456 - 23',
+      'GA 7890 - 23'
     ];
 
     // Return a random simulated detection
