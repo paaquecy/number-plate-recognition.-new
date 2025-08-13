@@ -352,3 +352,23 @@ BUG FIXES AND SYNTAX CORRECTIONS (LATEST):
     - Notification bell icon navigation working correctly
     - Analytics & Reporting page displaying real-time data
     - All four applications (Main, DVLA, Police, Supervisor) fully functional
+
+## 2025-08-13 - Run Status and Environment Update
+
+56. FRONTEND RUN STATUS:
+    - Vite dev server started successfully
+    - Port 5173 and 5174 were busy; server is running on http://localhost:5175/
+
+57. PYTHON INSTALLATION STATUS:
+    - User reported Python installed
+    - System PATH did not detect `python` or `py` yet during verification
+    - Next action: Open a new PowerShell window (to refresh PATH) and verify with `python --version`
+    - If still unavailable, install from Microsoft Store or python.org with "Add to PATH" checked, or use full path from `%LocalAppData%\Programs\Python\Python3xx\python.exe`
+
+58. BACKEND START INSTRUCTIONS (once Python is detected):
+    - `cd backend`
+    - `python -m venv .venv`
+    - `.\.venv\Scripts\Activate.ps1`
+    - `python -m pip install --upgrade pip`
+    - `python -m pip install -r requirements.txt`
+    - `python start.py`
