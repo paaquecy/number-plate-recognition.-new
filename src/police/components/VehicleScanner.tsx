@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { 
   Search, 
   Scan, 
@@ -29,6 +29,7 @@ const VehicleScanner = () => {
   const [detectionResult, setDetectionResult] = useState<PlateDetectionResult | null>(null);
   const [scanInterval, setScanInterval] = useState<NodeJS.Timeout | null>(null);
   const [permissionStatus, setPermissionStatus] = useState<'granted' | 'denied' | 'prompt' | 'unknown'>('unknown');
+  const autoStartRef = useRef(false);
 
   const {
     videoRef,
@@ -68,6 +69,11 @@ const VehicleScanner = () => {
       try {
         await plateDetector.initialize();
         console.log('Plate detector initialized successfully');
+        // Auto-start camera and scanning after detector initializes
+        if (!autoStartRef.current) {
+          autoStartRef.current = true;
+          handleStartScan();
+        }
       } catch (error) {
         console.error('Failed to initialize plate detector:', error);
       }
@@ -82,6 +88,14 @@ const VehicleScanner = () => {
       }
     };
   }, [scanInterval]);
+
+  // Auto-start scanning when permission state becomes known and not denied
+  useEffect(() => {
+    if (!autoStartRef.current && permissionStatus !== 'denied') {
+      autoStartRef.current = true;
+      handleStartScan();
+    }
+  }, [permissionStatus]);
 
   const requestCameraPermission = async () => {
     try {
@@ -103,17 +117,38 @@ const VehicleScanner = () => {
       
       if (result && result.confidence > 0.7) {
         setDetectionResult(result);
-        
-        // Auto-populate scan results with detected plate
-        const mockResults = {
-          plateNumber: result.plateNumber,
-          vehicleModel: '2019 Toyota Corolla',
-          owner: 'Kwame Asante',
-          status: Math.random() > 0.5 ? 'No Violations' : 'Outstanding Parking Ticket',
-          statusType: Math.random() > 0.5 ? 'clean' : 'violation'
-        };
-        
-        setScanResults(mockResults);
+        // Lookup detected plate in database
+        try {
+          const lookup = await lookupVehicle(result.plateNumber);
+          if (lookup && lookup.vehicle) {
+            const vehicle = lookup.vehicle;
+            setScanResults({
+              plateNumber: vehicle.plate_number || result.plateNumber,
+              vehicleModel: `${vehicle.year || vehicle.year_of_manufacture || ''} ${vehicle.make || vehicle.manufacturer || ''} ${vehicle.model || ''}`.trim() || 'Unknown',
+              owner: vehicle.owner_name || 'Unknown',
+              status: lookup.outstandingViolations > 0 ? `${lookup.outstandingViolations} Outstanding Violation(s)` : 'No Violations',
+              statusType: lookup.outstandingViolations > 0 ? 'violation' : 'clean'
+            });
+          } else {
+            // Not found in database => mark as Invalid
+            setScanResults({
+              plateNumber: result.plateNumber,
+              vehicleModel: 'Invalid',
+              owner: 'Invalid',
+              status: 'Invalid',
+              statusType: 'violation'
+            });
+          }
+        } catch (e) {
+          console.error('Lookup failed after detection:', e);
+          setScanResults({
+            plateNumber: result.plateNumber,
+            vehicleModel: 'Lookup Error',
+            owner: 'Error',
+            status: 'System Error',
+            statusType: 'violation'
+          });
+        }
         setIsScanning(false);
         
         // Stop continuous scanning after successful detection
@@ -121,11 +156,14 @@ const VehicleScanner = () => {
           clearInterval(scanInterval);
           setScanInterval(null);
         }
+
+        // Close the camera stream after a successful scan
+        stopCamera();
       }
     } catch (error) {
       console.error('Error during plate detection:', error);
     }
-  }, [cameraActive, scanInterval]);
+  }, [cameraActive, scanInterval, stopCamera]);
 
   const handleStartScan = async () => {
     if (!cameraActive) {

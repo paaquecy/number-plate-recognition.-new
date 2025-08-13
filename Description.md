@@ -13,6 +13,13 @@ The application is built using modern web technologies:
 - **Charts:** Recharts for data visualization
 - **Routing:** React Router DOM
 - **Icons:** Lucide React
+- **Backend:** Python FastAPI (unified backend for all apps)
+- **Database:** Supabase (PostgreSQL)
+
+### Backend & Database
+- All modules (Main, DVLA, Police, Supervisor) now communicate with a single FastAPI backend (`backend/main.py`).
+- Data is stored in a single Supabase PostgreSQL database, accessed via `backend/database/supabase_client.py`.
+- Legacy backends (Node.js for DVLA, Supabase Edge Functions for Police) are deprecated and no longer required.
 
 ## Applications Overview
 
@@ -80,6 +87,11 @@ The application is built using modern web technologies:
 2. **Credential-Based Routing:** Based on login credentials, users are automatically routed to their respective application
 3. **Session Management:** Maintains user sessions and application state
 4. **Logout Functionality:** Secure logout that returns users to the login page
+5. **Deterministic Role Routing:**
+   - DVLA `0987654321 / Bigfish020` → opens the DVLA app
+   - Police `1234567890 / Madman020` → opens the Police app
+   - Admin `4231220075 / Wattaddo020` → opens the Main admin dashboard
+   - Supervisor `0203549815 / Killerman020` → opens the Supervisor app
 
 ### Data Flow
 1. **Police Officers** report violations through the Police app
@@ -114,7 +126,13 @@ The application is built using modern web technologies:
 ### Real-time Updates
 - Hot module replacement for development
 - Live updates without page refresh
-- Real-time data synchronization
+- **Auto-sync with backend on refresh/focus:** Data context re-fetches from FastAPI whenever the page is loaded, the tab regains focus, network goes online, or cross-tab storage changes.
+
+### Security Management
+- Centralized security configuration (password policy, session timeout, 2FA toggle, IP whitelisting) is managed in the app and applied across all modules.
+
+### Email Notifications
+- When an account is approved or rejected from the admin dashboard, a simulated email notification is generated and logged (for demo environments) and can be viewed in the Email Notification History.
 
 ### Security Features
 - Credential-based access control
@@ -156,10 +174,24 @@ The application is built using modern web technologies:
 - Efficient state management
 - Optimized performance
 
-## Deployment
+## Deployment / Run Locally (Windows)
 
-The application is currently running on:
-- **Local Development:** http://localhost:5174/
+Backend (FastAPI):
+1. Install Python 3.11+ (e.g., via `winget install -e --id Python.Python.3.11`).
+2. In `backend/`:
+   - Create and activate venv (optional): `python -m venv .venv` then `..\.venv\Scripts\Activate.ps1`
+   - Install deps: `python -m pip install -r requirements.txt`
+   - Start API: `python start.py`
+3. API will run at `http://localhost:8000`.
+
+Frontend (Vite React):
+1. From project root:
+   - Install deps: `npm ci`
+   - Ensure API base URL: set env `VITE_API_BASE_URL=http://localhost:8000` (or add to `.env` for Vite)
+   - Start dev server: `npm run dev`
+2. App runs at `http://localhost:5173` (Vite default).
+
+Build & Packaging:
 - **Build System:** Vite for fast development and optimized production builds
 - **Package Management:** npm for dependency management
 

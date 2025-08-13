@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { approveUser, rejectUser } from '../utils/userStorage';
+import { unifiedAPI } from '../lib/unified-api';
 import { logApproval } from '../utils/auditLog';
 import { sendEmailNotification, EmailNotificationData } from '../utils/emailService';
 
@@ -55,6 +56,16 @@ const PendingApprovalsTable: React.FC<PendingApprovalsTableProps> = ({
     const approvedUser = approveUser(approval.id);
 
     if (approvedUser) {
+      // Persist to backend database: set status to active
+      try {
+        await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/auth/approve`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id: approvedUser.id })
+        });
+      } catch (err) {
+        console.warn('Backend approve sync failed, will rely on next sync to reconcile');
+      }
       const loginCredential = approval.accountType === 'police'
         ? approval.additionalInfo.badgeNumber
         : approval.additionalInfo.idNumber;

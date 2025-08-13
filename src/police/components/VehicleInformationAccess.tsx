@@ -46,16 +46,16 @@ const VehicleInformationAccess = () => {
           };
           setVehicleDetails(vehicleData);
         } else {
-          // No vehicle found
+          // No vehicle found -> mark as Invalid
           setVehicleDetails({
             plateNumber: lookupInput.toUpperCase(),
-            vin: 'Not Found',
-            make: 'Not Found',
-            model: 'Not Found',
+            vin: 'Invalid',
+            make: 'Invalid',
+            model: 'Invalid',
             year: 'N/A',
-            owner: 'Not Found',
-            registrationStatus: 'Not Found',
-            insuranceStatus: 'Not Found',
+            owner: 'Invalid',
+            registrationStatus: 'Invalid',
+            insuranceStatus: 'Invalid',
             outstandingViolations: 0
           });
         }

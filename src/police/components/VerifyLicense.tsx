@@ -41,8 +41,29 @@ const VerifyLicense = () => {
 
     setIsVerifying(true);
     
-    // Simulate verification process
+    // Simulate verification process (replace with backend call when available)
     setTimeout(() => {
+      const found = Math.random() > 0.5; // simulate not found cases
+      if (!found) {
+        setVerificationResults({
+          isValid: false,
+          hasResults: true,
+          licenseData: {
+            licenseNumber: licenseNumber,
+            holderName: 'Invalid',
+            dateOfBirth: '',
+            address: 'Invalid',
+            licenseClass: 'Invalid',
+            issueDate: '',
+            expiryDate: '',
+            status: 'Invalid',
+            restrictions: 'N/A'
+          }
+        });
+        setIsVerifying(false);
+        return;
+      }
+
       const mockLicenseData = {
         licenseNumber: licenseNumber,
         holderName: 'John Smith',
@@ -61,20 +82,23 @@ const VerifyLicense = () => {
         licenseData: mockLicenseData
       });
       setIsVerifying(false);
-    }, 2000);
+    }, 1200);
   };
 
   const getStatusColor = (status: string) => {
+    if (status === 'Invalid') return 'text-red-700';
     return status === 'Valid' ? 'text-green-600' : 'text-red-600';
   };
 
   const getStatusIcon = (status: string) => {
+    if (status === 'Invalid') return <AlertCircle className="w-5 h-5 text-red-700" />;
     return status === 'Valid' 
       ? <CheckCircle className="w-5 h-5 text-green-600" />
       : <AlertCircle className="w-5 h-5 text-red-600" />;
   };
 
   const getStatusBadge = (status: string) => {
+    if (status === 'Invalid') return 'bg-red-100 text-red-800 border border-red-300';
     return status === 'Valid'
       ? 'bg-green-100 text-green-800 border border-green-200'
       : 'bg-red-100 text-red-800 border border-red-200';

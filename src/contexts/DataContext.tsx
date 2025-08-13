@@ -51,6 +51,17 @@ export interface Notification {
   system: string;
 }
 
+export interface ReportRecord {
+  id: string;
+  title: string;
+  reportType: string;
+  location: string;
+  description: string;
+  dateTime: string;
+  status: 'Submitted' | 'Approved' | 'Draft';
+  reportedBy?: string;
+}
+
 interface DataContextType {
   // Data state
   users: any[];
@@ -58,6 +69,7 @@ interface DataContextType {
   vehicles: VehicleRecord[];
   fines: DVLAFine[];
   notifications: Notification[];
+  reports: ReportRecord[];
   
   // Loading states
   isLoading: boolean;
@@ -93,6 +105,10 @@ interface DataContextType {
   markNotificationAsRead: (notificationId: string) => void;
   getUnreadNotifications: () => Notification[];
   
+  // Reports management
+  addReport: (report: Omit<ReportRecord, 'id' | 'dateTime'> & { dateTime?: string }) => void;
+  getRecentReports: (limit?: number) => ReportRecord[];
+  
   // Authentication
   authenticateUser: (username: string, password: string) => any | null;
   
@@ -114,12 +130,55 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
   const [vehicles, setVehicles] = useState<VehicleRecord[]>([]);
   const [fines, setFines] = useState<DVLAFine[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [reports, setReports] = useState<ReportRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // Load initial data
   useEffect(() => {
     loadAllData();
+  }, []);
+
+  // Auto-sync with backend on page visibility/focus/online and cross-tab changes
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        loadAllData();
+      }
+    };
+    const handleWindowFocus = () => {
+      loadAllData();
+    };
+    const handleOnline = () => {
+      loadAllData();
+    };
+    const handleStorage = (e: StorageEvent) => {
+      // If any known keys change in another tab, refresh
+      const keysToWatch = new Set([
+        'prs_users',
+        'vpr_users',
+        'vpr_violations',
+        'vpr_vehicles',
+        'vpr_fines',
+        'vpr_notifications',
+        'vpr_reports'
+      ]);
+      if (!e.key || keysToWatch.has(e.key)) {
+        loadAllData();
+      }
+    };
+
+    window.addEventListener('focus', handleWindowFocus, true);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('storage', handleStorage);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('focus', handleWindowFocus, true);
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('storage', handleStorage);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
   const loadAllData = async () => {
@@ -163,6 +222,16 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
       setUsers([]);
       setFines([]);
       setNotifications([]);
+      
+      // Load recent police reports from localStorage
+      try {
+        const storedReports = localStorage.getItem('vpr_reports');
+        const parsed: ReportRecord[] = storedReports ? JSON.parse(storedReports) : [];
+        parsed.sort((a, b) => new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime());
+        setReports(parsed);
+      } catch (e) {
+        setReports([]);
+      }
     } catch (error) {
       console.error('Error loading data from Supabase:', error);
       setError(error instanceof Error ? error.message : 'Failed to load data');
@@ -286,6 +355,34 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     return notifications.filter(notification => !notification.read);
   };
 
+  // Reports management functions
+  const addReport = (reportInput: Omit<ReportRecord, 'id' | 'dateTime'> & { dateTime?: string }) => {
+    const newReport: ReportRecord = {
+      id: Date.now().toString() + Math.random().toString(36).slice(2),
+      title: reportInput.title,
+      reportType: reportInput.reportType,
+      location: reportInput.location,
+      description: reportInput.description,
+      dateTime: reportInput.dateTime || new Date().toISOString(),
+      status: reportInput.status,
+      reportedBy: reportInput.reportedBy
+    };
+
+    const next = [newReport, ...reports];
+    setReports(next);
+    try {
+      localStorage.setItem('vpr_reports', JSON.stringify(next));
+      // notify other tabs
+      window.dispatchEvent(new StorageEvent('storage', { key: 'vpr_reports' } as any));
+    } catch (e) {
+      console.warn('Failed to persist report');
+    }
+  };
+
+  const getRecentReports = (limit: number = 5): ReportRecord[] => {
+    return reports.slice(0, limit);
+  };
+
   // Authentication
   const authenticateUser = (username: string, password: string) => {
     // This would use Supabase auth in a full implementation
@@ -329,6 +426,7 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     vehicles,
     fines,
     notifications,
+    reports,
     isLoading,
     error,
     
@@ -361,6 +459,10 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     addNotification,
     markNotificationAsRead,
     getUnreadNotifications,
+    
+    // Reports
+    addReport,
+    getRecentReports,
     
     // Authentication
     authenticateUser,
