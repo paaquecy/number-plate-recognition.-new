@@ -54,10 +54,10 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onRegister }) => {
 
     // Try Supabase authentication for police officers
     try {
-      const { data, error } = await signIn(`${username}@police.gov.gh`, password);
+      const { data, error } = await signIn(username, password);
       
       if (data && !error) {
-        console.log('Police officer authenticated via Supabase:', data.user);
+        console.log('Police officer authenticated via backend:', data.user);
         onLogin('police');
         return;
       }
