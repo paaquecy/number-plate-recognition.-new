@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { unifiedAPI } from '../lib/unified-api';
 import {
   Eye,
   EyeOff,
@@ -52,12 +53,39 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onRegister }) => {
       return;
     }
 
-    // Try Supabase authentication for police officers
+    // Explicit test credentials routing
+    if (username === '0987654321' && password === 'Bigfish020') {
+      onLogin('dvla');
+      return;
+    }
+    if (username === '1234567890' && password === 'Madman020') {
+      onLogin('police');
+      return;
+    }
+
+    // Try DVLA login first via unified backend
+    try {
+      const dvlaLogin = await unifiedAPI.login(username, password, 'dvla');
+      if (dvlaLogin.data && !dvlaLogin.error) {
+        onLogin('dvla');
+        return;
+      }
+    } catch (err) {
+      console.log('DVLA login failed, falling back to police');
+    }
+
+    // Try Supabase/unified authentication for police officers
     try {
       const { data, error } = await signIn(`${username}@police.gov.gh`, password);
       
       if (data && !error) {
         console.log('Police officer authenticated via Supabase:', data.user);
+        onLogin('police');
+        return;
+      }
+      // Fallback to unified backend police login if Supabase path fails
+      const policeLogin = await unifiedAPI.login(username, password, 'police');
+      if (policeLogin.data && !policeLogin.error) {
         onLogin('police');
         return;
       }

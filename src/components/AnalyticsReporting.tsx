@@ -213,7 +213,7 @@ const AnalyticsReporting: React.FC = () => {
               <div className="flex items-center">
                 <div className="w-3 h-3 bg-yellow-500 rounded mr-1"></div>
                 <span>Pending</span>
-              </div>
+          </div>
             </div>
           </div>
         </div>
@@ -239,7 +239,7 @@ const AnalyticsReporting: React.FC = () => {
                     <div className="font-medium text-gray-900">{vehicle.count}</div>
                     <div className="text-blue-600">{vehicle.percentage}%</div>
                   </div>
-                </div>
+          </div>
               ))}
             </div>
           </div>
@@ -275,7 +275,7 @@ const AnalyticsReporting: React.FC = () => {
                 </div>
               </div>
               <div className="flex flex-col justify-center">
-                <div className="text-center">
+            <div className="text-center">
                   <div className="text-2xl font-bold text-orange-600">{analyticsData.systemPerformance.systemLoad}%</div>
                   <div className="text-xs text-gray-600">System Load</div>
                 </div>
@@ -434,13 +434,13 @@ const AnalyticsReporting: React.FC = () => {
                     <FileText size={16} />
                   </button>
                   {report.status === 'completed' && (
-                    <button
-                      onClick={() => handleDownloadReport(report.title)}
-                      className="p-2 text-gray-400 hover:text-green-600 transition-colors"
-                      title="Download Report"
-                    >
-                      <Download size={16} />
-                    </button>
+                  <button
+                    onClick={() => handleDownloadReport(report.title)}
+                    className="p-2 text-gray-400 hover:text-green-600 transition-colors"
+                    title="Download Report"
+                  >
+                    <Download size={16} />
+                  </button>
                   )}
                 </div>
               </div>
