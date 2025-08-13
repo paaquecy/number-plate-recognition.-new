@@ -43,12 +43,15 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onRegister }) => {
       return;
     }
 
-    // First check static admin/supervisor credentials
+    // First check static admin/supervisor/dvla credentials
     if (username === '4231220075' && password === 'Wattaddo020') {
       onLogin('main');
       return;
     } else if (username === '0203549815' && password === 'Killerman020') {
       onLogin('supervisor');
+      return;
+    } else if (username === 'admin' && password === 'admin123') {
+      onLogin('dvla');
       return;
     }
 
