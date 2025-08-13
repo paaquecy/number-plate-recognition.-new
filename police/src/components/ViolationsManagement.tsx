@@ -8,6 +8,18 @@ import {
   Filter
 } from 'lucide-react';
 
+interface Violation {
+  id: string;
+  plateNumber: string;
+  violationType: string;
+  location: string;
+  timestamp: string;
+  officer: string;
+  status: string;
+  description: string;
+  fine: number;
+}
+
 const ViolationsManagement = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
@@ -15,69 +27,83 @@ const ViolationsManagement = () => {
   const [dateFilter, setDateFilter] = useState('');
 
   // Mock violations data
-  const [violations] = useState([
+  const [violations] = useState<Violation[]>([
     {
-      id: 1,
-      plateNumber: 'ABC 123',
-      violationType: 'Parking Violation',
-      date: '2023-10-26',
-      status: 'Pending',
-      officer: 'Officer Smith',
-      location: 'Main St & 5th Ave'
-    },
-    {
-      id: 2,
-      plateNumber: 'XYZ 789',
+      id: '1',
+      plateNumber: 'GR 1234 - 23',
       violationType: 'Speeding',
-      date: '2023-10-25',
-      status: 'Completed',
-      officer: 'Officer Johnson',
-      location: 'Highway 101'
+      location: 'Ring Road Central, Accra',
+      timestamp: '2024-01-15T10:30:00Z',
+      officer: 'Officer Kwame',
+      status: 'pending',
+      description: 'Exceeding speed limit by 20 km/h',
+      fine: 200
     },
     {
-      id: 3,
-      plateNumber: 'DEF 456',
-      violationType: 'Running Red Light',
-      date: '2023-10-24',
-      status: 'Dismissed',
-      officer: 'Officer Brown',
-      location: 'Oak St & 2nd Ave'
+      id: '2',
+      plateNumber: 'AS 5678 - 23',
+      violationType: 'Parking',
+      location: 'Kumasi High Street, Kumasi',
+      timestamp: '2024-01-14T14:15:00Z',
+      officer: 'Officer Ama',
+      status: 'approved',
+      description: 'Parking in no parking zone',
+      fine: 100
     },
     {
-      id: 4,
-      plateNumber: 'GHI 012',
-      violationType: 'Illegal Parking',
-      date: '2023-10-23',
-      status: 'Pending',
-      officer: 'Officer Davis',
-      location: 'City Hall Parking'
+      id: '3',
+      plateNumber: 'WR 9876 - 23',
+      violationType: 'Red Light',
+      location: 'Takoradi High Street, Takoradi',
+      timestamp: '2024-01-13T16:45:00Z',
+      officer: 'Officer Kofi',
+      status: 'pending',
+      description: 'Running red light at intersection',
+      fine: 75
     },
     {
-      id: 5,
-      plateNumber: 'JKL 345',
-      violationType: 'Expired License',
-      date: '2023-10-22',
-      status: 'Completed',
-      officer: 'Officer Wilson',
-      location: 'Downtown District'
+      id: '4',
+      plateNumber: 'ER 3456 - 23',
+      violationType: 'Overloading',
+      location: 'Koforidua Central, Koforidua',
+      timestamp: '2024-01-12T11:20:00Z',
+      officer: 'Officer Yaw',
+      status: 'approved',
+      description: 'Vehicle carrying more passengers than allowed',
+      fine: 150
     },
     {
-      id: 6,
-      plateNumber: 'MNO 678',
+      id: '5',
+      plateNumber: 'CR 7890 - 23',
       violationType: 'No Insurance',
-      date: '2023-10-21',
-      status: 'Pending',
-      officer: 'Officer Taylor',
-      location: 'Shopping Center'
+      location: 'Cape Coast Road, Cape Coast',
+      timestamp: '2024-01-11T09:30:00Z',
+      officer: 'Officer Abena',
+      status: 'pending',
+      description: 'Vehicle operating without valid insurance',
+      fine: 300
     },
     {
-      id: 7,
-      plateNumber: 'PQR 901',
-      violationType: 'Reckless Driving',
-      date: '2023-10-20',
-      status: 'Completed',
-      officer: 'Officer Anderson',
-      location: 'School Zone'
+      id: '6',
+      plateNumber: 'BA 4567 - 23',
+      violationType: 'Illegal U-turn',
+      location: 'Sunyani Main Street, Sunyani',
+      timestamp: '2024-01-10T15:10:00Z',
+      officer: 'Officer Kwesi',
+      status: 'rejected',
+      description: 'Making illegal U-turn on main road',
+      fine: 50
+    },
+    {
+      id: '7',
+      plateNumber: 'NR 6789 - 23',
+      violationType: 'No Seatbelt',
+      location: 'Tamale Central, Tamale',
+      timestamp: '2024-01-09T13:25:00Z',
+      officer: 'Officer Fatima',
+      status: 'pending',
+      description: 'Driver not wearing seatbelt',
+      fine: 25
     }
   ]);
 
@@ -95,34 +121,34 @@ const ViolationsManagement = () => {
       
       const matchesStatus = statusFilter === 'All' || violation.status === statusFilter;
       const matchesType = typeFilter === 'All Types' || violation.violationType === typeFilter;
-      const matchesDate = !dateFilter || violation.date === dateFilter;
+      const matchesDate = !dateFilter || violation.timestamp.includes(dateFilter); // Assuming timestamp can be used for date filtering
 
       return matchesSearch && matchesStatus && matchesType && matchesDate;
     });
   }, [violations, searchQuery, statusFilter, typeFilter, dateFilter]);
 
-  const getStatusColor = (status) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Pending':
+      case 'pending':
         return 'bg-orange-100 text-orange-700 border border-orange-200';
-      case 'Completed':
+      case 'approved':
         return 'bg-green-100 text-green-700 border border-green-200';
-      case 'Dismissed':
-        return 'bg-gray-100 text-gray-700 border border-gray-200';
+      case 'rejected':
+        return 'bg-red-100 text-red-700 border border-red-200';
       default:
         return 'bg-gray-100 text-gray-700 border border-gray-200';
     }
   };
 
-  const handleViewDetails = (violation) => {
-    alert(`Viewing details for violation ID: ${violation.id}\nPlate: ${violation.plateNumber}\nType: ${violation.violationType}\nStatus: ${violation.status}\nOfficer: ${violation.officer}\nLocation: ${violation.location}`);
+  const handleViewDetails = (violation: Violation) => {
+    alert(`Viewing details for violation ID: ${parseInt(violation.id)}\nPlate: ${violation.plateNumber}\nType: ${violation.violationType}\nStatus: ${violation.status}\nOfficer: ${violation.officer}\nLocation: ${violation.location}`);
   };
 
   const getViolationStats = () => {
-    const pending = violations.filter(v => v.status === 'Pending').length;
-    const completed = violations.filter(v => v.status === 'Completed').length;
-    const dismissed = violations.filter(v => v.status === 'Dismissed').length;
-    return { pending, completed, dismissed, total: violations.length };
+    const pending = violations.filter(v => v.status === 'pending').length;
+    const approved = violations.filter(v => v.status === 'approved').length;
+    const rejected = violations.filter(v => v.status === 'rejected').length;
+    return { pending, approved, rejected, total: violations.length };
   };
 
   const stats = getViolationStats();
@@ -140,11 +166,11 @@ const ViolationsManagement = () => {
           <div className="text-sm text-gray-600 font-medium">Pending</div>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-3 lg:p-4 border-l-4 border-green-500">
-          <div className="text-xl lg:text-2xl font-bold text-green-600">{stats.completed}</div>
+          <div className="text-xl lg:text-2xl font-bold text-green-600">{stats.approved}</div>
           <div className="text-sm text-gray-600 font-medium">Completed</div>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-3 lg:p-4 border-l-4 border-gray-500">
-          <div className="text-xl lg:text-2xl font-bold text-gray-600">{stats.dismissed}</div>
+          <div className="text-xl lg:text-2xl font-bold text-gray-600">{stats.rejected}</div>
           <div className="text-sm text-gray-600 font-medium">Dismissed</div>
         </div>
       </div>
@@ -267,7 +293,7 @@ const ViolationsManagement = () => {
                       <div className="text-xs lg:text-sm text-gray-900">{violation.violationType}</div>
                     </td>
                     <td className="px-3 lg:px-6 py-3 lg:py-4 whitespace-nowrap hidden md:table-cell">
-                      <div className="text-xs lg:text-sm text-gray-900">{violation.date}</div>
+                      <div className="text-xs lg:text-sm text-gray-900">{violation.timestamp}</div>
                     </td>
                     <td className="px-3 lg:px-6 py-3 lg:py-4 whitespace-nowrap hidden lg:table-cell">
                       <div className="text-xs lg:text-sm text-gray-900">{violation.officer}</div>
@@ -277,7 +303,7 @@ const ViolationsManagement = () => {
                         {violation.status}
                       </span>
                       <div className="text-xs text-gray-500 md:hidden mt-1">
-                        {violation.date}
+                        {violation.timestamp}
                       </div>
                       <div className="text-xs text-gray-500 lg:hidden mt-1">
                         {violation.officer}

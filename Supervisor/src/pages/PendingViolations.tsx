@@ -10,16 +10,67 @@ const PendingViolations: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedViolation, setSelectedViolation] = useState<Violation | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
-  const [violations, setViolations] = useState(mockViolations);
+  const [violations] = useState([
+    {
+      id: '1',
+      plateNumber: 'GR 1234 - 23',
+      offense: 'Speeding',
+      location: 'Ring Road Central, Accra',
+      date: '2024-01-15',
+      officer: 'Officer Kwame',
+      status: 'pending',
+      fine: 200
+    },
+    {
+      id: '2',
+      plateNumber: 'AS 5678 - 23',
+      offense: 'Parking Violation',
+      location: 'Kumasi High Street, Kumasi',
+      date: '2024-01-14',
+      officer: 'Officer Ama',
+      status: 'pending',
+      fine: 100
+    },
+    {
+      id: '3',
+      plateNumber: 'WR 9876 - 23',
+      offense: 'Red Light Violation',
+      location: 'Takoradi High Street, Takoradi',
+      date: '2024-01-13',
+      officer: 'Officer Kofi',
+      status: 'pending',
+      fine: 75
+    },
+    {
+      id: '4',
+      plateNumber: 'ER 3456 - 23',
+      offense: 'Overloading',
+      location: 'Koforidua Central, Koforidua',
+      date: '2024-01-12',
+      officer: 'Officer Yaw',
+      status: 'pending',
+      fine: 150
+    },
+    {
+      id: '5',
+      plateNumber: 'CR 7890 - 23',
+      offense: 'No Insurance',
+      location: 'Cape Coast Road, Cape Coast',
+      date: '2024-01-11',
+      officer: 'Officer Abena',
+      status: 'pending',
+      fine: 300
+    }
+  ]);
 
   const pendingViolations = violations.filter(v => v.status === 'pending');
-  const officers = Array.from(new Set(violations.map(v => v.capturedBy)));
+  const officers = Array.from(new Set(violations.map(v => v.officer)));
 
   const filteredViolations = pendingViolations.filter(violation => {
     const matchesSearch = violation.plateNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          violation.offense.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesOfficer = !selectedOfficer || violation.capturedBy === selectedOfficer;
-    const matchesDate = !selectedDate || violation.dateTime.startsWith(selectedDate);
+    const matchesOfficer = !selectedOfficer || violation.officer === selectedOfficer;
+    const matchesDate = !selectedDate || violation.date.startsWith(selectedDate);
     
     return matchesSearch && matchesOfficer && matchesDate;
   });
@@ -140,10 +191,10 @@ const PendingViolations: React.FC = () => {
                     </div>
                   </td>
                   <td className="px-3 sm:px-6 py-4 hidden md:table-cell">
-                    <span className="text-gray-900">{violation.capturedBy}</span>
+                    <span className="text-gray-900">{violation.officer}</span>
                   </td>
                   <td className="px-3 sm:px-6 py-4 hidden lg:table-cell">
-                    <span className="text-gray-900">{formatDateTime(violation.dateTime)}</span>
+                    <span className="text-gray-900">{violation.date}</span>
                   </td>
                   <td className="px-3 sm:px-6 py-4 hidden xl:table-cell">
                     <span className="text-gray-600">{violation.location}</span>
