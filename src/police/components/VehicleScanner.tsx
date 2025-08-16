@@ -632,12 +632,22 @@ const VehicleScanner = () => {
               </div>
 
               {detectionResult && (
-                <div className="flex justify-between items-center py-2 border-t border-gray-100 gap-2">
-                  <span className="text-sm font-medium text-gray-600">Detection Confidence:</span>
-                  <span className="text-sm font-semibold text-blue-600">
-                    {Math.round(detectionResult.confidence * 100)}%
-                  </span>
-                </div>
+                <>
+                  <div className="flex justify-between items-center py-2 border-t border-gray-100 gap-2">
+                    <span className="text-sm font-medium text-gray-600">YOLO Confidence:</span>
+                    <span className="text-sm font-semibold text-purple-600">
+                      {Math.round(detectionResult.confidence * 100)}%
+                    </span>
+                  </div>
+                  {(detectionResult as any).ocrConfidence && (
+                    <div className="flex justify-between items-center py-2 border-t border-gray-100 gap-2">
+                      <span className="text-sm font-medium text-gray-600">OCR Confidence:</span>
+                      <span className="text-sm font-semibold text-blue-600">
+                        {Math.round((detectionResult as any).ocrConfidence * 100)}%
+                      </span>
+                    </div>
+                  )}
+                </>
               )}
             </div>
             
