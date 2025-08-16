@@ -194,6 +194,13 @@ const VehicleScanner = () => {
 
   const handleTestCamera = async () => {
     console.log('Testing camera access...');
+    console.log('Video ref available:', !!videoRef.current);
+
+    // Wait a bit to ensure video element is mounted
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    console.log('Video ref after delay:', !!videoRef.current);
+
     try {
       await startCamera();
       console.log('Camera test successful!');
