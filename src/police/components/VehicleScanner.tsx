@@ -87,12 +87,9 @@ const VehicleScanner = () => {
     };
   }, [scanInterval]);
 
-  // Auto-start scanning when permission state becomes known and not denied
+  // Log permission status changes for debugging
   useEffect(() => {
-    if (!autoStartRef.current && permissionStatus !== 'denied') {
-      autoStartRef.current = true;
-      handleStartScan();
-    }
+    console.log('Camera permission status changed:', permissionStatus);
   }, [permissionStatus]);
 
   const requestCameraPermission = async () => {
