@@ -118,10 +118,13 @@ const VehicleScanner = () => {
     if (!cameraActive || !videoRef.current) return;
 
     try {
-      const result = await plateDetector.detectPlate(videoRef.current);
-      
-      if (result && result.confidence > 0.7) {
+      console.log('Running YOLOv8 + EasyOCR plate detection...');
+      const result = await yoloPlateDetector.detectPlate(videoRef.current);
+
+      if (result && result.confidence > 0.5 && result.ocrConfidence > 0.6) {
+        console.log('Plate detected:', result);
         setDetectionResult(result);
+
         // Lookup detected plate in database
         try {
           const lookup = await lookupVehicle(result.plateNumber);
@@ -138,9 +141,9 @@ const VehicleScanner = () => {
             // Not found in database => mark as Invalid
             setScanResults({
               plateNumber: result.plateNumber,
-              vehicleModel: 'Invalid',
-              owner: 'Invalid',
-              status: 'Invalid',
+              vehicleModel: 'Vehicle Not Found',
+              owner: 'Unknown',
+              status: 'Vehicle Not Registered',
               statusType: 'violation'
             });
           }
@@ -154,8 +157,9 @@ const VehicleScanner = () => {
             statusType: 'violation'
           });
         }
+
         setIsScanning(false);
-        
+
         // Stop continuous scanning after successful detection
         if (scanInterval) {
           clearInterval(scanInterval);
@@ -164,11 +168,13 @@ const VehicleScanner = () => {
 
         // Close the camera stream after a successful scan
         stopCamera();
+      } else {
+        console.log('Detection below confidence threshold or OCR failed');
       }
     } catch (error) {
-      console.error('Error during plate detection:', error);
+      console.error('Error during YOLO plate detection:', error);
     }
-  }, [cameraActive, scanInterval, stopCamera]);
+  }, [cameraActive, scanInterval, stopCamera, lookupVehicle]);
 
   const handleStartScan = async () => {
     console.log('Starting camera scan...');
