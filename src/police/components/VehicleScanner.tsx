@@ -334,6 +334,9 @@ const VehicleScanner = () => {
                   autoPlay
                   playsInline
                   muted
+                  onLoadedMetadata={() => console.log('Video metadata loaded')}
+                  onPlay={() => console.log('Video started playing')}
+                  onError={(e) => console.error('Video element error:', e)}
                 />
 
                 {/* Camera Feed Overlay Grid (for targeting) */}
