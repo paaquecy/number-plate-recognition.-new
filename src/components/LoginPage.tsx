@@ -76,12 +76,14 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onRegister }) => {
 
     // Try Supabase/unified authentication for police officers
     try {
-      const { data, error } = await signIn(`${username}@police.gov.gh`, password);
+      if (signIn && typeof signIn === 'function') {
+        const result = await signIn(`${username}@police.gov.gh`, password);
 
-      if (data && !error) {
-        console.log('Police officer authenticated via Supabase:', data.user);
-        onLogin('police');
-        return;
+        if (result && result.data && !result.error) {
+          console.log('Police officer authenticated via Supabase:', result.data.user);
+          onLogin('police');
+          return;
+        }
       }
     } catch (error) {
       console.log('Supabase auth failed, trying unified backend:', error);
