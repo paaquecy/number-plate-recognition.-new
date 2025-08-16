@@ -324,9 +324,21 @@ const VehicleScanner = () => {
               </div>
             </div>
 
-            {/* Camera Feed Content */}
+            {/* Video Feed - Always present in DOM */}
+            <video
+              ref={videoRef}
+              className={`w-full h-full object-cover rounded-lg ${cameraActive ? 'block' : 'hidden'}`}
+              autoPlay
+              playsInline
+              muted
+              onLoadedMetadata={() => console.log('Video metadata loaded')}
+              onPlay={() => console.log('Video started playing')}
+              onError={(e) => console.error('Video element error:', e)}
+            />
+
+            {/* Camera Feed Content Overlays */}
             {cameraError ? (
-              <div className="flex items-center justify-center h-full">
+              <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center text-white p-6">
                   <AlertCircle className="w-12 lg:w-16 h-12 lg:h-16 mx-auto mb-4 text-red-400" />
                   <p className="font-semibold text-lg mb-2">Camera Error</p>
@@ -342,7 +354,7 @@ const VehicleScanner = () => {
                 </div>
               </div>
             ) : cameraLoading ? (
-              <div className="flex items-center justify-center h-full">
+              <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center text-white p-6">
                   <div className="relative">
                     <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-600 border-t-transparent mx-auto mb-4"></div>
@@ -353,19 +365,7 @@ const VehicleScanner = () => {
                 </div>
               </div>
             ) : cameraActive ? (
-              <div className="relative w-full h-full">
-                {/* Video Feed */}
-                <video
-                  ref={videoRef}
-                  className="w-full h-full object-cover rounded-lg"
-                  autoPlay
-                  playsInline
-                  muted
-                  onLoadedMetadata={() => console.log('Video metadata loaded')}
-                  onPlay={() => console.log('Video started playing')}
-                  onError={(e) => console.error('Video element error:', e)}
-                />
-
+              <>
                 {/* Camera Feed Overlay Grid (for targeting) */}
                 <div className="absolute inset-0 pointer-events-none">
                   <div className="absolute inset-0 border border-white/20"></div>
@@ -406,9 +406,9 @@ const VehicleScanner = () => {
                     </span>
                   </div>
                 </div>
-              </div>
+              </>
             ) : (
-              <div className="flex items-center justify-center h-full">
+              <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center text-white p-6">
                   <div className="relative mb-6">
                     <Camera className="w-16 lg:w-20 h-16 lg:h-20 mx-auto text-gray-400" />
