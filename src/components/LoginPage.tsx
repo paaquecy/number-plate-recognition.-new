@@ -98,6 +98,22 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onRegister }) => {
       console.log('Unified backend login failed:', error);
     }
 
+    // Development mode bypass - allow any credentials if backend is not available
+    if (import.meta.env.VITE_MODE === 'development' || import.meta.env.DEV) {
+      console.log('Development mode: Allowing login bypass');
+      // Allow login with any credentials if all backend methods failed
+      if (username && password) {
+        if (username.toLowerCase().includes('dvla')) {
+          onLogin('dvla');
+        } else if (username.toLowerCase().includes('supervisor')) {
+          onLogin('supervisor');
+        } else {
+          onLogin('police');
+        }
+        return;
+      }
+    }
+
     // Fallback to existing authentication for other users
     // This maintains compatibility with existing DVLA and other credentials
     // In a full implementation, all users would be migrated to Supabase
