@@ -67,18 +67,16 @@ const VehicleScanner = () => {
   useEffect(() => {
     const initializeDetector = async () => {
       try {
+        console.log('Starting plate detector initialization...');
         await plateDetector.initialize();
         console.log('Plate detector initialized successfully');
-        // Auto-start camera and scanning after detector initializes
-        if (!autoStartRef.current) {
-          autoStartRef.current = true;
-          handleStartScan();
-        }
       } catch (error) {
-        console.error('Failed to initialize plate detector:', error);
+        console.warn('Failed to initialize plate detector, will continue without OpenCV:', error);
+        // Don't auto-start if OpenCV fails, let user start manually
       }
     };
 
+    // Don't auto-start - let user start manually for better debugging
     initializeDetector();
 
     return () => {
