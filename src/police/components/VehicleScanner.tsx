@@ -43,6 +43,17 @@ const VehicleScanner = () => {
     captureFrame
   } = useCamera();
 
+  // Track component mount status
+  useEffect(() => {
+    setIsMounted(true);
+    console.log('VehicleScanner component mounted');
+
+    return () => {
+      setIsMounted(false);
+      console.log('VehicleScanner component unmounting');
+    };
+  }, []);
+
   // Check camera permissions on mount
   useEffect(() => {
     const checkPermissions = async () => {
