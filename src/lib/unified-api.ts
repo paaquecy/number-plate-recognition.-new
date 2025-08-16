@@ -143,30 +143,40 @@ class UnifiedAPIClient {
     }
 
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
       const response = await fetch(url, {
         ...options,
         headers,
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ detail: 'Network error' }));
-        return { error: errorData.detail || 'Request failed' };
+        console.warn(`API request failed: ${response.status} ${response.statusText}`, errorData);
+        return { error: errorData.detail || `Request failed with status ${response.status}` };
       }
 
       const data = await response.json();
       return { data };
     } catch (error) {
-      // Debug logging to understand the error
-      console.log('API Request Error:', {
+      // Enhanced error logging
+      const errorInfo = {
+        endpoint,
         error,
         errorName: error instanceof Error ? error.name : 'unknown',
         errorMessage: error instanceof Error ? error.message : 'unknown',
         errorType: typeof error,
-        endpoint
-      });
+        isAbortError: error instanceof Error && error.name === 'AbortError',
+        baseUrl: this.baseUrl
+      };
 
-      // Only use mock data if the backend is completely unavailable
-      // This ensures we prioritize the real database connection
+      console.log('API Request Error Details:', errorInfo);
+
+      // Check for various network error conditions
       const isNetworkError = error instanceof Error && (
         error.message.includes('fetch') ||
         error.message.includes('Failed to fetch') ||
@@ -174,21 +184,21 @@ class UnifiedAPIClient {
         error.message.includes('ECONNREFUSED') ||
         error.message.includes('ERR_NETWORK') ||
         error.message.includes('ERR_INTERNET_DISCONNECTED') ||
+        error.message.includes('NETWORK_ERROR') ||
         error.name === 'TypeError' ||
-        error.name === 'NetworkError'
+        error.name === 'NetworkError' ||
+        error.name === 'AbortError'
       );
 
-      const isLikelyNetworkError = !error ||
-        (typeof error === 'object' && 'message' in error &&
-         typeof error.message === 'string' &&
-         error.message.toLowerCase().includes('fetch'));
+      const isLikelyFetchError = error instanceof TypeError ||
+        (error instanceof Error && error.message.toLowerCase().includes('fetch'));
 
-      if (isNetworkError || isLikelyNetworkError) {
-        console.warn('FastAPI backend not available, using mock response for development:', endpoint);
+      if (isNetworkError || isLikelyFetchError) {
+        console.warn('Network/Backend not available, using mock response:', endpoint);
         return this.getMockResponse<T>(endpoint, options);
       }
 
-      return { error: error instanceof Error ? error.message : 'Unknown error' };
+      return { error: error instanceof Error ? error.message : 'Unknown error occurred' };
     }
   }
 
