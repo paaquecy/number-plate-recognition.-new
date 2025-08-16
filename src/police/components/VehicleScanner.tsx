@@ -461,8 +461,8 @@ const VehicleScanner = () => {
                 Resolution: {cameraActive && videoRef.current ? `${videoRef.current.videoWidth}x${videoRef.current.videoHeight}` : 'N/A'}
               </span>
               <span className="flex items-center">
-                <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                OpenCV Status: {detectionResult ? 'Active' : 'Standby'}
+                <div className="w-2 h-2 bg-purple-500 rounded-full mr-2"></div>
+                YOLO+OCR Status: {detectionResult ? 'Active' : 'Standby'}
               </span>
             </div>
             <span className="text-gray-400">
