@@ -71,9 +71,21 @@ export function useCamera(): CameraHook {
       console.log('Camera stream obtained:', stream);
       console.log('Stream tracks:', stream.getTracks());
 
-      if (!videoRef.current) {
-        throw new Error('Video element not available in DOM');
+      // Wait for video element to be available with retry logic
+      let attempts = 0;
+      const maxAttempts = 10;
+
+      while (!videoRef.current && attempts < maxAttempts) {
+        console.log(`Waiting for video element... attempt ${attempts + 1}/${maxAttempts}`);
+        await new Promise(resolve => setTimeout(resolve, 100));
+        attempts++;
       }
+
+      if (!videoRef.current) {
+        throw new Error(`Video element not available in DOM after ${maxAttempts} attempts. Please refresh the page and try again.`);
+      }
+
+      console.log('Video element found:', videoRef.current);
 
       videoRef.current.srcObject = stream;
       streamRef.current = stream;
