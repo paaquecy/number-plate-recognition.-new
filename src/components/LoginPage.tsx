@@ -71,26 +71,31 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onRegister }) => {
         return;
       }
     } catch (err) {
-      console.log('DVLA login failed, falling back to police');
+      console.log('DVLA login failed, trying next method:', err);
     }
 
     // Try Supabase/unified authentication for police officers
     try {
       const { data, error } = await signIn(`${username}@police.gov.gh`, password);
-      
+
       if (data && !error) {
         console.log('Police officer authenticated via Supabase:', data.user);
         onLogin('police');
         return;
       }
-      // Fallback to unified backend police login if Supabase path fails
+    } catch (error) {
+      console.log('Supabase auth failed, trying unified backend:', error);
+    }
+
+    // Fallback to unified backend police login
+    try {
       const policeLogin = await unifiedAPI.login(username, password, 'police');
       if (policeLogin.data && !policeLogin.error) {
         onLogin('police');
         return;
       }
     } catch (error) {
-      console.log('Supabase auth failed, trying fallback');
+      console.log('Unified backend login failed:', error);
     }
 
     // Fallback to existing authentication for other users
