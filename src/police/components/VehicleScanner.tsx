@@ -161,25 +161,45 @@ const VehicleScanner = () => {
   }, [cameraActive, scanInterval, stopCamera]);
 
   const handleStartScan = async () => {
-    if (!cameraActive) {
-      await startCamera();
-    }
-    
-    setIsScanning(true);
-    setDetectionResult(null);
-    
-    // Start continuous plate detection
-    const interval = setInterval(performPlateDetection, 1000); // Scan every second
-    setScanInterval(interval);
-    
-    // Stop scanning after 30 seconds if no plate detected
-    setTimeout(() => {
-      if (scanInterval) {
-        clearInterval(interval);
-        setScanInterval(null);
-        setIsScanning(false);
+    console.log('Starting camera scan...');
+    console.log('Current states:', { cameraActive, cameraLoading, cameraError, permissionStatus });
+
+    try {
+      if (!cameraActive) {
+        console.log('Camera not active, starting camera...');
+        await startCamera();
+        console.log('Camera started successfully');
       }
-    }, 30000);
+
+      setIsScanning(true);
+      setDetectionResult(null);
+
+      // Start continuous plate detection
+      const interval = setInterval(performPlateDetection, 1000); // Scan every second
+      setScanInterval(interval);
+
+      // Stop scanning after 30 seconds if no plate detected
+      setTimeout(() => {
+        if (scanInterval) {
+          clearInterval(interval);
+          setScanInterval(null);
+          setIsScanning(false);
+        }
+      }, 30000);
+    } catch (error) {
+      console.error('Failed to start scanning:', error);
+      setIsScanning(false);
+    }
+  };
+
+  const handleTestCamera = async () => {
+    console.log('Testing camera access...');
+    try {
+      await startCamera();
+      console.log('Camera test successful!');
+    } catch (error) {
+      console.error('Camera test failed:', error);
+    }
   };
 
   const handleStopScan = () => {
