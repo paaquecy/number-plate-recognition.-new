@@ -29,6 +29,7 @@ const VehicleScanner = () => {
   const [detectionResult, setDetectionResult] = useState<PlateDetectionResult | null>(null);
   const [scanInterval, setScanInterval] = useState<NodeJS.Timeout | null>(null);
   const [permissionStatus, setPermissionStatus] = useState<'granted' | 'denied' | 'prompt' | 'unknown'>('unknown');
+  const [isMounted, setIsMounted] = useState(false);
   const autoStartRef = useRef(false);
 
   const {
