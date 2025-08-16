@@ -14,6 +14,7 @@ import {
 import { useCamera } from '../hooks/useCamera';
 import { yoloPlateDetector, PlateDetectionResult } from '../utils/yoloPlateDetection';
 import { useData } from '../../contexts/DataContext';
+import DetectionMetrics from './DetectionMetrics';
 
 const VehicleScanner = () => {
   const { lookupVehicle, api } = useData();
