@@ -167,9 +167,9 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     setIsLoading(true);
     setError(null);
     try {
-      // Load vehicles from shared database
+      // Load vehicles from shared database with better error handling
       const vehiclesResponse = await unifiedAPI.getVehicles();
-      if (vehiclesResponse.data) {
+      if (vehiclesResponse.data && Array.isArray(vehiclesResponse.data)) {
         const convertedVehicles: VehicleRecord[] = vehiclesResponse.data.map((v: any) => ({
           id: v.id?.toString() || '',
           plateNumber: v.plate_number || v.reg_number || '',
@@ -183,13 +183,15 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
           status: v.status === 'active' ? 'active' : 'expired'
         }));
         setVehicles(convertedVehicles);
+        console.log('Loaded vehicles successfully:', convertedVehicles.length);
       } else {
-        console.warn('Failed to load vehicles from database:', vehiclesResponse.error);
+        console.warn('Failed to load vehicles from database:', vehiclesResponse.error || 'No data received');
+        setVehicles([]); // Set empty array as fallback
       }
 
-      // Load violations from shared database
+      // Load violations from shared database with better error handling
       const violationsResponse = await unifiedAPI.getViolations();
-      if (violationsResponse.data) {
+      if (violationsResponse.data && Array.isArray(violationsResponse.data)) {
         const convertedViolations: ViolationRecord[] = violationsResponse.data.map((v: any) => ({
           id: v.id || '',
           plateNumber: v.plate_number || '',
@@ -204,8 +206,10 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
           fine: v.fine_amount || 0
         }));
         setViolations(convertedViolations);
+        console.log('Loaded violations successfully:', convertedViolations.length);
       } else {
-        console.warn('Failed to load violations from database:', violationsResponse.error);
+        console.warn('Failed to load violations from database:', violationsResponse.error || 'No data received');
+        setViolations([]); // Set empty array as fallback
       }
 
       // Initialize empty arrays for other data types
@@ -215,6 +219,12 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     } catch (error) {
       console.error('Error loading data from Supabase:', error);
       setError(error instanceof Error ? error.message : 'Failed to load data');
+      // Set fallback empty arrays on error
+      setVehicles([]);
+      setViolations([]);
+      setUsers([]);
+      setFines([]);
+      setNotifications([]);
     } finally {
       setIsLoading(false);
     }
