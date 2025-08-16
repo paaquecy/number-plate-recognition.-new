@@ -75,24 +75,22 @@ const VehicleScanner = () => {
     checkPermissions();
   }, []);
 
-  // Initialize OpenCV when component mounts
+  // Initialize YOLOv8 + EasyOCR when component mounts
   useEffect(() => {
     const initializeDetector = async () => {
       try {
-        console.log('Starting plate detector initialization...');
-        await plateDetector.initialize();
-        console.log('Plate detector initialized successfully');
+        console.log('Starting YOLOv8 + EasyOCR detector initialization...');
+        await yoloPlateDetector.initialize();
+        console.log('YOLOv8 + EasyOCR detector initialized successfully');
       } catch (error) {
-        console.warn('Failed to initialize plate detector, will continue without OpenCV:', error);
-        // Don't auto-start if OpenCV fails, let user start manually
+        console.warn('Failed to initialize YOLO detector, will continue with fallback:', error);
       }
     };
 
-    // Don't auto-start - let user start manually for better debugging
     initializeDetector();
 
     return () => {
-      plateDetector.cleanup();
+      yoloPlateDetector.cleanup();
       if (scanInterval) {
         clearInterval(scanInterval);
       }
