@@ -257,97 +257,169 @@ const VehicleScanner = () => {
           Live Camera Feed with OpenCV Plate Detection
         </h3>
         
-        {/* Camera Feed Area */}
-        <div className="relative w-full h-48 sm:h-64 lg:h-80 rounded-lg border-2 border-dashed overflow-hidden mb-4 lg:mb-6 transition-all duration-300 bg-gray-900">
-          {cameraError ? (
-            <div className="flex items-center justify-center h-full">
-              <div className="text-center text-white">
-                <AlertCircle className="w-8 lg:w-12 h-8 lg:h-12 mx-auto mb-4 text-red-400" />
-                <p className="font-medium text-sm lg:text-base">Camera Error</p>
-                <p className="text-xs lg:text-sm text-gray-300 mt-2 mb-4">{cameraError}</p>
-                {permissionStatus === 'denied' && (
-                  <button
-                    onClick={requestCameraPermission}
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium"
+        {/* Camera Feed Container */}
+        <div className="relative w-full">
+          {/* Camera Feed Display Area */}
+          <div className="relative w-full h-48 sm:h-64 lg:h-80 rounded-xl border-2 border-gray-300 overflow-hidden mb-4 lg:mb-6 transition-all duration-300 bg-gray-900 shadow-inner">
+            {/* Camera Feed Status Indicator */}
+            <div className="absolute top-3 left-3 z-10">
+              <div className={`flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                cameraActive ? 'bg-green-600 text-white' :
+                cameraLoading ? 'bg-yellow-600 text-white' :
+                cameraError ? 'bg-red-600 text-white' :
+                'bg-gray-600 text-gray-200'
+              }`}>
+                <div className={`w-2 h-2 rounded-full mr-2 ${
+                  cameraActive ? 'bg-green-300 animate-pulse' :
+                  cameraLoading ? 'bg-yellow-300 animate-spin' :
+                  cameraError ? 'bg-red-300' :
+                  'bg-gray-400'
+                }`}></div>
+                {cameraActive ? 'LIVE' :
+                 cameraLoading ? 'STARTING' :
+                 cameraError ? 'ERROR' :
+                 'OFFLINE'}
+              </div>
+            </div>
+
+            {/* Camera Feed Content */}
+            {cameraError ? (
+              <div className="flex items-center justify-center h-full">
+                <div className="text-center text-white p-6">
+                  <AlertCircle className="w-12 lg:w-16 h-12 lg:h-16 mx-auto mb-4 text-red-400" />
+                  <p className="font-semibold text-lg mb-2">Camera Error</p>
+                  <p className="text-sm text-gray-300 mb-4 max-w-md">{cameraError}</p>
+                  {permissionStatus === 'denied' && (
+                    <button
+                      onClick={requestCameraPermission}
+                      className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                    >
+                      Request Camera Permission
+                    </button>
+                  )}
+                </div>
+              </div>
+            ) : cameraLoading ? (
+              <div className="flex items-center justify-center h-full">
+                <div className="text-center text-white p-6">
+                  <div className="relative">
+                    <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-600 border-t-transparent mx-auto mb-4"></div>
+                    <Camera className="w-8 h-8 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-blue-400" />
+                  </div>
+                  <p className="font-semibold text-lg">Initializing Camera...</p>
+                  <p className="text-sm text-gray-300 mt-2">Please wait while we access your camera</p>
+                </div>
+              </div>
+            ) : cameraActive ? (
+              <div className="relative w-full h-full">
+                {/* Video Feed */}
+                <video
+                  ref={videoRef}
+                  className="w-full h-full object-cover rounded-lg"
+                  autoPlay
+                  playsInline
+                  muted
+                />
+
+                {/* Camera Feed Overlay Grid (for targeting) */}
+                <div className="absolute inset-0 pointer-events-none">
+                  <div className="absolute inset-0 border border-white/20"></div>
+                  <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-white/20"></div>
+                  <div className="absolute top-0 bottom-0 left-1/2 w-0.5 bg-white/20"></div>
+                </div>
+
+                {/* Plate Detection Overlay */}
+                {detectionResult && (
+                  <div
+                    className="absolute border-2 border-green-400 bg-green-400 bg-opacity-20 animate-pulse"
+                    style={{
+                      left: `${(detectionResult.boundingBox.x / videoRef.current?.videoWidth || 1) * 100}%`,
+                      top: `${(detectionResult.boundingBox.y / videoRef.current?.videoHeight || 1) * 100}%`,
+                      width: `${(detectionResult.boundingBox.width / videoRef.current?.videoWidth || 1) * 100}%`,
+                      height: `${(detectionResult.boundingBox.height / videoRef.current?.videoHeight || 1) * 100}%`
+                    }}
                   >
-                    Request Camera Permission
-                  </button>
+                    <div className="absolute -top-8 left-0 bg-green-500 text-white px-3 py-1 rounded-lg text-xs font-bold shadow-lg">
+                      {detectionResult.plateNumber} ({Math.round(detectionResult.confidence * 100)}%)
+                    </div>
+                  </div>
                 )}
-              </div>
-            </div>
-          ) : cameraLoading ? (
-            <div className="flex items-center justify-center h-full">
-              <div className="text-center text-white">
-                <div className="animate-spin rounded-full h-8 lg:h-12 w-8 lg:w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                <p className="font-medium text-sm lg:text-base">Initializing Camera...</p>
-              </div>
-            </div>
-          ) : cameraActive ? (
-            <>
-              <video
-                ref={videoRef}
-                className="w-full h-full object-cover"
-                autoPlay
-                playsInline
-                muted
-              />
-              
-              {/* Detection Overlay */}
-              {detectionResult && (
-                <div 
-                  className="absolute border-2 border-green-400 bg-green-400 bg-opacity-20"
-                  style={{
-                    left: `${(detectionResult.boundingBox.x / videoRef.current?.videoWidth || 1) * 100}%`,
-                    top: `${(detectionResult.boundingBox.y / videoRef.current?.videoHeight || 1) * 100}%`,
-                    width: `${(detectionResult.boundingBox.width / videoRef.current?.videoWidth || 1) * 100}%`,
-                    height: `${(detectionResult.boundingBox.height / videoRef.current?.videoHeight || 1) * 100}%`
-                  }}
-                >
-                  <div className="absolute -top-8 left-0 bg-green-500 text-white px-2 py-1 rounded text-xs font-semibold">
-                    {detectionResult.plateNumber} ({Math.round(detectionResult.confidence * 100)}%)
+
+                {/* Scanning Indicator */}
+                {isScanning && (
+                  <div className="absolute top-3 right-3 bg-blue-600 text-white px-3 py-2 rounded-lg text-xs font-semibold flex items-center shadow-lg">
+                    <div className="animate-pulse w-2 h-2 bg-white rounded-full mr-2"></div>
+                    Scanning for Plates...
+                  </div>
+                )}
+
+                {/* Target Box for Plate Positioning */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className="w-64 h-32 border-2 border-dashed border-white/60 rounded-lg flex items-center justify-center">
+                    <span className="text-white/80 text-xs font-medium bg-black/50 px-2 py-1 rounded">
+                      Position license plate here
+                    </span>
                   </div>
                 </div>
-              )}
-              
-              {/* Scanning Indicator */}
-              {isScanning && (
-                <div className="absolute top-4 right-4 bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-semibold flex items-center">
-                  <div className="animate-pulse w-2 h-2 bg-white rounded-full mr-2"></div>
-                  Scanning...
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="flex items-center justify-center h-full">
-              <div className="text-center text-white">
-                <Camera className="w-12 lg:w-16 h-12 lg:h-16 mx-auto mb-4 text-gray-400" />
-                <p className="font-medium text-sm lg:text-base">Camera Ready</p>
-                <p className="text-xs lg:text-sm text-gray-300 mt-2">Click "Start Scan" to activate camera and begin plate detection</p>
-                {permissionStatus === 'denied' && (
-                  <div className="mt-4">
-                    <p className="text-xs text-red-300 mb-2">Camera permission denied</p>
-                    <button
-                      onClick={requestCameraPermission}
-                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium"
-                    >
-                      Enable Camera Access
-                    </button>
-                  </div>
-                )}
-                {permissionStatus === 'prompt' && (
-                  <div className="mt-4">
-                    <p className="text-xs text-yellow-300 mb-2">Camera permission needed</p>
-                    <button
-                      onClick={requestCameraPermission}
-                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium"
-                    >
-                      Grant Camera Permission
-                    </button>
-                  </div>
-                )}
               </div>
+            ) : (
+              <div className="flex items-center justify-center h-full">
+                <div className="text-center text-white p-6">
+                  <div className="relative mb-6">
+                    <Camera className="w-16 lg:w-20 h-16 lg:h-20 mx-auto text-gray-400" />
+                    <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-gray-600 rounded-full flex items-center justify-center">
+                      <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
+                    </div>
+                  </div>
+                  <p className="font-semibold text-lg mb-2">Camera Feed Ready</p>
+                  <p className="text-sm text-gray-300 mb-4 max-w-md">
+                    Click "Start Camera & Scan" below to activate your camera and begin automatic license plate detection
+                  </p>
+
+                  {permissionStatus === 'denied' && (
+                    <div className="mt-6 p-4 bg-red-600/20 border border-red-400 rounded-lg">
+                      <p className="text-sm text-red-300 mb-3">Camera access denied</p>
+                      <button
+                        onClick={requestCameraPermission}
+                        className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                      >
+                        Enable Camera Access
+                      </button>
+                    </div>
+                  )}
+
+                  {permissionStatus === 'prompt' && (
+                    <div className="mt-6 p-4 bg-yellow-600/20 border border-yellow-400 rounded-lg">
+                      <p className="text-sm text-yellow-300 mb-3">Camera permission required</p>
+                      <button
+                        onClick={requestCameraPermission}
+                        className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                      >
+                        Grant Camera Permission
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Camera Feed Information Bar */}
+          <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
+            <div className="flex items-center space-x-4">
+              <span className="flex items-center">
+                <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+                Resolution: {cameraActive && videoRef.current ? `${videoRef.current.videoWidth}x${videoRef.current.videoHeight}` : 'N/A'}
+              </span>
+              <span className="flex items-center">
+                <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                OpenCV Status: {detectionResult ? 'Active' : 'Standby'}
+              </span>
             </div>
-          )}
+            <span className="text-gray-400">
+              Frame Rate: 30fps
+            </span>
+          </div>
         </div>
 
         {/* Hidden canvas for frame capture */}
