@@ -270,16 +270,32 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
 
   const lookupVehicle = async (plateNumber: string) => {
     try {
+      console.log('Looking up vehicle:', plateNumber);
       const result = await unifiedAPI.lookupVehicle(plateNumber);
+
       if (result.data) {
-        return result.data;
+        console.log('Vehicle lookup successful:', result.data);
+        // Transform the response to match expected format
+        const vehicle = result.data;
+        return {
+          vehicle: {
+            id: vehicle.id,
+            plate_number: vehicle.plate_number || vehicle.reg_number,
+            make: vehicle.make || vehicle.manufacturer,
+            model: vehicle.model,
+            year: vehicle.year || vehicle.year_of_manufacture,
+            owner_name: vehicle.owner_name,
+            registration_status: vehicle.registration_status || vehicle.status
+          },
+          outstandingViolations: 0 // For now, assume no violations
+        };
       } else {
         console.warn('Vehicle not found in database:', result.error);
-        return null;
+        return { vehicle: null, outstandingViolations: 0 };
       }
     } catch (error) {
       console.error('Error looking up vehicle:', error);
-      return null;
+      return { vehicle: null, outstandingViolations: 0 };
     }
   };
   // Violation management functions
