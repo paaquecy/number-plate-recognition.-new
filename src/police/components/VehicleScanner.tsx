@@ -12,7 +12,7 @@ import {
   Pause
 } from 'lucide-react';
 import { useCamera } from '../hooks/useCamera';
-import { plateDetector, PlateDetectionResult } from '../utils/plateDetection';
+import { yoloPlateDetector, PlateDetectionResult } from '../utils/yoloPlateDetection';
 import { useData } from '../../contexts/DataContext';
 
 const VehicleScanner = () => {
