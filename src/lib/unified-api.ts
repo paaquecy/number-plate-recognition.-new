@@ -225,6 +225,8 @@ class UnifiedAPIClient {
   }
 
   private getMockResponse<T>(endpoint: string, options: RequestInit = {}): ApiResponse<T> {
+    console.log('Using mock response for endpoint:', endpoint);
+
     // Mock responses for development when backend is not available
     if (endpoint.includes('/auth/login') || endpoint.includes('/dvla/auth/login')) {
       let userRole = 'police';
