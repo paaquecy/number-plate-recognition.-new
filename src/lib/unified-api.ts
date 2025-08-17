@@ -176,7 +176,7 @@ class UnifiedAPIClient {
 
       console.log('API Request Error Details:', errorInfo);
 
-      // Check for various network error conditions
+      // Check for various network error conditions including third-party script interference
       const isNetworkError = error instanceof Error && (
         error.message.includes('fetch') ||
         error.message.includes('Failed to fetch') ||
@@ -193,8 +193,15 @@ class UnifiedAPIClient {
       const isLikelyFetchError = error instanceof TypeError ||
         (error instanceof Error && error.message.toLowerCase().includes('fetch'));
 
-      if (isNetworkError || isLikelyFetchError) {
-        console.warn('Network/Backend not available, using mock response:', endpoint);
+      // Check for third-party script interference (like FullStory)
+      const isThirdPartyInterference = errorInfo.errorMessage.includes('fullstory') ||
+        (typeof error === 'object' && error !== null && 'stack' in error &&
+         typeof error.stack === 'string' && error.stack.includes('fullstory'));
+
+      // Always use mock data if there's any fetch-related error or third-party interference
+      if (isNetworkError || isLikelyFetchError || isThirdPartyInterference ||
+          (error instanceof Error && error.message === 'Failed to fetch')) {
+        console.warn('Network/Backend not available or third-party interference, using mock response:', endpoint);
         return this.getMockResponse<T>(endpoint, options);
       }
 
