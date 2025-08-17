@@ -117,6 +117,12 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Add circuit breaker state
+  const [lastFailureTime, setLastFailureTime] = useState<number>(0);
+  const [failureCount, setFailureCount] = useState<number>(0);
+  const CIRCUIT_BREAKER_THRESHOLD = 3;
+  const CIRCUIT_BREAKER_TIMEOUT = 30000; // 30 seconds
+
   // Load initial data
   useEffect(() => {
     loadAllData();
