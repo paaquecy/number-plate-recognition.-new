@@ -128,18 +128,35 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     loadAllData();
   }, []);
 
+  // Debounced data loading to prevent excessive API calls
+  const debouncedLoadData = useCallback(() => {
+    const timeoutId = setTimeout(() => {
+      // Check circuit breaker
+      const now = Date.now();
+      if (failureCount >= CIRCUIT_BREAKER_THRESHOLD &&
+          now - lastFailureTime < CIRCUIT_BREAKER_TIMEOUT) {
+        console.log('Circuit breaker open, skipping API call');
+        return;
+      }
+
+      loadAllData();
+    }, 1000); // 1 second debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [failureCount, lastFailureTime, CIRCUIT_BREAKER_THRESHOLD, CIRCUIT_BREAKER_TIMEOUT]);
+
   // Auto-sync with backend on page visibility/focus/online and cross-tab changes
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (!document.hidden) {
-        loadAllData();
+        debouncedLoadData();
       }
     };
     const handleWindowFocus = () => {
-      loadAllData();
+      debouncedLoadData();
     };
     const handleOnline = () => {
-      loadAllData();
+      debouncedLoadData();
     };
     const handleStorage = (e: StorageEvent) => {
       // If any known keys change in another tab, refresh
@@ -152,7 +169,7 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
         'vpr_notifications'
       ]);
       if (!e.key || keysToWatch.has(e.key)) {
-        loadAllData();
+        debouncedLoadData();
       }
     };
 
@@ -167,7 +184,7 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
       window.removeEventListener('storage', handleStorage);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, []);
+  }, [debouncedLoadData]);
 
   const loadAllData = async () => {
     setIsLoading(true);
