@@ -189,6 +189,7 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
   const loadAllData = async () => {
     setIsLoading(true);
     setError(null);
+
     try {
       // Load vehicles from shared database with better error handling
       const vehiclesResponse = await unifiedAPI.getVehicles();
@@ -207,8 +208,13 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
         }));
         setVehicles(convertedVehicles);
         console.log('Loaded vehicles successfully:', convertedVehicles.length);
+
+        // Reset failure count on success
+        setFailureCount(0);
+      } else if (vehiclesResponse.error) {
+        throw new Error(vehiclesResponse.error);
       } else {
-        console.warn('Failed to load vehicles from database:', vehiclesResponse.error || 'No data received');
+        console.warn('No vehicle data received');
         setVehicles([]); // Set empty array as fallback
       }
 
@@ -230,8 +236,10 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
         }));
         setViolations(convertedViolations);
         console.log('Loaded violations successfully:', convertedViolations.length);
+      } else if (violationsResponse.error) {
+        throw new Error(violationsResponse.error);
       } else {
-        console.warn('Failed to load violations from database:', violationsResponse.error || 'No data received');
+        console.warn('No violations data received');
         setViolations([]); // Set empty array as fallback
       }
 
@@ -239,9 +247,16 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
       setUsers([]);
       setFines([]);
       setNotifications([]);
+
     } catch (error) {
-      console.error('Error loading data from Supabase:', error);
+      console.error('Error loading data:', error);
+
+      // Update circuit breaker state
+      setFailureCount(prev => prev + 1);
+      setLastFailureTime(Date.now());
+
       setError(error instanceof Error ? error.message : 'Failed to load data');
+
       // Set fallback empty arrays on error
       setVehicles([]);
       setViolations([]);
