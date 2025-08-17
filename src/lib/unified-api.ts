@@ -570,7 +570,16 @@ class UnifiedAPIClient {
       };
     }
 
-    // Default mock response
+    // Default mock response - ensure we always return appropriate data structure
+    if (endpoint.includes('/vehicles')) {
+      return { data: [] as T };
+    }
+
+    if (endpoint.includes('/violations')) {
+      return { data: [] as T };
+    }
+
+    // Default success response
     return {
       data: { success: true } as T
     };
