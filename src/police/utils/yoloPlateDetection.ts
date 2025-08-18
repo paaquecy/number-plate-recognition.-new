@@ -31,6 +31,12 @@ export class YOLOPlateDetector {
       await tf.ready();
       console.log('TensorFlow.js backend ready');
 
+      // Detect third-party script interference
+      const hasFullStory = typeof window !== 'undefined' &&
+                          (window as any).FS ||
+                          document.querySelector('script[src*="fullstory"]') ||
+                          document.querySelector('script[src*="fs.js"]');
+
       // Check if we should skip external model loading
       const isDevelopment = window.location.hostname === 'localhost' ||
                            window.location.hostname.includes('127.0.0.1') ||
@@ -39,7 +45,9 @@ export class YOLOPlateDetector {
 
       const shouldSkipExternalModel = isDevelopment ||
                                     navigator.onLine === false ||
-                                    window.location.protocol !== 'https:';
+                                    window.location.protocol !== 'https:' ||
+                                    hasFullStory ||
+                                    this.hasNetworkIssues;
 
       if (shouldSkipExternalModel) {
         console.log('Skipping external model loading (development/offline mode)');
