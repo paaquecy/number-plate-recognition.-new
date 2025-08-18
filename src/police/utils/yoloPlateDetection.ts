@@ -79,6 +79,15 @@ export class YOLOPlateDetector {
         } catch (modelError) {
           console.warn('Failed to load external model, will use fallback detection:', modelError);
           this.model = null;
+
+          // Mark network issues for future initialization attempts
+          if (modelError instanceof Error &&
+              (modelError.message.includes('fetch') ||
+               modelError.message.includes('Failed to fetch') ||
+               modelError.message.includes('Network'))) {
+            this.hasNetworkIssues = true;
+            console.log('Network issues detected, future model loading will be skipped');
+          }
         }
       }
 
