@@ -18,6 +18,7 @@ export class YOLOPlateDetector {
   private ocrWorker: any = null;
   private isInitialized = false;
   private isInitializing = false;
+  private hasNetworkIssues = false;
 
   async initialize(): Promise<void> {
     if (this.isInitialized || this.isInitializing) return;
