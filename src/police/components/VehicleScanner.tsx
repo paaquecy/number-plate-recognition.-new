@@ -209,30 +209,6 @@ const VehicleScanner = () => {
     }
   };
 
-  const handleTestCamera = async () => {
-    console.log('Testing camera access...');
-    console.log('Component mounted:', isMounted);
-    console.log('Video ref available:', !!videoRef.current);
-    console.log('Video element in DOM:', document.querySelector('video'));
-
-    if (!isMounted) {
-      console.error('Component not mounted yet');
-      return;
-    }
-
-    // Wait a bit to ensure video element is mounted
-    await new Promise(resolve => setTimeout(resolve, 200));
-
-    console.log('Video ref after delay:', !!videoRef.current);
-    console.log('Video element in DOM after delay:', document.querySelector('video'));
-
-    try {
-      await startCamera();
-      console.log('Camera test successful!');
-    } catch (error) {
-      console.error('Camera test failed:', error);
-    }
-  };
 
   const handleStopScan = () => {
     setIsScanning(false);
