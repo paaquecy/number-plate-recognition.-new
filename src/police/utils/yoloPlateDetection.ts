@@ -30,25 +30,40 @@ export class YOLOPlateDetector {
       await tf.ready();
       console.log('TensorFlow.js backend ready');
 
-      // Try to load external model with timeout and fallback
-      console.log('Attempting to load detection model...');
+      // Check if we should skip external model loading
+      const isDevelopment = window.location.hostname === 'localhost' ||
+                           window.location.hostname.includes('127.0.0.1') ||
+                           window.location.hostname.includes('vite') ||
+                           import.meta.env.DEV;
 
-      try {
-        // Using a lightweight detection model for demonstration
-        // Replace this URL with your custom YOLOv8 license plate model
-        const modelUrl = 'https://tfhub.dev/tensorflow/tfjs-model/ssd_mobilenet_v2/1/default/1';
+      const shouldSkipExternalModel = isDevelopment ||
+                                    navigator.onLine === false ||
+                                    window.location.protocol !== 'https:';
 
-        // Add timeout for model loading
-        const modelLoadPromise = tf.loadGraphModel(modelUrl);
-        const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Model loading timeout')), 10000)
-        );
-
-        this.model = await Promise.race([modelLoadPromise, timeoutPromise]) as tf.GraphModel;
-        console.log('External model loaded successfully');
-      } catch (modelError) {
-        console.warn('Failed to load external model, will use fallback detection:', modelError);
+      if (shouldSkipExternalModel) {
+        console.log('Skipping external model loading (development/offline mode)');
         this.model = null;
+      } else {
+        // Try to load external model with timeout and fallback
+        console.log('Attempting to load detection model...');
+
+        try {
+          // Using a lightweight detection model for demonstration
+          // Replace this URL with your custom YOLOv8 license plate model
+          const modelUrl = 'https://tfhub.dev/tensorflow/tfjs-model/ssd_mobilenet_v2/1/default/1';
+
+          // Add timeout for model loading
+          const modelLoadPromise = tf.loadGraphModel(modelUrl);
+          const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Model loading timeout')), 5000) // Reduced to 5 seconds
+          );
+
+          this.model = await Promise.race([modelLoadPromise, timeoutPromise]) as tf.GraphModel;
+          console.log('External model loaded successfully');
+        } catch (modelError) {
+          console.warn('Failed to load external model, will use fallback detection:', modelError);
+          this.model = null;
+        }
       }
 
       // Initialize OCR worker with better error handling
