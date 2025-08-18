@@ -50,7 +50,14 @@ export class YOLOPlateDetector {
                                     this.hasNetworkIssues;
 
       if (shouldSkipExternalModel) {
-        console.log('Skipping external model loading (development/offline mode)');
+        const reasons = [];
+        if (isDevelopment) reasons.push('development mode');
+        if (navigator.onLine === false) reasons.push('offline');
+        if (window.location.protocol !== 'https:') reasons.push('non-HTTPS');
+        if (hasFullStory) reasons.push('third-party interference');
+        if (this.hasNetworkIssues) reasons.push('previous network issues');
+
+        console.log('Skipping external model loading:', reasons.join(', '));
         this.model = null;
       } else {
         // Try to load external model with timeout and fallback
