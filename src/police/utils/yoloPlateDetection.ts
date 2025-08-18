@@ -341,19 +341,27 @@ export class YOLOPlateDetector {
   async cleanup(): Promise<void> {
     try {
       if (this.ocrWorker) {
-        await this.ocrWorker.terminate();
+        try {
+          await this.ocrWorker.terminate();
+        } catch (error) {
+          console.warn('Error terminating OCR worker:', error);
+        }
         this.ocrWorker = null;
       }
-      
+
       if (this.model) {
-        this.model.dispose();
+        try {
+          this.model.dispose();
+        } catch (error) {
+          console.warn('Error disposing model:', error);
+        }
         this.model = null;
       }
-      
+
       this.isInitialized = false;
-      console.log('YOLO detector cleaned up');
+      console.log('YOLO detector cleaned up successfully');
     } catch (error) {
-      console.error('Error cleaning up YOLO detector:', error);
+      console.error('Error during cleanup:', error);
     }
   }
 }
