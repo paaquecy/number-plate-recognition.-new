@@ -197,9 +197,20 @@ const VehicleScanner = () => {
         console.log('Detection below confidence threshold or OCR failed');
       }
     } catch (error) {
-      console.error('Error during YOLO plate detection:', error);
+      console.error('Error during plate detection:', error);
+
+      // If YOLO detector fails, try falling back to simple detector
+      if (!usingSimpleDetector) {
+        console.log('Attempting fallback to simple detector...');
+        try {
+          await simplePlateDetector.initialize();
+          setUsingSimpleDetector(true);
+        } catch (fallbackError) {
+          console.error('Fallback detector also failed:', fallbackError);
+        }
+      }
     }
-  }, [cameraActive, scanInterval, stopCamera, lookupVehicle]);
+  }, [cameraActive, scanInterval, stopCamera, lookupVehicle, usingSimpleDetector]);
 
   const handleStartScan = async () => {
     console.log('Starting camera scan...');
