@@ -32,6 +32,7 @@ const VehicleScanner = () => {
   const [scanInterval, setScanInterval] = useState<NodeJS.Timeout | null>(null);
   const [permissionStatus, setPermissionStatus] = useState<'granted' | 'denied' | 'prompt' | 'unknown'>('unknown');
   const [isMounted, setIsMounted] = useState(false);
+  const [usingSimpleDetector, setUsingSimpleDetector] = useState(false);
   const autoStartRef = useRef(false);
 
   const {
