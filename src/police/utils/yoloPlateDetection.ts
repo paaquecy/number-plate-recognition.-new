@@ -21,7 +21,7 @@ export class YOLOPlateDetector {
 
   async initialize(): Promise<void> {
     if (this.isInitialized || this.isInitializing) return;
-    
+
     this.isInitializing = true;
     console.log('Initializing YOLOv8 + EasyOCR plate detector...');
 
@@ -30,41 +30,60 @@ export class YOLOPlateDetector {
       await tf.ready();
       console.log('TensorFlow.js backend ready');
 
-      // For now, we'll use a pre-trained general object detection model
-      // In production, you would use a custom-trained YOLOv8 model for license plates
-      console.log('Loading YOLOv8 model...');
-      
-      // Using a lightweight detection model for demonstration
-      // Replace this URL with your custom YOLOv8 license plate model
-      const modelUrl = 'https://tfhub.dev/tensorflow/tfjs-model/ssd_mobilenet_v2/1/default/1';
-      
+      // Try to load external model with timeout and fallback
+      console.log('Attempting to load detection model...');
+
       try {
-        this.model = await tf.loadGraphModel(modelUrl);
-        console.log('YOLOv8 model loaded successfully');
+        // Using a lightweight detection model for demonstration
+        // Replace this URL with your custom YOLOv8 license plate model
+        const modelUrl = 'https://tfhub.dev/tensorflow/tfjs-model/ssd_mobilenet_v2/1/default/1';
+
+        // Add timeout for model loading
+        const modelLoadPromise = tf.loadGraphModel(modelUrl);
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Model loading timeout')), 10000)
+        );
+
+        this.model = await Promise.race([modelLoadPromise, timeoutPromise]) as tf.GraphModel;
+        console.log('External model loaded successfully');
       } catch (modelError) {
-        console.warn('Failed to load external model, using fallback detection');
+        console.warn('Failed to load external model, will use fallback detection:', modelError);
         this.model = null;
       }
 
-      // Initialize OCR worker
-      console.log('Initializing OCR worker...');
-      this.ocrWorker = await createWorker('eng', 1, {
-        logger: (m: any) => console.log('OCR:', m)
-      });
+      // Initialize OCR worker with better error handling
+      try {
+        console.log('Initializing OCR worker...');
+        this.ocrWorker = await createWorker('eng', 1, {
+          logger: (m: any) => {
+            // Only log important OCR messages to reduce noise
+            if (m.status === 'recognizing text' || m.status === 'loading tesseract core') {
+              console.log('OCR:', m.status, m.progress ? `${Math.round(m.progress * 100)}%` : '');
+            }
+          }
+        });
 
-      await this.ocrWorker.setParameters({
-        tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-',
-        tessedit_pageseg_mode: '8', // Treat the image as a single word
-        tessedit_ocr_engine_mode: '2' // Use LSTM OCR engine
-      });
+        await this.ocrWorker.setParameters({
+          tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-',
+          tessedit_pageseg_mode: '8', // Treat the image as a single word
+          tessedit_ocr_engine_mode: '2' // Use LSTM OCR engine
+        });
 
-      console.log('OCR worker initialized');
+        console.log('OCR worker initialized successfully');
+      } catch (ocrError) {
+        console.warn('Failed to initialize OCR worker, will use simplified text extraction:', ocrError);
+        this.ocrWorker = null;
+      }
 
       this.isInitialized = true;
-      console.log('YOLOv8 + EasyOCR detector fully initialized');
+      console.log('Plate detector initialized (Model:', this.model ? 'External' : 'Fallback', ', OCR:', this.ocrWorker ? 'Tesseract' : 'Fallback', ')');
+
     } catch (error) {
-      console.error('Failed to initialize YOLO detector:', error);
-      throw error;
+      console.warn('Detector initialization failed, using basic fallback mode:', error);
+      // Don't throw error, allow fallback mode
+      this.model = null;
+      this.ocrWorker = null;
+      this.isInitialized = true;
     } finally {
       this.isInitializing = false;
     }
