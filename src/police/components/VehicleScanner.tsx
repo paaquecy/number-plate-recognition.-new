@@ -133,10 +133,20 @@ const VehicleScanner = () => {
     if (!cameraActive || !videoRef.current) return;
 
     try {
-      console.log('Running YOLOv8 + EasyOCR plate detection...');
-      const result = await yoloPlateDetector.detectPlate(videoRef.current);
+      console.log('Running plate detection with', usingSimpleDetector ? 'simple detector' : 'YOLOv8 + EasyOCR');
 
-      if (result && result.confidence > 0.5 && result.ocrConfidence > 0.6) {
+      let result;
+      if (usingSimpleDetector) {
+        result = await simplePlateDetector.detectPlate(videoRef.current);
+      } else {
+        result = await yoloPlateDetector.detectPlate(videoRef.current);
+      }
+
+      const minConfidence = usingSimpleDetector ? 0.6 : 0.5;
+      const minOcrConfidence = usingSimpleDetector ? 0.7 : 0.6;
+
+      if (result && result.confidence > minConfidence &&
+          (result.ocrConfidence || 0) > minOcrConfidence) {
         console.log('Plate detected:', result);
         setDetectionResult(result);
 
