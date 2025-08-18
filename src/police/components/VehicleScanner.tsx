@@ -315,7 +315,12 @@ const VehicleScanner = () => {
       <div className="bg-white rounded-xl shadow-sm p-4 lg:p-6">
         <h3 className="text-base lg:text-lg font-semibold text-gray-800 mb-4 flex items-center">
           <Camera className="w-4 lg:w-5 h-4 lg:h-5 mr-2 text-blue-600" />
-          Live Camera Feed with YOLOv8 + EasyOCR Plate Detection
+          Live Camera Feed with {usingSimpleDetector ? 'Simple' : 'YOLOv8 + EasyOCR'} Plate Detection
+          {usingSimpleDetector && (
+            <span className="ml-2 px-2 py-1 bg-orange-100 text-orange-700 text-xs rounded-full">
+              Fallback Mode
+            </span>
+          )}
         </h3>
         
         {/* Camera Feed Container */}
