@@ -85,20 +85,32 @@ const VehicleScanner = () => {
         console.log('Starting YOLOv8 + EasyOCR detector initialization...');
         await yoloPlateDetector.initialize();
         console.log('YOLOv8 + EasyOCR detector initialized successfully');
+        setUsingSimpleDetector(false);
       } catch (error) {
-        console.warn('Failed to initialize YOLO detector, will continue with fallback:', error);
+        console.warn('Failed to initialize YOLO detector, falling back to simple detector:', error);
+        try {
+          await simplePlateDetector.initialize();
+          console.log('Simple detector initialized as fallback');
+          setUsingSimpleDetector(true);
+        } catch (fallbackError) {
+          console.error('Failed to initialize any detector:', fallbackError);
+        }
       }
     };
 
     initializeDetector();
 
     return () => {
-      yoloPlateDetector.cleanup();
+      if (usingSimpleDetector) {
+        simplePlateDetector.cleanup();
+      } else {
+        yoloPlateDetector.cleanup();
+      }
       if (scanInterval) {
         clearInterval(scanInterval);
       }
     };
-  }, [scanInterval]);
+  }, [scanInterval, usingSimpleDetector]);
 
   // Log permission status changes for debugging
   useEffect(() => {
