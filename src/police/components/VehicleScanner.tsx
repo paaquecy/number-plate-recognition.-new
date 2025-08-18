@@ -416,9 +416,11 @@ const VehicleScanner = () => {
 
                 {/* Scanning Indicator */}
                 {isScanning && (
-                  <div className="absolute top-3 right-3 bg-purple-600 text-white px-3 py-2 rounded-lg text-xs font-semibold flex items-center shadow-lg">
+                  <div className={`absolute top-3 right-3 text-white px-3 py-2 rounded-lg text-xs font-semibold flex items-center shadow-lg ${
+                    usingSimpleDetector ? 'bg-orange-600' : 'bg-purple-600'
+                  }`}>
                     <div className="animate-pulse w-2 h-2 bg-white rounded-full mr-2"></div>
-                    YOLOv8 + OCR Scanning...
+                    {usingSimpleDetector ? 'Simple Detection...' : 'YOLOv8 + OCR Scanning...'}
                   </div>
                 )}
 
