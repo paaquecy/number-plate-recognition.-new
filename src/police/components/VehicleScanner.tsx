@@ -558,8 +558,12 @@ const VehicleScanner = () => {
                 Resolution: {cameraActive && videoRef.current ? `${videoRef.current.videoWidth}x${videoRef.current.videoHeight}` : 'N/A'}
               </span>
               <span className="flex items-center">
-                <div className="w-2 h-2 bg-purple-500 rounded-full mr-2"></div>
-                YOLO+OCR Status: {detectionResult ? 'Active' : 'Standby'}
+                <div className={`w-2 h-2 rounded-full mr-2 ${
+                  detectorType === 'custom' ? 'bg-green-500' :
+                  detectorType === 'yolo' ? 'bg-purple-500' : 'bg-orange-500'
+                }`}></div>
+                {detectorType === 'custom' ? 'Custom Model' :
+                 detectorType === 'yolo' ? 'YOLO+OCR' : 'Simple'} Status: {detectionResult ? 'Active' : 'Standby'}
               </span>
             </div>
             <span className="text-gray-400">
