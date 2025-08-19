@@ -496,8 +496,16 @@ const VehicleScanner = () => {
                     detectorType === 'yolo' ? 'bg-purple-600' : 'bg-orange-600'
                   }`}>
                     <div className="animate-pulse w-2 h-2 bg-white rounded-full mr-2"></div>
-                    {detectorType === 'custom' ? 'Custom Model Scanning...' :
-                     detectorType === 'yolo' ? 'YOLOv8 + OCR Scanning...' : 'Simple Detection...'}
+                    🔍 {detectorType === 'custom' ? 'AI Detection Active' :
+                         detectorType === 'yolo' ? 'YOLO Detection Active' : 'Detection Active'}
+                  </div>
+                )}
+
+                {/* Always show detection status when camera is active */}
+                {cameraActive && !isScanning && (
+                  <div className="absolute top-3 right-3 bg-blue-600 text-white px-3 py-2 rounded-lg text-xs font-semibold flex items-center shadow-lg">
+                    <div className="animate-pulse w-2 h-2 bg-white rounded-full mr-2"></div>
+                    📹 Camera Ready - Click Start Detection
                   </div>
                 )}
 
