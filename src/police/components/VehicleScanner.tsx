@@ -34,6 +34,8 @@ const VehicleScanner = () => {
   const [permissionStatus, setPermissionStatus] = useState<'granted' | 'denied' | 'prompt' | 'unknown'>('unknown');
   const [isMounted, setIsMounted] = useState(false);
   const [usingSimpleDetector, setUsingSimpleDetector] = useState(false);
+  const [usingCustomModel, setUsingCustomModel] = useState(false);
+  const [detectorType, setDetectorType] = useState<'custom' | 'yolo' | 'simple'>('custom');
   const autoStartRef = useRef(false);
 
   const {
