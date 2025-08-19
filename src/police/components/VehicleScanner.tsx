@@ -208,8 +208,12 @@ const VehicleScanner = () => {
 
       if (result && result.confidence > minConfidence &&
           (result.ocrConfidence || 0) > minOcrConfidence) {
-        console.log('Plate detected:', result);
+        console.log('✅ Plate detected successfully:', result);
         setDetectionResult(result);
+        setLastDetectionTime(new Date());
+
+        // Show success notification briefly
+        console.log(`🎯 Detection successful after ${detectionAttempts + 1} attempts!`);
 
         // Lookup detected plate in database
         try {
