@@ -684,6 +684,17 @@ const VehicleScanner = () => {
               )}
 
               <button
+                onClick={() => {
+                  console.log('🧪 Manual detection test triggered');
+                  performPlateDetection();
+                }}
+                className="px-4 lg:px-6 py-3 lg:py-4 rounded-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200 text-sm lg:text-base flex items-center justify-center"
+              >
+                <Scan className="w-4 lg:w-5 h-4 lg:h-5 mr-2" />
+                Test Detect
+              </button>
+
+              <button
                 onClick={stopCamera}
                 className="px-4 lg:px-6 py-3 lg:py-4 rounded-lg font-semibold text-gray-700 bg-gray-200 hover:bg-gray-300 transition-colors duration-200 text-sm lg:text-base flex items-center justify-center"
               >
