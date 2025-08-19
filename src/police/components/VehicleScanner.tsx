@@ -306,7 +306,9 @@ const VehicleScanner = () => {
       }
 
       setIsScanning(true);
-      setDetectionResult(null);
+    setDetectionResult(null);
+    setDetectionAttempts(0);
+    setLastDetectionTime(null);
 
       // Start continuous plate detection
       const interval = setInterval(performPlateDetection, 1500); // Scan every 1.5 seconds for better responsiveness
