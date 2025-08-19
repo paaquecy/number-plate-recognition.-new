@@ -244,18 +244,38 @@ const VehicleScanner = () => {
     } catch (error) {
       console.error('Error during plate detection:', error);
 
-      // If YOLO detector fails, try falling back to simple detector
-      if (!usingSimpleDetector) {
-        console.log('Attempting fallback to simple detector...');
+      // Implement fallback chain: custom -> yolo -> simple
+      if (detectorType === 'custom') {
+        console.log('Custom detector failed, attempting fallback to standard YOLO...');
+        try {
+          await yoloPlateDetector.initialize();
+          setDetectorType('yolo');
+          setUsingCustomModel(false);
+          setUsingSimpleDetector(false);
+        } catch (fallbackError) {
+          console.log('YOLO fallback failed, trying simple detector...');
+          try {
+            await simplePlateDetector.initialize();
+            setDetectorType('simple');
+            setUsingCustomModel(false);
+            setUsingSimpleDetector(true);
+          } catch (finalError) {
+            console.error('All detectors failed:', finalError);
+          }
+        }
+      } else if (detectorType === 'yolo') {
+        console.log('YOLO detector failed, attempting fallback to simple detector...');
         try {
           await simplePlateDetector.initialize();
+          setDetectorType('simple');
+          setUsingCustomModel(false);
           setUsingSimpleDetector(true);
         } catch (fallbackError) {
-          console.error('Fallback detector also failed:', fallbackError);
+          console.error('Simple detector fallback also failed:', fallbackError);
         }
       }
     }
-  }, [cameraActive, scanInterval, stopCamera, lookupVehicle, usingSimpleDetector]);
+  }, [cameraActive, scanInterval, stopCamera, lookupVehicle, detectorType]);
 
   const handleStartScan = async () => {
     console.log('Starting camera scan...');
