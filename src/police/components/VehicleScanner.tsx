@@ -318,29 +318,42 @@ const VehicleScanner = () => {
   }, [cameraActive, scanInterval, stopCamera, lookupVehicle, detectorType]);
 
   const handleStartScan = async () => {
-    console.log('Starting camera scan...');
-    console.log('Current states:', { cameraActive, cameraLoading, cameraError, permissionStatus });
+    console.log('🎬 handleStartScan called');
+    console.log('📊 Current states:', { cameraActive, cameraLoading, cameraError, permissionStatus, isScanning, scanInterval: !!scanInterval });
 
     try {
       if (!cameraActive) {
-        console.log('Camera not active, starting camera...');
+        console.log('📹 Camera not active, starting camera...');
         await startCamera();
-        console.log('Camera started successfully');
+        console.log('✅ Camera started successfully');
       }
 
+      console.log('🔄 Setting up detection state...');
       setIsScanning(true);
-    setDetectionResult(null);
-    setDetectionAttempts(0);
-    setLastDetectionTime(null);
+      setDetectionResult(null);
+      setDetectionAttempts(0);
+      setLastDetectionTime(null);
 
       // Start continuous plate detection
-      const interval = setInterval(performPlateDetection, 1500); // Scan every 1.5 seconds for better responsiveness
+      console.log('⏱️ Setting up detection interval (1.5 seconds)...');
+      const interval = setInterval(() => {
+        console.log('🔍 Interval tick - calling performPlateDetection');
+        performPlateDetection();
+      }, 1500);
+
       setScanInterval(interval);
 
-      // Keep scanning indefinitely while camera is active (no timeout)
-      console.log('Continuous plate detection started - will run until camera is stopped');
+      console.log('✅ Continuous plate detection started - interval ID:', interval);
+      console.log('📍 Detection will run until camera is stopped');
+
+      // Test detection immediately
+      setTimeout(() => {
+        console.log('🧪 Running immediate test detection...');
+        performPlateDetection();
+      }, 500);
+
     } catch (error) {
-      console.error('Failed to start scanning:', error);
+      console.error('❌ Failed to start scanning:', error);
       setIsScanning(false);
     }
   };
