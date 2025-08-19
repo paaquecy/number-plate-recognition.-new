@@ -53,12 +53,21 @@ const VehicleScanner = () => {
 
   // Auto-start detection when camera becomes active
   useEffect(() => {
+    console.log('🔄 Auto-start check - Camera:', cameraActive, 'Scanning:', isScanning, 'Interval:', !!scanInterval);
+
     if (cameraActive && !isScanning && !scanInterval) {
-      console.log('Camera is active, auto-starting plate detection...');
+      console.log('🚀 Camera is active and not scanning, auto-starting plate detection...');
+
       // Small delay to ensure camera is fully ready
-      setTimeout(() => {
+      const autoStartTimer = setTimeout(() => {
+        console.log('⏰ Auto-start timer triggered, calling handleStartScan');
         handleStartScan();
-      }, 1000);
+      }, 1500); // Increased delay to ensure camera is ready
+
+      return () => {
+        console.log('🧹 Cleaning up auto-start timer');
+        clearTimeout(autoStartTimer);
+      };
     }
   }, [cameraActive, isScanning, scanInterval]);
 
