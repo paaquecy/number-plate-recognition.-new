@@ -165,17 +165,30 @@ const VehicleScanner = () => {
     if (!cameraActive || !videoRef.current) return;
 
     try {
-      console.log('Running plate detection with', usingSimpleDetector ? 'simple detector' : 'YOLOv8 + EasyOCR');
+      console.log('Running plate detection with',
+        detectorType === 'custom' ? 'custom trained model' :
+        detectorType === 'yolo' ? 'standard YOLOv8 + EasyOCR' : 'simple detector');
 
       let result;
-      if (usingSimpleDetector) {
-        result = await simplePlateDetector.detectPlate(videoRef.current);
-      } else {
-        result = await yoloPlateDetector.detectPlate(videoRef.current);
+      switch (detectorType) {
+        case 'custom':
+          result = await customYOLODetector.detectPlate(videoRef.current);
+          break;
+        case 'yolo':
+          result = await yoloPlateDetector.detectPlate(videoRef.current);
+          break;
+        case 'simple':
+          result = await simplePlateDetector.detectPlate(videoRef.current);
+          break;
+        default:
+          result = await customYOLODetector.detectPlate(videoRef.current);
       }
 
-      const minConfidence = usingSimpleDetector ? 0.6 : 0.5;
-      const minOcrConfidence = usingSimpleDetector ? 0.7 : 0.6;
+      // Adjust confidence thresholds based on detector type
+      const minConfidence = detectorType === 'custom' ? 0.7 :
+                           detectorType === 'yolo' ? 0.5 : 0.6;
+      const minOcrConfidence = detectorType === 'custom' ? 0.75 :
+                              detectorType === 'yolo' ? 0.6 : 0.7;
 
       if (result && result.confidence > minConfidence &&
           (result.ocrConfidence || 0) > minOcrConfidence) {
