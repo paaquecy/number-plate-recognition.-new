@@ -36,6 +36,8 @@ const VehicleScanner = () => {
   const [usingSimpleDetector, setUsingSimpleDetector] = useState(false);
   const [usingCustomModel, setUsingCustomModel] = useState(false);
   const [detectorType, setDetectorType] = useState<'custom' | 'yolo' | 'simple'>('custom');
+  const [detectionAttempts, setDetectionAttempts] = useState(0);
+  const [lastDetectionTime, setLastDetectionTime] = useState<Date | null>(null);
   const autoStartRef = useRef(false);
 
   const {
