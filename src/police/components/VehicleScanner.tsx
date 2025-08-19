@@ -599,7 +599,9 @@ const VehicleScanner = () => {
               <span>Component Mounted: {isMounted ? '✅' : '❌'}</span>
               <span>Video Ref: {videoRef.current ? '✅' : '❌'}</span>
               <span>Camera Active: {cameraActive ? '✅' : '❌'}</span>
-              <span>Camera Loading: {cameraLoading ? '⏳' : '✅'}</span>
+              <span>Detection Active: {isScanning ? '🔍' : '⏸️'}</span>
+              <span>Detection Attempts: {detectionAttempts}</span>
+              <span>Last Detection: {lastDetectionTime ? lastDetectionTime.toLocaleTimeString() : 'None'}</span>
               <span>Permission: {permissionStatus}</span>
               <span>HTTPS: {window.isSecureContext ? '✅' : '❌'}</span>
             </div>
