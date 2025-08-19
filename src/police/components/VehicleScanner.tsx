@@ -14,6 +14,7 @@ import {
 import { useCamera } from '../hooks/useCamera';
 import { yoloPlateDetector, PlateDetectionResult } from '../utils/yoloPlateDetection';
 import { simplePlateDetector } from '../utils/simplePlateDetection';
+import { customYOLODetector } from '../utils/customModelDetection';
 import { useData } from '../../contexts/DataContext';
 import DetectionMetrics from './DetectionMetrics';
 
