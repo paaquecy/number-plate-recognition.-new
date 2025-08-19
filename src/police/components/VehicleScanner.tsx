@@ -490,10 +490,12 @@ const VehicleScanner = () => {
                 {/* Scanning Indicator */}
                 {isScanning && (
                   <div className={`absolute top-3 right-3 text-white px-3 py-2 rounded-lg text-xs font-semibold flex items-center shadow-lg ${
-                    usingSimpleDetector ? 'bg-orange-600' : 'bg-purple-600'
+                    detectorType === 'custom' ? 'bg-green-600' :
+                    detectorType === 'yolo' ? 'bg-purple-600' : 'bg-orange-600'
                   }`}>
                     <div className="animate-pulse w-2 h-2 bg-white rounded-full mr-2"></div>
-                    {usingSimpleDetector ? 'Simple Detection...' : 'YOLOv8 + OCR Scanning...'}
+                    {detectorType === 'custom' ? 'Custom Model Scanning...' :
+                     detectorType === 'yolo' ? 'YOLOv8 + OCR Scanning...' : 'Simple Detection...'}
                   </div>
                 )}
 
