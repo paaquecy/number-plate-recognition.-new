@@ -49,6 +49,17 @@ const VehicleScanner = () => {
     captureFrame
   } = useCamera();
 
+  // Auto-start detection when camera becomes active
+  useEffect(() => {
+    if (cameraActive && !isScanning && !scanInterval) {
+      console.log('Camera is active, auto-starting plate detection...');
+      // Small delay to ensure camera is fully ready
+      setTimeout(() => {
+        handleStartScan();
+      }, 1000);
+    }
+  }, [cameraActive, isScanning, scanInterval]);
+
   // Track component mount status
   useEffect(() => {
     setIsMounted(true);
