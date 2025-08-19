@@ -175,13 +175,27 @@ const VehicleScanner = () => {
   };
 
   const performPlateDetection = useCallback(async () => {
-    if (!cameraActive || !videoRef.current) return;
+    console.log('🔍 performPlateDetection called - Camera Active:', cameraActive, 'Video Ref:', !!videoRef.current);
 
-    // Increment detection attempts
-    setDetectionAttempts(prev => prev + 1);
+    // Increment detection attempts first to show activity
+    setDetectionAttempts(prev => {
+      const newCount = prev + 1;
+      console.log('📊 Detection attempt #', newCount);
+      return newCount;
+    });
+
+    if (!cameraActive) {
+      console.warn('❌ Camera not active, skipping detection');
+      return;
+    }
+
+    if (!videoRef.current) {
+      console.warn('❌ Video ref not available, skipping detection');
+      return;
+    }
 
     try {
-      console.log('Running plate detection attempt #', detectionAttempts + 1, 'with',
+      console.log('🎯 Running plate detection attempt #', detectionAttempts + 1, 'with',
         detectorType === 'custom' ? 'custom trained model' :
         detectorType === 'yolo' ? 'standard YOLOv8 + EasyOCR' : 'simple detector');
 
