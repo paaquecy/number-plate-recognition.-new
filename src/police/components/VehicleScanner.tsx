@@ -614,7 +614,7 @@ const VehicleScanner = () => {
                   className="flex-1 py-3 lg:py-4 rounded-lg font-semibold text-white transition-colors duration-200 text-sm lg:text-base bg-green-600 hover:bg-green-700 flex items-center justify-center"
                 >
                   <Scan className="w-4 lg:w-5 h-4 lg:h-5 mr-2" />
-                  Start Plate Detection
+                  Start Continuous Detection
                 </button>
               ) : (
                 <button
@@ -622,7 +622,7 @@ const VehicleScanner = () => {
                   className="flex-1 py-3 lg:py-4 rounded-lg font-semibold text-white transition-colors duration-200 text-sm lg:text-base bg-red-600 hover:bg-red-700 flex items-center justify-center"
                 >
                   <Pause className="w-4 lg:w-5 h-4 lg:h-5 mr-2" />
-                  Stop Scanning
+                  Stop Detection
                 </button>
               )}
 
