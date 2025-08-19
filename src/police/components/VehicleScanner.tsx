@@ -299,18 +299,12 @@ const VehicleScanner = () => {
       setIsScanning(true);
       setDetectionResult(null);
 
-      // Start continuous plate detection with YOLO + EasyOCR
-      const interval = setInterval(performPlateDetection, 2000); // Scan every 2 seconds (YOLO + OCR is slower)
+      // Start continuous plate detection
+      const interval = setInterval(performPlateDetection, 1500); // Scan every 1.5 seconds for better responsiveness
       setScanInterval(interval);
 
-      // Stop scanning after 45 seconds if no plate detected (longer timeout for OCR processing)
-      setTimeout(() => {
-        if (scanInterval) {
-          clearInterval(interval);
-          setScanInterval(null);
-          setIsScanning(false);
-        }
-      }, 45000);
+      // Keep scanning indefinitely while camera is active (no timeout)
+      console.log('Continuous plate detection started - will run until camera is stopped');
     } catch (error) {
       console.error('Failed to start scanning:', error);
       setIsScanning(false);
