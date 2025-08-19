@@ -177,8 +177,11 @@ const VehicleScanner = () => {
   const performPlateDetection = useCallback(async () => {
     if (!cameraActive || !videoRef.current) return;
 
+    // Increment detection attempts
+    setDetectionAttempts(prev => prev + 1);
+
     try {
-      console.log('Running plate detection with',
+      console.log('Running plate detection attempt #', detectionAttempts + 1, 'with',
         detectorType === 'custom' ? 'custom trained model' :
         detectorType === 'yolo' ? 'standard YOLOv8 + EasyOCR' : 'simple detector');
 
