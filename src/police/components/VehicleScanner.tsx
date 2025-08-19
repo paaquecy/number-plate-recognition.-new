@@ -521,7 +521,7 @@ const VehicleScanner = () => {
                   </div>
                   <p className="font-semibold text-lg mb-2">Camera Feed Ready</p>
                   <p className="text-sm text-gray-300 mb-4 max-w-md">
-                    Click "Start Camera & Scan" below to activate your camera and begin automatic license plate detection
+                    Click "Start Camera & Scan" below to activate your camera. Plate detection will start automatically when camera is active.
                   </p>
 
                   {permissionStatus === 'denied' && (
