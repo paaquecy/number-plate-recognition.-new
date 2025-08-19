@@ -81,39 +81,68 @@ const VehicleScanner = () => {
     checkPermissions();
   }, []);
 
-  // Initialize YOLOv8 + EasyOCR when component mounts
+  // Initialize detection system with custom model priority
   useEffect(() => {
     const initializeDetector = async () => {
+      // Try custom model first (your trained model)
       try {
-        console.log('Starting YOLOv8 + EasyOCR detector initialization...');
-        await yoloPlateDetector.initialize();
-        console.log('YOLOv8 + EasyOCR detector initialized successfully');
+        console.log('Starting custom YOLO detector initialization...');
+        await customYOLODetector.initialize();
+        console.log('Custom YOLO detector initialized successfully');
+        setDetectorType('custom');
+        setUsingCustomModel(true);
         setUsingSimpleDetector(false);
+        return;
+      } catch (error) {
+        console.warn('Failed to initialize custom detector, trying standard YOLO:', error);
+      }
+
+      // Fallback to standard YOLO + EasyOCR
+      try {
+        console.log('Starting standard YOLOv8 + EasyOCR detector initialization...');
+        await yoloPlateDetector.initialize();
+        console.log('Standard YOLOv8 + EasyOCR detector initialized successfully');
+        setDetectorType('yolo');
+        setUsingCustomModel(false);
+        setUsingSimpleDetector(false);
+        return;
       } catch (error) {
         console.warn('Failed to initialize YOLO detector, falling back to simple detector:', error);
-        try {
-          await simplePlateDetector.initialize();
-          console.log('Simple detector initialized as fallback');
-          setUsingSimpleDetector(true);
-        } catch (fallbackError) {
-          console.error('Failed to initialize any detector:', fallbackError);
-        }
+      }
+
+      // Final fallback to simple detector
+      try {
+        await simplePlateDetector.initialize();
+        console.log('Simple detector initialized as final fallback');
+        setDetectorType('simple');
+        setUsingCustomModel(false);
+        setUsingSimpleDetector(true);
+      } catch (fallbackError) {
+        console.error('Failed to initialize any detector:', fallbackError);
       }
     };
 
     initializeDetector();
 
     return () => {
-      if (usingSimpleDetector) {
-        simplePlateDetector.cleanup();
-      } else {
-        yoloPlateDetector.cleanup();
+      // Cleanup based on which detector is active
+      switch (detectorType) {
+        case 'custom':
+          customYOLODetector.cleanup();
+          break;
+        case 'yolo':
+          yoloPlateDetector.cleanup();
+          break;
+        case 'simple':
+          simplePlateDetector.cleanup();
+          break;
       }
+
       if (scanInterval) {
         clearInterval(scanInterval);
       }
     };
-  }, [scanInterval, usingSimpleDetector]);
+  }, [scanInterval, detectorType]);
 
   // Log permission status changes for debugging
   useEffect(() => {
