@@ -671,8 +671,12 @@ const VehicleScanner = () => {
             <FileText className="w-4 lg:w-5 h-4 lg:h-5 mr-2 text-blue-600" />
             Scan Results
             {detectionResult && (
-              <span className="ml-2 px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded-full">
-                YOLOv8 + EasyOCR
+              <span className={`ml-2 px-2 py-1 text-xs rounded-full ${
+                detectorType === 'custom' ? 'bg-green-100 text-green-700' :
+                detectorType === 'yolo' ? 'bg-purple-100 text-purple-700' : 'bg-orange-100 text-orange-700'
+              }`}>
+                {detectorType === 'custom' ? 'Custom Model' :
+                 detectorType === 'yolo' ? 'YOLOv8 + EasyOCR' : 'Simple Detection'}
               </span>
             )}
           </h3>
