@@ -239,16 +239,13 @@ const VehicleScanner = () => {
           });
         }
 
-        setIsScanning(false);
+        // Keep scanning continuously for new plates
+        console.log('Plate detected successfully, continuing to scan for new plates...');
 
-        // Stop continuous scanning after successful detection
-        if (scanInterval) {
-          clearInterval(scanInterval);
-          setScanInterval(null);
-        }
-
-        // Close the camera stream after a successful scan
-        stopCamera();
+        // Brief pause before next detection to avoid rapid fire
+        setTimeout(() => {
+          console.log('Ready for next plate detection...');
+        }, 3000);
       } else {
         console.log('Detection below confidence threshold or OCR failed');
       }
