@@ -223,11 +223,22 @@ const VehicleScanner = () => {
           result = await customYOLODetector.detectPlate(videoRef.current);
       }
 
-      // Adjust confidence thresholds based on detector type
-      const minConfidence = detectorType === 'custom' ? 0.7 :
-                           detectorType === 'yolo' ? 0.5 : 0.6;
-      const minOcrConfidence = detectorType === 'custom' ? 0.75 :
-                              detectorType === 'yolo' ? 0.6 : 0.7;
+      // Adjust confidence thresholds based on detector type (lowered for better detection)
+      const minConfidence = detectorType === 'custom' ? 0.4 :
+                           detectorType === 'yolo' ? 0.3 : 0.35;
+      const minOcrConfidence = detectorType === 'custom' ? 0.5 :
+                              detectorType === 'yolo' ? 0.4 : 0.45;
+
+      console.log('🎯 Detection thresholds:', { minConfidence, minOcrConfidence, detectorType });
+
+      console.log('🔍 Detection result:', {
+        plateNumber: result?.plateNumber,
+        confidence: result?.confidence,
+        ocrConfidence: result?.ocrConfidence,
+        minConfidence,
+        minOcrConfidence,
+        passesConfidenceCheck: result && result.confidence > minConfidence && (result.ocrConfidence || 0) > minOcrConfidence
+      });
 
       if (result && result.confidence > minConfidence &&
           (result.ocrConfidence || 0) > minOcrConfidence) {
@@ -290,7 +301,16 @@ const VehicleScanner = () => {
           console.log('Ready for next plate detection...');
         }, 3000);
       } else {
-        console.log('Detection below confidence threshold or OCR failed');
+        if (result) {
+          console.log('❌ Detection failed confidence check:', {
+            detected: result.plateNumber,
+            confidence: `${Math.round(result.confidence * 100)}% (need >${Math.round(minConfidence * 100)}%)`,
+            ocrConfidence: `${Math.round((result.ocrConfidence || 0) * 100)}% (need >${Math.round(minOcrConfidence * 100)}%)`,
+            reason: result.confidence <= minConfidence ? 'Low detection confidence' : 'Low OCR confidence'
+          });
+        } else {
+          console.log('❌ No plate detected in this frame');
+        }
       }
     } catch (error) {
       console.error('Error during plate detection:', error);
