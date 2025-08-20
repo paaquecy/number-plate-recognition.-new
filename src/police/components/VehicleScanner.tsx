@@ -246,7 +246,7 @@ const VehicleScanner = () => {
             const vehicle = lookup.vehicle;
             // Vehicle found in database - show all details
             setScanResults({
-              plateNumber: vehicle.plate_number || result.plateNumber,
+              plateNumber: result.plateNumber, // Always show what the camera actually detected
               vehicleModel: `${vehicle.year || vehicle.year_of_manufacture || ''} ${vehicle.make || vehicle.manufacturer || ''} ${vehicle.model || ''}`.trim() || 'Unknown',
               owner: vehicle.owner_name || 'Unknown',
               status: lookup.outstandingViolations > 0 ? `${lookup.outstandingViolations} Outstanding Violation(s)` : 'No Violations',
