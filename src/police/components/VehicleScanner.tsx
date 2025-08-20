@@ -232,8 +232,9 @@ const VehicleScanner = () => {
       if (result && result.confidence > minConfidence &&
           (result.ocrConfidence || 0) > minOcrConfidence) {
         console.log('✅ Plate detected successfully:', result);
-        setDetectionResult(result);
         setLastDetectionTime(new Date());
+
+        // Don't set detection result yet - wait for database lookup
 
         // Show success notification briefly
         console.log(`🎯 Detection successful after ${detectionAttempts + 1} attempts!`);
@@ -243,6 +244,7 @@ const VehicleScanner = () => {
           const lookup = await lookupVehicle(result.plateNumber);
           if (lookup && lookup.vehicle) {
             const vehicle = lookup.vehicle;
+            // Vehicle found in database - show all details
             setScanResults({
               plateNumber: vehicle.plate_number || result.plateNumber,
               vehicleModel: `${vehicle.year || vehicle.year_of_manufacture || ''} ${vehicle.make || vehicle.manufacturer || ''} ${vehicle.model || ''}`.trim() || 'Unknown',
@@ -250,25 +252,34 @@ const VehicleScanner = () => {
               status: lookup.outstandingViolations > 0 ? `${lookup.outstandingViolations} Outstanding Violation(s)` : 'No Violations',
               statusType: lookup.outstandingViolations > 0 ? 'violation' : 'clean'
             });
+
+            // Keep detection result for camera overlay only if vehicle is registered
+            setDetectionResult(result);
           } else {
-            // Not found in database => mark as Invalid
+            // Not found in database => mark as Invalid and clear detection result
             setScanResults({
-              plateNumber: result.plateNumber,
-              vehicleModel: 'Vehicle Not Found',
-              owner: 'Unknown',
-              status: 'Vehicle Not Registered',
+              plateNumber: 'Invalid',
+              vehicleModel: 'Vehicle Not Registered',
+              owner: 'N/A',
+              status: 'Invalid License Plate',
               statusType: 'violation'
             });
+
+            // Clear detection result so no overlay appears on camera
+            setDetectionResult(null);
           }
         } catch (e) {
           console.error('Lookup failed after detection:', e);
           setScanResults({
-            plateNumber: result.plateNumber,
-            vehicleModel: 'Lookup Error',
+            plateNumber: 'Error',
+            vehicleModel: 'Lookup Failed',
             owner: 'Error',
             status: 'System Error',
             statusType: 'violation'
           });
+
+          // Clear detection result on error
+          setDetectionResult(null);
         }
 
         // Keep scanning continuously for new plates
