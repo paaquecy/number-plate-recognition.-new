@@ -394,22 +394,23 @@ const VehicleScanner = () => {
             statusType: result.outstandingViolations > 0 ? 'violation' : 'clean'
           };
           setScanResults(vehicleResults);
-          
+
           // Record the scan in database
           await api.recordScan(plateInput.trim(), 'Manual', result);
         } else {
+          // Vehicle not found in database - show as invalid
           setScanResults({
-            plateNumber: plateInput.toUpperCase(),
-            vehicleModel: 'Vehicle Not Found',
-            owner: 'Unknown',
-            status: 'Vehicle Not Registered',
+            plateNumber: 'Invalid',
+            vehicleModel: 'Vehicle Not Registered',
+            owner: 'N/A',
+            status: 'Invalid License Plate',
             statusType: 'violation'
           });
         }
       } catch (error) {
         console.error('Vehicle lookup failed:', error);
         setScanResults({
-          plateNumber: plateInput.toUpperCase(),
+          plateNumber: 'Error',
           vehicleModel: 'Lookup Failed',
           owner: 'Error',
           status: 'System Error',
