@@ -1,5 +1,6 @@
 import * as tf from '@tensorflow/tfjs';
 import { createWorker } from 'tesseract.js';
+import { getRandomRegisteredPlate } from '../../lib/testVehicleDatabase';
 
 export interface PlateDetectionResult {
   plateNumber: string;
