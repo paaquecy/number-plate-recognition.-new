@@ -107,35 +107,30 @@ export class CustomYOLODetector {
       return null;
     }
     
-    // More realistic Ghanaian license plate patterns based on training data
-    const platePatterns = [
-      // Greater Accra Region
-      'GR-{####}-{##}', 'GA-{####}-{##}', 'GE-{####}-{##}', 'GW-{####}-{##}',
-      // Ashanti Region  
-      'AS-{####}-{##}', 'AK-{####}-{##}', 'AT-{####}-{##}',
-      // Western Region
-      'WR-{####}-{##}', 'WN-{####}-{##}', 'WP-{####}-{##}',
-      // Central Region
-      'CR-{####}-{##}', 'CP-{####}-{##}', 'CC-{####}-{##}',
-      // Eastern Region
-      'ER-{####}-{##}', 'EP-{####}-{##}', 'EK-{####}-{##}',
-      // Northern Region
-      'NR-{####}-{##}', 'NT-{####}-{##}', 'NW-{####}-{##}',
-      // Volta Region
-      'VR-{####}-{##}', 'VT-{####}-{##}', 'VH-{####}-{##}',
-      // Brong Ahafo Region
-      'BA-{####}-{##}', 'BT-{####}-{##}', 'BK-{####}-{##}',
-      // Upper East Region
-      'UE-{####}-{##}', 'UW-{####}-{##}', 'UR-{####}-{##}',
-      // Upper West Region
-      'UW-{####}-{##}', 'UK-{####}-{##}', 'UT-{####}-{##}'
-    ];
-    
-    // Generate realistic plate number
-    const pattern = platePatterns[Math.floor(Math.random() * platePatterns.length)];
-    const plateNumber = pattern
-      .replace(/{####}/g, () => String(Math.floor(1000 + Math.random() * 9000)))
-      .replace(/{##}/g, () => String(Math.floor(20 + Math.random() * 5))); // Years 20-24
+    // 60% chance to detect a registered plate, 40% chance for unregistered plate
+    const useRegisteredPlate = Math.random() < 0.6;
+
+    let plateNumber: string;
+
+    if (useRegisteredPlate) {
+      // Use a real registered plate from test database
+      plateNumber = getRandomRegisteredPlate();
+      console.log('🎯 Custom model detecting REGISTERED plate:', plateNumber);
+    } else {
+      // Generate random unregistered plate for testing "Invalid" flow
+      const platePatterns = [
+        'GR-{####}-{##}', 'AS-{####}-{##}', 'WR-{####}-{##}', 'CR-{####}-{##}',
+        'ER-{####}-{##}', 'NR-{####}-{##}', 'VR-{####}-{##}', 'BA-{####}-{##}',
+        'UE-{####}-{##}', 'TV-{####}-{##}', 'CP-{####}-{##}', 'UW-{####}-{##}'
+      ];
+
+      const pattern = platePatterns[Math.floor(Math.random() * platePatterns.length)];
+      plateNumber = pattern
+        .replace(/{####}/g, () => String(Math.floor(1000 + Math.random() * 9000)))
+        .replace(/{##}/g, () => String(Math.floor(18 + Math.random() * 8))); // Years 18-25
+
+      console.log('🎯 Custom model detecting UNREGISTERED plate:', plateNumber);
+    }
     
     // Higher confidence since this is a trained model
     const confidence = 0.75 + Math.random() * 0.2; // 0.75 to 0.95
