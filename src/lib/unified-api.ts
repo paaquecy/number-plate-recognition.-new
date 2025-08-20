@@ -451,31 +451,15 @@ class UnifiedAPIClient {
     }
 
     if (endpoint.includes('/vehicles/') && !endpoint.includes('/dvla/')) {
-      // Extract plate number from endpoint (e.g., /vehicles/GR-1234-23)
       const plateNumber = endpoint.split('/vehicles/')[1];
-      console.log('🔍 Looking up plate in test database:', plateNumber);
+      console.log('🔍 Vehicle lookup for plate:', plateNumber);
+      console.log('❌ No backend database available - returning not found');
 
-      // Log registered plates for reference in development
-      if (Math.random() < 0.1) { // Only log occasionally to avoid spam
-        logRegisteredPlates();
-      }
-
-      // Look up vehicle in test database
-      const vehicle = findVehicleByPlate(plateNumber);
-
-      if (vehicle) {
-        console.log('✅ Vehicle found in test database:', vehicle.plate_number, '-', vehicle.year, vehicle.make, vehicle.model);
-        return {
-          data: vehicle as T
-        };
-      } else {
-        console.log('❌ Vehicle not found in test database for plate:', plateNumber);
-        console.log('💡 Available plates:', TEST_VEHICLE_DATABASE.map(v => v.plate_number).join(', '));
-        return {
-          data: null as T,
-          error: 'Vehicle not found'
-        };
-      }
+      // Return not found for all vehicle lookups since there's no real database
+      return {
+        data: null as T,
+        error: 'Vehicle not found in database'
+      };
     }
 
     if (endpoint.includes('/violations') && options.method === 'GET') {
