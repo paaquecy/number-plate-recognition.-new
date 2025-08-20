@@ -442,6 +442,49 @@ const VehicleScanner = () => {
     }
   };
 
+  const handleCapturePlate = async () => {
+    console.log('📸 Capture button clicked - performing single plate detection');
+
+    if (!cameraActive) {
+      console.warn('❌ Camera not active, cannot capture');
+      alert('Please start the camera first before capturing');
+      return;
+    }
+
+    if (!videoRef.current) {
+      console.warn('❌ Video ref not available, cannot capture');
+      alert('Camera not ready for capture');
+      return;
+    }
+
+    try {
+      // Reset scan results before capture
+      setScanResults({
+        plateNumber: 'Capturing...',
+        vehicleModel: 'Scanning',
+        owner: 'Please wait',
+        status: 'Processing',
+        statusType: 'clean'
+      });
+
+      console.log('🎯 Starting single license plate capture and detection...');
+
+      // Perform the detection
+      await performPlateDetection();
+
+      console.log('✅ Single capture completed');
+    } catch (error) {
+      console.error('❌ Capture failed:', error);
+      setScanResults({
+        plateNumber: 'Error',
+        vehicleModel: 'Capture Failed',
+        owner: 'Error',
+        status: 'System Error',
+        statusType: 'violation'
+      });
+    }
+  };
+
   const handleDocumentEvidence = () => {
     const frame = captureFrame();
     if (frame) {
