@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { unifiedAPI } from '../lib/unified-api';
 
 export interface ViolationRecord {
@@ -117,23 +117,46 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Add circuit breaker state
+  const [lastFailureTime, setLastFailureTime] = useState<number>(0);
+  const [failureCount, setFailureCount] = useState<number>(0);
+  const CIRCUIT_BREAKER_THRESHOLD = 3;
+  const CIRCUIT_BREAKER_TIMEOUT = 30000; // 30 seconds
+
   // Load initial data
   useEffect(() => {
     loadAllData();
   }, []);
 
+  // Debounced data loading to prevent excessive API calls
+  const debouncedLoadData = useCallback(() => {
+    const timeoutId = setTimeout(() => {
+      // Check circuit breaker
+      const now = Date.now();
+      if (failureCount >= CIRCUIT_BREAKER_THRESHOLD &&
+          now - lastFailureTime < CIRCUIT_BREAKER_TIMEOUT) {
+        console.log('Circuit breaker open, skipping API call');
+        return;
+      }
+
+      loadAllData();
+    }, 1000); // 1 second debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [failureCount, lastFailureTime, CIRCUIT_BREAKER_THRESHOLD, CIRCUIT_BREAKER_TIMEOUT]);
+
   // Auto-sync with backend on page visibility/focus/online and cross-tab changes
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (!document.hidden) {
-        loadAllData();
+        debouncedLoadData();
       }
     };
     const handleWindowFocus = () => {
-      loadAllData();
+      debouncedLoadData();
     };
     const handleOnline = () => {
-      loadAllData();
+      debouncedLoadData();
     };
     const handleStorage = (e: StorageEvent) => {
       // If any known keys change in another tab, refresh
@@ -146,7 +169,7 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
         'vpr_notifications'
       ]);
       if (!e.key || keysToWatch.has(e.key)) {
-        loadAllData();
+        debouncedLoadData();
       }
     };
 
@@ -161,15 +184,16 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
       window.removeEventListener('storage', handleStorage);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, []);
+  }, [debouncedLoadData]);
 
   const loadAllData = async () => {
     setIsLoading(true);
     setError(null);
+
     try {
-      // Load vehicles from shared database
+      // Load vehicles from shared database with better error handling
       const vehiclesResponse = await unifiedAPI.getVehicles();
-      if (vehiclesResponse.data) {
+      if (vehiclesResponse.data && Array.isArray(vehiclesResponse.data)) {
         const convertedVehicles: VehicleRecord[] = vehiclesResponse.data.map((v: any) => ({
           id: v.id?.toString() || '',
           plateNumber: v.plate_number || v.reg_number || '',
@@ -183,13 +207,20 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
           status: v.status === 'active' ? 'active' : 'expired'
         }));
         setVehicles(convertedVehicles);
+        console.log('Loaded vehicles successfully:', convertedVehicles.length);
+
+        // Reset failure count on success
+        setFailureCount(0);
+      } else if (vehiclesResponse.error) {
+        throw new Error(vehiclesResponse.error);
       } else {
-        console.warn('Failed to load vehicles from database:', vehiclesResponse.error);
+        console.warn('No vehicle data received');
+        setVehicles([]); // Set empty array as fallback
       }
 
-      // Load violations from shared database
+      // Load violations from shared database with better error handling
       const violationsResponse = await unifiedAPI.getViolations();
-      if (violationsResponse.data) {
+      if (violationsResponse.data && Array.isArray(violationsResponse.data)) {
         const convertedViolations: ViolationRecord[] = violationsResponse.data.map((v: any) => ({
           id: v.id || '',
           plateNumber: v.plate_number || '',
@@ -204,17 +235,34 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
           fine: v.fine_amount || 0
         }));
         setViolations(convertedViolations);
+        console.log('Loaded violations successfully:', convertedViolations.length);
+      } else if (violationsResponse.error) {
+        throw new Error(violationsResponse.error);
       } else {
-        console.warn('Failed to load violations from database:', violationsResponse.error);
+        console.warn('No violations data received');
+        setViolations([]); // Set empty array as fallback
       }
 
       // Initialize empty arrays for other data types
       setUsers([]);
       setFines([]);
       setNotifications([]);
+
     } catch (error) {
-      console.error('Error loading data from Supabase:', error);
+      console.error('Error loading data:', error);
+
+      // Update circuit breaker state
+      setFailureCount(prev => prev + 1);
+      setLastFailureTime(Date.now());
+
       setError(error instanceof Error ? error.message : 'Failed to load data');
+
+      // Set fallback empty arrays on error
+      setVehicles([]);
+      setViolations([]);
+      setUsers([]);
+      setFines([]);
+      setNotifications([]);
     } finally {
       setIsLoading(false);
     }
@@ -260,16 +308,32 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
 
   const lookupVehicle = async (plateNumber: string) => {
     try {
+      console.log('Looking up vehicle:', plateNumber);
       const result = await unifiedAPI.lookupVehicle(plateNumber);
+
       if (result.data) {
-        return result.data;
+        console.log('Vehicle lookup successful:', result.data);
+        // Transform the response to match expected format
+        const vehicle = result.data;
+        return {
+          vehicle: {
+            id: vehicle.id,
+            plate_number: vehicle.plate_number || vehicle.reg_number,
+            make: vehicle.make || vehicle.manufacturer,
+            model: vehicle.model,
+            year: vehicle.year || vehicle.year_of_manufacture,
+            owner_name: vehicle.owner_name,
+            registration_status: vehicle.registration_status || vehicle.status
+          },
+          outstandingViolations: 0 // For now, assume no violations
+        };
       } else {
         console.warn('Vehicle not found in database:', result.error);
-        return null;
+        return { vehicle: null, outstandingViolations: 0 };
       }
     } catch (error) {
       console.error('Error looking up vehicle:', error);
-      return null;
+      return { vehicle: null, outstandingViolations: 0 };
     }
   };
   // Violation management functions

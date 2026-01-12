@@ -87,16 +87,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    const result = await api.signIn(email, password);
-    if (result.data) {
-      setUser(result.data.user);
+    try {
+      const result = await api.signIn(email, password);
+      if (result && result.data) {
+        setUser(result.data.user);
+      }
+      return result;
+    } catch (error) {
+      console.error('Auth context signIn error:', error);
+      return { data: null, error: error instanceof Error ? error.message : 'Authentication failed' };
     }
-    return result;
   };
 
   const signUp = async (email: string, password: string, metadata?: any) => {
-    const result = await api.signUp(email, password, metadata);
-    return result;
+    try {
+      const result = await api.signUp(email, password, metadata);
+      return result;
+    } catch (error) {
+      console.error('Auth context signUp error:', error);
+      return { data: null, error: error instanceof Error ? error.message : 'Registration failed' };
+    }
   };
 
   const signOut = async () => {

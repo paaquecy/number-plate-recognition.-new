@@ -1,10 +1,22 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'placeholder_key';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+
+// Validate Supabase URL format
+const isValidSupabaseUrl = (url: string): boolean => {
+  if (!url) return false;
+  try {
+    const parsedUrl = new URL(url);
+    return parsedUrl.hostname.includes('supabase') && parsedUrl.protocol === 'https:';
+  } catch {
+    return false;
+  }
+};
 
 // Create a mock Supabase client for development when environment variables are not set
 const createMockSupabaseClient = () => {
+  console.log('Using mock Supabase client - Supabase not configured');
   return {
     auth: {
       getSession: () => Promise.resolve({ data: { session: null }, error: null }),
@@ -23,9 +35,22 @@ const createMockSupabaseClient = () => {
   };
 };
 
-export const supabase = supabaseUrl === 'https://placeholder.supabase.co' 
-  ? createMockSupabaseClient() 
-  : createClient(supabaseUrl, supabaseAnonKey);
+// Create Supabase client only if valid credentials are provided
+const createSupabaseClient = () => {
+  if (!isValidSupabaseUrl(supabaseUrl) || !supabaseAnonKey) {
+    return createMockSupabaseClient();
+  }
+
+  try {
+    console.log('Creating Supabase client with URL:', supabaseUrl);
+    return createClient(supabaseUrl, supabaseAnonKey);
+  } catch (error) {
+    console.error('Failed to create Supabase client:', error);
+    return createMockSupabaseClient();
+  }
+};
+
+export const supabase = createSupabaseClient();
 
 export type Database = {
   public: {

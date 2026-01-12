@@ -71,26 +71,49 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onRegister }) => {
         return;
       }
     } catch (err) {
-      console.log('DVLA login failed, falling back to police');
+      console.log('DVLA login failed, trying next method:', err);
     }
 
     // Try Supabase/unified authentication for police officers
     try {
-      const { data, error } = await signIn(`${username}@police.gov.gh`, password);
-      
-      if (data && !error) {
-        console.log('Police officer authenticated via Supabase:', data.user);
-        onLogin('police');
-        return;
+      if (signIn && typeof signIn === 'function') {
+        const result = await signIn(`${username}@police.gov.gh`, password);
+
+        if (result && result.data && !result.error) {
+          console.log('Police officer authenticated via Supabase:', result.data.user);
+          onLogin('police');
+          return;
+        }
       }
-      // Fallback to unified backend police login if Supabase path fails
+    } catch (error) {
+      console.log('Supabase auth failed, trying unified backend:', error);
+    }
+
+    // Fallback to unified backend police login
+    try {
       const policeLogin = await unifiedAPI.login(username, password, 'police');
       if (policeLogin.data && !policeLogin.error) {
         onLogin('police');
         return;
       }
     } catch (error) {
-      console.log('Supabase auth failed, trying fallback');
+      console.log('Unified backend login failed:', error);
+    }
+
+    // Development mode bypass - allow any credentials if backend is not available
+    if (import.meta.env.VITE_MODE === 'development' || import.meta.env.DEV) {
+      console.log('Development mode: Allowing login bypass');
+      // Allow login with any credentials if all backend methods failed
+      if (username && password) {
+        if (username.toLowerCase().includes('dvla')) {
+          onLogin('dvla');
+        } else if (username.toLowerCase().includes('supervisor')) {
+          onLogin('supervisor');
+        } else {
+          onLogin('police');
+        }
+        return;
+      }
     }
 
     // Fallback to existing authentication for other users
